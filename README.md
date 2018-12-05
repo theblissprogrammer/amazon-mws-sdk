@@ -1,5 +1,5 @@
-# android-amazon-mws-sdk
-(Unofficial) Android Amazon MWS SDK. 
+# (Unofficial) Android Amazon MWS SDK
+
 This library will help you connect to the Amazon MWS to quickly develop applications to help Amazon Sellers. 
 You can read more on Amazon MWS at --> https://developer.amazonservices.com/. 
 
