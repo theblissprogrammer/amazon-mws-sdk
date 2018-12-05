@@ -36,7 +36,7 @@ class AuthenticationNetworkService(val apiSession: APISessionType,
             val error = initDataError(response.error)
 
             /* Only explicit unauthorized error will be checked */
-            if (error != DataError.Unauthorized && error != DataError.BadRequest) {
+            if (response.isSuccess && error is DataError.Other) {
                 success()
             } else {
                 failure(error)

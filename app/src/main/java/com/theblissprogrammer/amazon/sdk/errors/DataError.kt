@@ -21,4 +21,15 @@ sealed class DataError : Exception() {
     class NetworkFailure(var error: Exception?) : DataError()
     class UnknownReason(var error: Exception?) : DataError()
     class Other(var errors: FieldErrors) : DataError()
+
+    override fun getLocalizedMessage(): String {
+
+        return if (this is NetworkFailure
+            && this.error != null
+            && this.error is NetworkError
+            && (this.error as NetworkError).fieldErrors.size > 0) {
+            (this.error as NetworkError).fieldErrors.joinToString(separator = ", ")
+        } else
+            super.getLocalizedMessage() ?: ""
+    }
 }

@@ -21,7 +21,7 @@ interface SellerDAO {
     fun createSellers(vararg sellers: Seller)
 
     @Query("SELECT * FROM Seller")
-    fun fetchAllSellers(): Array<Seller>
+    fun fetchAllSellers(): LiveData<Array<Seller>>
 
     @Query("SELECT * FROM Seller WHERE id = :id")
     fun fetch(id: String): Seller?

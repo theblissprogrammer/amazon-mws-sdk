@@ -21,6 +21,6 @@ fun initDataError(error: NetworkError?): DataError {
         400 -> DataError.NetworkFailure(error)
         401 -> DataError.Unauthorized
         403 -> DataError.Forbidden
-        else -> DataError.Other(error?.fieldErrors ?: mutableMapOf())
+        else -> DataError.Other(error?.fieldErrors ?: arrayListOf())
     }
 }

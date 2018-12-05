@@ -11,13 +11,13 @@ import org.json.JSONObject
  */
 
 // Alias type used to represent specific field errors from the server
-typealias FieldErrors = MutableMap<String, ArrayList<String>>
+typealias FieldErrors = ArrayList<String>
 
 /// The NetworkError type represents an error object returned from the API server.
 class NetworkError(val urlRequest: Request? = null,
                    val statusCode: Int = 0,
                    val headerValues: Map<String, String> = mutableMapOf(),
-                   var fieldErrors: FieldErrors = mutableMapOf(),
+                   var fieldErrors: FieldErrors = arrayListOf(),
                    val serverData: String? = null,
                    val internalError: Exception? = null) : Exception() {
 
@@ -33,29 +33,13 @@ class NetworkError(val urlRequest: Request? = null,
         this.fieldErrors = getFieldErrors(serverData)
     }
 
-    private fun getFieldErrors(response: String?) : MutableMap<String, ArrayList<String>> {
-        val fieldErrors: FieldErrors = mutableMapOf()
+    private fun getFieldErrors(response: String?) : ArrayList<String> {
+        val fieldErrors: FieldErrors = arrayListOf()
 
         try {
             response?.apply {
-                val errorJSON = JSONObject(this)
-                val errorsObject = errorJSON.optJSONObject("errors")
-                if (errorsObject != null) {
-                    val names = errorsObject.names()
-
-                    for (i in 0 until names.length()) {
-                        val key = names.getString(i)
-
-                        val errorMessages = errorsObject.optJSONArray(key)
-                        if (errorMessages != null) {
-                            val errorArray = arrayListOf<String>()
-                            for (j in 0 until errorMessages.length()) {
-                                errorArray.add(errorMessages.getString(j))
-                            }
-                            fieldErrors[key] = errorArray
-                        }
-                    }
-                }
+                val errors =  ErrorsXmlParser().parse(this)
+                fieldErrors.addAll(errors)
             }
         } catch (e: Exception) {
             LogHelper.d(messages = *arrayOf("An error occurred while converting HTTP response " +

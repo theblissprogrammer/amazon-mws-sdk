@@ -1,6 +1,8 @@
 package com.theblissprogrammer.amazon.sdk
 
-import androidx.test.core.app.ApplicationProvider
+import android.app.Application
+import androidx.test.InstrumentationRegistry
+import androidx.test.runner.AndroidJUnit4
 import com.theblissprogrammer.amazon.sdk.TestCredentials.Companion.mwsToken
 import com.theblissprogrammer.amazon.sdk.TestCredentials.Companion.sellerID
 import com.theblissprogrammer.amazon.sdk.account.AuthenticationWorkerType
@@ -13,13 +15,12 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 
 /**
  * Created by ahmed.saad on 2018-12-03.
  * Copyright © 2018. All rights reserved.
  */
-@RunWith(RobolectricTestRunner::class)
+@RunWith(AndroidJUnit4::class)
 class AccountUnitTests: HasDependencies, DependencyConfigurator {
 
     private val authenticationWorker: AuthenticationWorkerType by lazy {
@@ -28,11 +29,14 @@ class AccountUnitTests: HasDependencies, DependencyConfigurator {
 
     @Before
     fun configure() {
-        configure(application = ApplicationProvider.getApplicationContext(), dependencies = MockSDKDependency())
+        configure(
+            application = InstrumentationRegistry.getTargetContext().applicationContext as Application,
+            dependencies = MockSDKDependency()
+        )
     }
 
     @Test
-    fun `account login incomplete`() {
+    fun account_login_incomplete() {
         val request = LoginModels.Request(
             sellerID = "",
             token = ""
@@ -49,7 +53,7 @@ class AccountUnitTests: HasDependencies, DependencyConfigurator {
     }
 
     @Test
-    fun `account login token incomplete`() {
+    fun account_login_token_incomplete() {
         val request = LoginModels.Request(
             sellerID = sellerID,
             token = ""
@@ -66,7 +70,7 @@ class AccountUnitTests: HasDependencies, DependencyConfigurator {
     }
 
     @Test
-    fun `account login invalid`() {
+    fun account_login_invalid() {
         val request = LoginModels.Request(
             sellerID = sellerID.drop(3),
             token = mwsToken
@@ -74,16 +78,17 @@ class AccountUnitTests: HasDependencies, DependencyConfigurator {
 
         runBlocking {
             authenticationWorker.login(request) {
-                Assert.assertTrue(
-                    "Logging in with invalid values should fail.",
-                    it.error is DataError.BadRequest
+                Assert.assertFalse("Logging in with invalid values should fail.", it.isSuccess)
+                Assert.assertNotNull(
+                    "Logging in with invalid values should fail. ${it.error?.localizedMessage}",
+                    it.error
                 )
             }
         }
     }
 
     @Test
-    fun `account login valid`() {
+    fun account_login_valid() {
         val request = LoginModels.Request(
             sellerID = sellerID,
             token = mwsToken
@@ -102,9 +107,7 @@ class AccountUnitTests: HasDependencies, DependencyConfigurator {
     }
 
     @Test
-    fun `account ping authorization`() {
-        `account login valid`()
-
+    fun account_ping_authorization() {
         runBlocking {
             authenticationWorker.pingAuthorization {
                 Assert.assertTrue("An error occurred when there should not be: ${it.error?.localizedMessage ?: it.error}", it.isSuccess)

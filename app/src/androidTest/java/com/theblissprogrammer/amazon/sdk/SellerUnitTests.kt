@@ -1,8 +1,11 @@
 package com.theblissprogrammer.amazon.sdk
 
+import android.app.Application
 import android.content.Context
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.room.Room
-import androidx.test.core.app.ApplicationProvider
+import androidx.test.InstrumentationRegistry
+import androidx.test.runner.AndroidJUnit4
 import com.theblissprogrammer.amazon.sdk.TestCredentials.Companion.sellerID
 import com.theblissprogrammer.amazon.sdk.data.AppDatabase
 import com.theblissprogrammer.amazon.sdk.dependencies.DependencyConfigurator
@@ -16,19 +19,15 @@ import com.theblissprogrammer.amazon.sdk.stores.sellers.models.SellerModels
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
-import org.junit.After
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Test
+import org.junit.*
 import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
 import java.io.IOException
 
 /**
  * Created by ahmed.saad on 2018-12-04.
  * Copyright © 2018. All rights reserved.
  */
-@RunWith(RobolectricTestRunner::class)
+@RunWith(AndroidJUnit4::class)
 class SellerUnitTests: HasDependencies, DependencyConfigurator {
     private lateinit var sellerDao: SellerDAO
     private lateinit var db: AppDatabase
@@ -41,14 +40,20 @@ class SellerUnitTests: HasDependencies, DependencyConfigurator {
         dependencies.resolveSellersCacheStore
     }
 
+    @get:Rule
+    var instantTaskExecutorRule = InstantTaskExecutorRule()
+
     @Before
-    fun configure() {
-        configure(application = ApplicationProvider.getApplicationContext(), dependencies = MockSDKDependency())
+    fun configureSdk() {
+        configure(
+            application = InstrumentationRegistry.getTargetContext().applicationContext as Application,
+            dependencies = MockSDKDependency()
+        )
     }
 
     @Before
     fun createDb() {
-        val context: Context = ApplicationProvider.getApplicationContext()
+        val context: Context = InstrumentationRegistry.getTargetContext()
         db = Room.inMemoryDatabaseBuilder(
             context, AppDatabase::class.java
         ).build()
@@ -63,7 +68,29 @@ class SellerUnitTests: HasDependencies, DependencyConfigurator {
 
     @Test
     @Throws(Exception::class)
-    fun `saving and fetching from db`() {
+    fun saving_and_fetching_live_data() {
+        val id = "1234"
+        val marketplace = MarketplaceType.UK
+        val seller = Seller(id = id, marketplace = marketplace)
+
+        runBlocking {
+
+            val sellerLD = async(Dispatchers.IO) {
+                sellerDao.createSellers(seller)
+                sellerDao.fetchAllSellers()
+            }.await()
+
+            val sellers = getValue(sellerLD)
+            Assert.assertEquals("The number of sellers must equal to number added.", 1, sellers.size)
+            Assert.assertEquals("The seller ids should match after saving to db", id, sellers[0].id)
+            Assert.assertEquals("The seller marketplaces should match after saving to db", marketplace, sellers[0].marketplace)
+        }
+    }
+
+
+    @Test
+    @Throws(Exception::class)
+    fun saving_and_fetching_from_db() {
         val id = "1234"
         val marketplace = MarketplaceType.UK
         val seller = Seller(id = id, marketplace = marketplace)
@@ -82,7 +109,7 @@ class SellerUnitTests: HasDependencies, DependencyConfigurator {
 
     @Test
     @Throws(Exception::class)
-    fun `saving and fetching from cache store`() {
+    fun saving_and_fetching_from_cache_store() {
         val id = "1234"
         val marketplace = MarketplaceType.UK
         val seller = Seller(id = id, marketplace = marketplace)
@@ -97,7 +124,7 @@ class SellerUnitTests: HasDependencies, DependencyConfigurator {
 
     @Test
     @Throws(Exception::class)
-    fun `saving and fetching from worker`() {
+    fun saving_and_fetching_from_worker() {
         val id = "1234"
         val marketplace = MarketplaceType.UK
         val seller = Seller(id = id, marketplace = marketplace)
@@ -125,10 +152,7 @@ class SellerUnitTests: HasDependencies, DependencyConfigurator {
 
 
     @Test
-    fun `login and fetch current seller`() {
-        // Login
-        AccountUnitTests().`account login valid`()
-
+    fun fetch_current_seller() {
         runBlocking {
             sellersWorker.fetchCurrent {
                 Assert.assertTrue(
