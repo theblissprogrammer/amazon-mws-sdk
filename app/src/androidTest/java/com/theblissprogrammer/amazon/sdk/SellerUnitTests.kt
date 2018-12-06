@@ -8,8 +8,8 @@ import androidx.test.InstrumentationRegistry
 import androidx.test.runner.AndroidJUnit4
 import com.theblissprogrammer.amazon.sdk.TestCredentials.Companion.sellerID
 import com.theblissprogrammer.amazon.sdk.data.AppDatabase
-import com.theblissprogrammer.amazon.sdk.dependencies.DependencyConfigurator
 import com.theblissprogrammer.amazon.sdk.dependencies.HasDependencies
+import com.theblissprogrammer.amazon.sdk.dependencies.MwsSdk
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.stores.sellers.SellerDAO
 import com.theblissprogrammer.amazon.sdk.stores.sellers.SellersCacheStore
@@ -28,7 +28,7 @@ import java.io.IOException
  * Copyright © 2018. All rights reserved.
  */
 @RunWith(AndroidJUnit4::class)
-class SellerUnitTests: HasDependencies, DependencyConfigurator {
+class SellerUnitTests: HasDependencies {
     private lateinit var sellerDao: SellerDAO
     private lateinit var db: AppDatabase
 
@@ -45,7 +45,7 @@ class SellerUnitTests: HasDependencies, DependencyConfigurator {
 
     @Before
     fun configureSdk() {
-        configure(
+        MwsSdk.configure(
             application = InstrumentationRegistry.getTargetContext().applicationContext as Application,
             dependencies = MockSDKDependency()
         )

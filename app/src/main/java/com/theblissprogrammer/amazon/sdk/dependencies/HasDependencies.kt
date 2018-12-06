@@ -7,8 +7,7 @@ import android.app.Application
  * Created by ahmedsaad on 2017-11-30.
  * Copyright © 2017. All rights reserved.
  */
- internal interface HasDependencies {
-
+interface HasDependencies {
     /// Container for dependency instance factories
     val dependencies: SDKDependable
         get() {
@@ -16,25 +15,19 @@ import android.app.Application
         }
 }
 
-interface DependencyConfigurator {
-
-    /// Declare dependency container to use
-    fun configure(dependencies: CoreDependable) {
-        DependencyInjector.dependencies = dependencies
-    }
-
-    fun configure(application: Application, dependencies: SDKDependable) {
-        dependencies.application = application
-
-        configure(dependencies as CoreDependable)
-        DependencyInjector.dependencies = dependencies
+class MwsSdk {
+    companion object {
+        fun configure(application: Application, dependencies: SDKDependable = SDKDependency()) {
+            dependencies.application = application
+            DependencyInjector.dependencies = dependencies
+        }
     }
 }
 
 /// Used to pass around dependency container
 /// which can be reassigned to another container
-class DependencyInjector {
+internal class DependencyInjector {
     companion object {
-        var dependencies: CoreDependable = SDKDependency()
+        lateinit var dependencies: CoreDependable
     }
 }

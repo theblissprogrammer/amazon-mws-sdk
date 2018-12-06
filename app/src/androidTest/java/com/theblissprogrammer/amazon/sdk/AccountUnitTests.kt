@@ -7,7 +7,7 @@ import com.theblissprogrammer.amazon.sdk.TestCredentials.Companion.mwsToken
 import com.theblissprogrammer.amazon.sdk.TestCredentials.Companion.sellerID
 import com.theblissprogrammer.amazon.sdk.account.AuthenticationWorkerType
 import com.theblissprogrammer.amazon.sdk.account.models.LoginModels
-import com.theblissprogrammer.amazon.sdk.dependencies.DependencyConfigurator
+import com.theblissprogrammer.amazon.sdk.dependencies.MwsSdk
 import com.theblissprogrammer.amazon.sdk.dependencies.HasDependencies
 import com.theblissprogrammer.amazon.sdk.errors.DataError
 import kotlinx.coroutines.*
@@ -21,7 +21,7 @@ import org.junit.runner.RunWith
  * Copyright © 2018. All rights reserved.
  */
 @RunWith(AndroidJUnit4::class)
-class AccountUnitTests: HasDependencies, DependencyConfigurator {
+class AccountUnitTests: HasDependencies {
 
     private val authenticationWorker: AuthenticationWorkerType by lazy {
         dependencies.resolveAuthenticationWorker
@@ -29,7 +29,7 @@ class AccountUnitTests: HasDependencies, DependencyConfigurator {
 
     @Before
     fun configure() {
-        configure(
+        MwsSdk.configure(
             application = InstrumentationRegistry.getTargetContext().applicationContext as Application,
             dependencies = MockSDKDependency()
         )
