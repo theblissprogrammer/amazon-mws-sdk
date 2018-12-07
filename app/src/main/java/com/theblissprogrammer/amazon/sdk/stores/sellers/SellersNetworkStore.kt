@@ -1,16 +1,15 @@
 package com.theblissprogrammer.amazon.sdk.stores.sellers
 
+import com.theblissprogrammer.amazon.sdk.common.DeferredResult
 import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetwork
 import com.theblissprogrammer.amazon.sdk.stores.sellers.models.Seller
 import com.theblissprogrammer.amazon.sdk.stores.sellers.models.SellerModels
-import com.theblissprogrammer.amazon.sdk.common.Result
 import com.theblissprogrammer.amazon.sdk.common.Result.Companion.failure
 import com.theblissprogrammer.amazon.sdk.common.Result.Companion.success
 import com.theblissprogrammer.amazon.sdk.common.initDataError
 import com.theblissprogrammer.amazon.sdk.errors.DataError
 import com.theblissprogrammer.amazon.sdk.logging.LogHelper
 import com.theblissprogrammer.amazon.sdk.network.HTTPServiceType
-import kotlinx.coroutines.Deferred
 import org.jsoup.Jsoup
 
 /**
@@ -19,8 +18,7 @@ import org.jsoup.Jsoup
  **/
 class SellersNetworkStore(val httpService: HTTPServiceType): SellersStore {
 
-    override fun fetch(request: SellerModels.Request)
-            : Deferred<Result<Seller>> {
+    override fun fetch(request: SellerModels.Request) : DeferredResult<Seller> {
 
         return coroutineNetwork <Seller> {
             val response = httpService.get(request.marketplace.amazonBaseURL + "/sp",

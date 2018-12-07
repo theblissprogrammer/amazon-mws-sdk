@@ -34,18 +34,19 @@ data class NetworkResult<T>(val isSuccess: Boolean = false, val value: T? = null
     }
 }
 
-data class LiveDataResult<T>(val isSuccess: Boolean = false, val value: LiveData<T>? = null, val error: DataError? = null) {
+data class LiveResult<T>(val isSuccess: Boolean = false, val value: LiveData<T>? = null, val error: DataError? = null) {
     companion object {
-        fun <T>success(value: LiveData<T>? = null): LiveDataResult<T> {
-            return LiveDataResult(true, value, null)
+        fun <T>success(value: LiveData<T>? = null): LiveResult<T> {
+            return LiveResult(true, value, null)
         }
 
-        fun <T>failure(error: DataError? = null): LiveDataResult<T> {
-            return LiveDataResult(false, null, error)
+        fun <T>failure(error: DataError? = null): LiveResult<T> {
+            return LiveResult(false, null, error)
         }
     }
 }
 
 typealias CompletionResponse<T> = (Result<T>) -> Unit
-typealias LiveDataCompletionResponse<T> = (LiveDataResult<T>) -> Unit
+typealias LiveCompletionResponse<T> = (LiveResult<T>) -> Unit
+typealias DeferredLiveResult<T> = Deferred<LiveResult<T>>
 typealias DeferredResult<T> = Deferred<Result<T>>

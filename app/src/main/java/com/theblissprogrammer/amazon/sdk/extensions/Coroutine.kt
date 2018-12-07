@@ -3,7 +3,7 @@ package com.theblissprogrammer.amazon.sdk.extensions
 import com.theblissprogrammer.amazon.sdk.common.Result
 import com.theblissprogrammer.amazon.sdk.common.Result.Companion.failure
 import com.theblissprogrammer.amazon.sdk.common.CompletionResponse
-import com.theblissprogrammer.amazon.sdk.common.LiveDataResult
+import com.theblissprogrammer.amazon.sdk.common.LiveResult
 import com.theblissprogrammer.amazon.sdk.errors.DataError
 import kotlinx.coroutines.*
 import java.io.IOException
@@ -29,7 +29,7 @@ fun <T> coroutineNetwork (call: () -> Result<T>): Deferred<Result<T>> {
     }
 }
 
-fun <T> coroutineRoom (call: () -> LiveDataResult<T>): Deferred<LiveDataResult<T>> {
+fun <T> coroutineRoom (call: () -> LiveResult<T>): Deferred<LiveResult<T>> {
     return GlobalScope.async(Dispatchers.IO) {
         call()
     }

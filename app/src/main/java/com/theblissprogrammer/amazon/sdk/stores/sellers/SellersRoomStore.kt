@@ -1,15 +1,15 @@
 package com.theblissprogrammer.amazon.sdk.stores.sellers
 
-import com.theblissprogrammer.amazon.sdk.common.LiveDataResult
-import com.theblissprogrammer.amazon.sdk.common.LiveDataResult.Companion.failure
-import com.theblissprogrammer.amazon.sdk.common.LiveDataResult.Companion.success
+import com.theblissprogrammer.amazon.sdk.common.DeferredLiveResult
+import com.theblissprogrammer.amazon.sdk.common.DeferredResult
+import com.theblissprogrammer.amazon.sdk.common.LiveResult.Companion.failure
+import com.theblissprogrammer.amazon.sdk.common.LiveResult.Companion.success
 import com.theblissprogrammer.amazon.sdk.common.Result
 import com.theblissprogrammer.amazon.sdk.errors.DataError
 import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetwork
 import com.theblissprogrammer.amazon.sdk.extensions.coroutineRoom
 import com.theblissprogrammer.amazon.sdk.stores.sellers.models.Seller
 import com.theblissprogrammer.amazon.sdk.stores.sellers.models.SellerModels
-import kotlinx.coroutines.Deferred
 
 /**
  * Created by ahmedsaad on 2018-08-04.
@@ -17,7 +17,7 @@ import kotlinx.coroutines.Deferred
  **/
 class SellersRoomStore(val sellerDao: SellerDAO?): SellersCacheStore {
 
-    override fun fetch(request: SellerModels.Request): Deferred<LiveDataResult<Seller>> {
+    override fun fetch(request: SellerModels.Request): DeferredLiveResult<Seller> {
         return coroutineRoom<Seller> {
             val item = sellerDao?.fetch(id = request.id, marketplace = request.marketplace)
 
@@ -29,7 +29,7 @@ class SellersRoomStore(val sellerDao: SellerDAO?): SellersCacheStore {
         }
     }
 
-    override fun createOrUpdate(request: Seller): Deferred<LiveDataResult<Seller>> {
+    override fun createOrUpdate(request: Seller): DeferredLiveResult<Seller> {
         return coroutineRoom<Seller> {
 
             sellerDao?.insertOrUpdate(request)
@@ -44,7 +44,7 @@ class SellersRoomStore(val sellerDao: SellerDAO?): SellersCacheStore {
         }
     }
 
-    override fun createOrUpdate(vararg sellers: Seller): Deferred<Result<Void>> {
+    override fun createOrUpdate(vararg sellers: Seller): DeferredResult<Void> {
         return coroutineNetwork<Void> {
             sellerDao?.insert(*sellers)
             Result.success()
