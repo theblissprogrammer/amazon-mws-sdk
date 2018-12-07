@@ -1,4 +1,4 @@
-package com.example.appstores.sources.stores.sellers
+package com.theblissprogrammer.amazon.sdk.stores.sellers
 
 import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetwork
 import com.theblissprogrammer.amazon.sdk.stores.sellers.models.Seller
@@ -10,7 +10,6 @@ import com.theblissprogrammer.amazon.sdk.common.initDataError
 import com.theblissprogrammer.amazon.sdk.errors.DataError
 import com.theblissprogrammer.amazon.sdk.logging.LogHelper
 import com.theblissprogrammer.amazon.sdk.network.HTTPServiceType
-import com.theblissprogrammer.amazon.sdk.stores.sellers.SellersStore
 import kotlinx.coroutines.Deferred
 import org.jsoup.Jsoup
 

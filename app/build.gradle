@@ -48,7 +48,6 @@ dependencies {
     implementation 'commons-codec:commons-codec:1.10'
     implementation 'org.jsoup:jsoup:1.11.3'
 
-
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$rootProject.kotlinVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$rootProject.coroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$rootProject.coroutinesVersion"

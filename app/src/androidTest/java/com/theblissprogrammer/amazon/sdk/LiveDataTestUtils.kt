@@ -12,10 +12,10 @@ import java.util.concurrent.TimeUnit
  * Once we got a notification via onChanged, we stop observing.
  */
 @Throws(InterruptedException::class)
-fun <T> getValue(liveData: LiveData<T>): T {
+fun <T> getValue(liveData: LiveData<T>?): T {
     val data = arrayOfNulls<Any>(1)
     val latch = CountDownLatch(1)
-    liveData.observeForever { o ->
+    liveData?.observeForever { o ->
         data[0] = o
         latch.countDown()
     }

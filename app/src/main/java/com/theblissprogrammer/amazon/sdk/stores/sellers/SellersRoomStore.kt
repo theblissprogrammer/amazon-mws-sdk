@@ -1,5 +1,6 @@
 package com.theblissprogrammer.amazon.sdk.stores.sellers
 
+import androidx.lifecycle.LiveData
 import com.theblissprogrammer.amazon.sdk.common.Result
 import com.theblissprogrammer.amazon.sdk.common.Result.Companion.failure
 import com.theblissprogrammer.amazon.sdk.common.Result.Companion.success
@@ -15,8 +16,8 @@ import kotlinx.coroutines.Deferred
  **/
 class SellersRoomStore(val sellerDao: SellerDAO?): SellersCacheStore {
 
-    override fun fetch(request: SellerModels.Request): Deferred<Result<Seller>> {
-        return coroutineNetwork<Seller> {
+    override fun fetch(request: SellerModels.Request): Deferred<Result<LiveData<Seller>>> {
+        return coroutineNetwork<LiveData<Seller>> {
             val item = sellerDao?.fetch(id = request.id, marketplace = request.marketplace)
 
             if (item == null) {
@@ -27,17 +28,12 @@ class SellersRoomStore(val sellerDao: SellerDAO?): SellersCacheStore {
         }
     }
 
-    override fun createOrUpdate(request: Seller): Deferred<Result<Seller>> {
-        return coroutineNetwork<Seller> {
+    override fun createOrUpdate(request: Seller): Deferred<Result<LiveData<Seller>>> {
+        return coroutineNetwork<LiveData<Seller>> {
 
-            var item = sellerDao?.fetch(id = request.id, marketplace = request.marketplace)
+            sellerDao?.insertOrUpdate(request)
 
-            if (item == null)
-                sellerDao?.createSellers(request)
-            else
-                sellerDao?.updateSellers(request)
-
-            item = sellerDao?.fetch(id = request.id, marketplace = request.marketplace)
+            val item = sellerDao?.fetch(id = request.id, marketplace = request.marketplace)
 
             if (item == null) {
                 failure(DataError.NonExistent)
@@ -49,7 +45,7 @@ class SellersRoomStore(val sellerDao: SellerDAO?): SellersCacheStore {
 
     override fun createOrUpdate(vararg sellers: Seller): Deferred<Result<Void>> {
         return coroutineNetwork<Void> {
-            sellerDao?.createSellers(*sellers)
+            sellerDao?.insert(*sellers)
             success()
         }
     }

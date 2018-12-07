@@ -1,10 +1,12 @@
 package com.theblissprogrammer.amazon.sdk.stores.sellers
 
+import androidx.lifecycle.LiveData
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.extensions.coroutineCompletionOnUi
 import com.theblissprogrammer.amazon.sdk.stores.sellers.models.SellerModels
 import com.theblissprogrammer.amazon.sdk.common.Result.Companion.failure
 import com.theblissprogrammer.amazon.sdk.common.CompletionResponse
+import com.theblissprogrammer.amazon.sdk.common.LiveDataCompletionResponse
 import com.theblissprogrammer.amazon.sdk.enums.DefaultsKeys
 import com.theblissprogrammer.amazon.sdk.enums.DefaultsKeys.Companion.sellerID
 import com.theblissprogrammer.amazon.sdk.errors.DataError
@@ -17,18 +19,11 @@ import com.theblissprogrammer.amazon.sdk.stores.sellers.models.Seller
  * Copyright (c) 2018. All rights reserved.
  **/
 class SellersWorker(val store: SellersStore,
-                    val cacheStore: SellersCacheStore?,
+                    val cacheStore: SellersCacheStore,
                     val preferencesWorker: PreferencesWorkerType): SellersWorkerType {
 
-    override suspend fun fetch(request: SellerModels.Request, completion: CompletionResponse<Seller>) {
+    override suspend fun fetch(request: SellerModels.Request, completion: CompletionResponse<LiveData<Seller>>) {
         // Use cache storage if applicable
-        if (cacheStore == null) {
-            coroutineCompletionOnUi(completion) {
-                completion(store.fetch(request = request).await())
-            }
-            return
-        }
-
         val cache = cacheStore.fetch(request = request).await()
 
         // Retrieve missing cache data from cloud if applicable
@@ -36,7 +31,7 @@ class SellersWorker(val store: SellersStore,
             val response = this.store.fetch(request = request).await()
             val value = response.value
             if (value == null || !response.isSuccess) {
-                completion(response)
+                completion(failure(response.error))
             } else {
                 completion(cacheStore.createOrUpdate(value).await())
             }
@@ -65,13 +60,10 @@ class SellersWorker(val store: SellersStore,
         if (!savedElement.isSuccess) {
             LogHelper.e(messages = *arrayOf("Could not save updated user locally" +
                     " from remote storage: ${savedElement.error?.localizedMessage ?: ""}"))
-        } else {
-            // Callback handler again if updated
-            completion(savedElement)
         }
     }
 
-    override suspend fun fetchCurrent(completion: CompletionResponse<Seller>) {
+    override suspend fun fetchCurrent(completion: CompletionResponse<LiveData<Seller>>) {
         val id = preferencesWorker.get(sellerID)
         val marketplace = preferencesWorker.get(DefaultsKeys.marketplace)
 

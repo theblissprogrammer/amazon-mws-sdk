@@ -1,6 +1,6 @@
 package com.theblissprogrammer.amazon.sdk.dependencies
 
-import com.example.appstores.sources.stores.sellers.SellersNetworkStore
+import com.theblissprogrammer.amazon.sdk.stores.sellers.SellersNetworkStore
 import com.theblissprogrammer.amazon.sdk.account.AuthenticationService
 import com.theblissprogrammer.amazon.sdk.account.AuthenticationWorker
 import com.theblissprogrammer.amazon.sdk.account.AuthenticationWorkerType

@@ -76,7 +76,7 @@ class SellerUnitTests: HasDependencies {
         runBlocking {
 
             val sellerLD = async(Dispatchers.IO) {
-                sellerDao.createSellers(seller)
+                sellerDao.insert(seller)
                 sellerDao.fetchAllSellers()
             }.await()
 
@@ -97,10 +97,10 @@ class SellerUnitTests: HasDependencies {
 
         runBlocking {
 
-            val sellerDB = async(Dispatchers.IO) {
-                sellerDao.createSellers(seller)
+            val sellerDB = getValue(async(Dispatchers.IO) {
+                sellerDao.insert(seller)
                 sellerDao.fetch(id = id, marketplace = marketplace)
-            }.await()
+            }.await())
 
             Assert.assertEquals("The seller ids should match after saving to db", id, sellerDB?.id)
             Assert.assertEquals("The seller marketplaces should match after saving to db", marketplace, sellerDB?.marketplace)
@@ -117,8 +117,12 @@ class SellerUnitTests: HasDependencies {
         runBlocking {
             val sellerDB = sellersRoomStore.createOrUpdate(seller).await().value
 
-            Assert.assertEquals("The seller ids should match after saving to db", id, sellerDB?.id)
-            Assert.assertEquals("The seller marketplaces should match after saving to db", marketplace, sellerDB?.marketplace)
+            Assert.assertNotNull("Seller should not be null", sellerDB)
+
+
+            val seller = getValue(sellerDB)
+            Assert.assertEquals("The seller ids should match after saving to db", id, seller?.id)
+            Assert.assertEquals("The seller marketplaces should match after saving to db", marketplace, seller?.marketplace)
         }
     }
 
@@ -142,7 +146,7 @@ class SellerUnitTests: HasDependencies {
                 )
                 Assert.assertNull("Login should return a null error.", it.error)
 
-                val seller = it.value
+                val seller = getValue(it.value)
                 Assert.assertNotNull("Login should return valid seller object.", seller)
                 Assert.assertEquals("The seller ids should match after saving to db", id, seller?.id)
                 Assert.assertEquals("The seller marketplaces should match after saving to db", marketplace, seller?.marketplace)
@@ -161,7 +165,7 @@ class SellerUnitTests: HasDependencies {
                 )
                 Assert.assertNull("Login should return a null error.", it.error)
 
-                val seller = it.value
+                val seller = getValue(it.value)
                 Assert.assertNotNull("Login should return valid seller object.", seller)
                 Assert.assertEquals("The seller ids should match after saving to db", sellerID, seller?.id)
             }

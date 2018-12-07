@@ -1,7 +1,5 @@
 package com.theblissprogrammer.amazon.sdk.dependencies
 
-import android.app.Application
-
 
 /**
  * Created by ahmedsaad on 2017-11-30.
@@ -13,15 +11,6 @@ interface HasDependencies {
         get() {
             return DependencyInjector.dependencies as SDKDependable
         }
-}
-
-class MwsSdk {
-    companion object {
-        fun configure(application: Application, dependencies: SDKDependable = SDKDependency()) {
-            dependencies.application = application
-            DependencyInjector.dependencies = dependencies
-        }
-    }
 }
 
 /// Used to pass around dependency container
