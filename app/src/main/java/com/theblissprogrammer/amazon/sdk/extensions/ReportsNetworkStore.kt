@@ -58,7 +58,7 @@ internal fun <T> ReportsNetworkStore.fetchReport(request: ReportModels.Request, 
         return failure(requestReport.error)
     }
 
-    // Set the requestID to fetch
+    // Set the requestID to fetchSellerAsync
     reportRequestList.ids = arrayListOf(requestID)
     reportRequestList.statuses = listOf() // Clear done status
 

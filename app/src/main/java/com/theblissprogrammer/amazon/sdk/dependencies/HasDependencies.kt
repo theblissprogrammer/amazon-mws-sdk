@@ -5,11 +5,11 @@ package com.theblissprogrammer.amazon.sdk.dependencies
  * Created by ahmedsaad on 2017-11-30.
  * Copyright © 2017. All rights reserved.
  */
-interface HasDependencies {
+internal interface HasDependencies {
     /// Container for dependency instance factories
     val dependencies: SDKDependable
         get() {
-            return DependencyInjector.dependencies as SDKDependable
+            return DependencyInjector.dependencies
         }
 }
 
@@ -17,6 +17,6 @@ interface HasDependencies {
 /// which can be reassigned to another container
 internal class DependencyInjector {
     companion object {
-        lateinit var dependencies: CoreDependable
+        lateinit var dependencies: SDKDependable
     }
 }

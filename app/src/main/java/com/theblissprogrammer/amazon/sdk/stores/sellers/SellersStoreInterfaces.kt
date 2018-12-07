@@ -19,6 +19,9 @@ interface SellersCacheStore {
 }
 
 interface SellersWorkerType {
-    suspend fun fetch(request: SellerModels.Request, completion: LiveCompletionResponse<Seller>)
-    suspend fun fetchCurrent(completion: LiveCompletionResponse<Seller>)
+    suspend fun fetchSellerAsync(request: SellerModels.Request, completion: LiveCompletionResponse<Seller>)
+    suspend fun fetchCurrentSellerAsync(completion: LiveCompletionResponse<Seller>)
+
+    fun fetchSeller(request: SellerModels.Request, completion: CompletionResponse<Seller>)
+    fun fetchCurrentSeller(completion: CompletionResponse<Seller>)
 }

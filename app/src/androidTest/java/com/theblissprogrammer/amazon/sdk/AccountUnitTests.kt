@@ -7,7 +7,7 @@ import com.theblissprogrammer.amazon.sdk.TestCredentials.Companion.mwsToken
 import com.theblissprogrammer.amazon.sdk.TestCredentials.Companion.sellerID
 import com.theblissprogrammer.amazon.sdk.account.AuthenticationWorkerType
 import com.theblissprogrammer.amazon.sdk.account.models.LoginModels
-import com.theblissprogrammer.amazon.sdk.dependencies.MwsSdk
+import com.theblissprogrammer.amazon.sdk.access.MwsSdk
 import com.theblissprogrammer.amazon.sdk.dependencies.HasDependencies
 import com.theblissprogrammer.amazon.sdk.errors.DataError
 import kotlinx.coroutines.*

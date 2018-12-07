@@ -9,11 +9,10 @@ import androidx.test.runner.AndroidJUnit4
 import com.theblissprogrammer.amazon.sdk.TestCredentials.Companion.sellerID
 import com.theblissprogrammer.amazon.sdk.data.AppDatabase
 import com.theblissprogrammer.amazon.sdk.dependencies.HasDependencies
-import com.theblissprogrammer.amazon.sdk.dependencies.MwsSdk
+import com.theblissprogrammer.amazon.sdk.access.MwsSdk
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.stores.sellers.SellerDAO
 import com.theblissprogrammer.amazon.sdk.stores.sellers.SellersCacheStore
-import com.theblissprogrammer.amazon.sdk.stores.sellers.SellersWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.sellers.models.Seller
 import com.theblissprogrammer.amazon.sdk.stores.sellers.models.SellerModels
 import kotlinx.coroutines.Dispatchers
@@ -32,8 +31,8 @@ class SellerUnitTests: HasDependencies {
     private lateinit var sellerDao: SellerDAO
     private lateinit var db: AppDatabase
 
-    private val sellersWorker: SellersWorkerType by lazy {
-        dependencies.resolveSellersWorker
+    private val dataManager by lazy {
+        MwsSdk.dataManager
     }
 
     private val sellersRoomStore: SellersCacheStore by lazy {
@@ -136,7 +135,7 @@ class SellerUnitTests: HasDependencies {
         runBlocking {
             sellersRoomStore.createOrUpdate(seller).await()
 
-            sellersWorker.fetch(request = SellerModels.Request(
+            dataManager.fetchSellerAsync(request = SellerModels.Request(
                 id = id,
                 marketplace = marketplace
             )) {
@@ -158,7 +157,7 @@ class SellerUnitTests: HasDependencies {
     @Test
     fun fetch_current_seller() {
         runBlocking {
-            sellersWorker.fetchCurrent {
+            dataManager.fetchCurrentSellerAsync {
                 Assert.assertTrue(
                     "An error occurred when there should not be: ${it.error?.localizedMessage ?: it.error}",
                     it.isSuccess

@@ -1,5 +1,6 @@
 package com.theblissprogrammer.amazon.sdk.stores.sellers
 
+import com.theblissprogrammer.amazon.sdk.common.CompletionResponse
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.stores.sellers.models.SellerModels
 import com.theblissprogrammer.amazon.sdk.common.LiveCompletionResponse
@@ -19,7 +20,7 @@ class SellersWorker(val store: SellersStore,
                     val cacheStore: SellersCacheStore,
                     val preferencesWorker: PreferencesWorkerType): SellersWorkerType {
 
-    override suspend fun fetch(request: SellerModels.Request, completion: LiveCompletionResponse<Seller>) {
+    override suspend fun fetchSellerAsync(request: SellerModels.Request, completion: LiveCompletionResponse<Seller>) {
         // Use cache storage if applicable
         val cache = cacheStore.fetch(request = request).await()
 
@@ -60,7 +61,7 @@ class SellersWorker(val store: SellersStore,
         }
     }
 
-    override suspend fun fetchCurrent(completion: LiveCompletionResponse<Seller>) {
+    override suspend fun fetchCurrentSellerAsync(completion: LiveCompletionResponse<Seller>) {
         val id = preferencesWorker.get(sellerID)
         val marketplace = preferencesWorker.get(DefaultsKeys.marketplace)
 
@@ -74,7 +75,15 @@ class SellersWorker(val store: SellersStore,
                 marketplace = MarketplaceType.valueOf(marketplace)
         )
 
-        fetch(request = request, completion = completion)
+        fetchSellerAsync(request = request, completion = completion)
+    }
+
+    override fun fetchCurrentSeller(completion: CompletionResponse<Seller>) {
+        // TODO: ("fetchCurrentSeller not implemented")
+    }
+
+    override fun fetchSeller(request: SellerModels.Request, completion: CompletionResponse<Seller>) {
+        // TODO: ("fetchSeller not implemented")
     }
 
 }
