@@ -1,12 +1,9 @@
 package com.theblissprogrammer.amazon.sdk.stores.sellers
 
-import androidx.lifecycle.LiveData
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
-import com.theblissprogrammer.amazon.sdk.extensions.coroutineCompletionOnUi
 import com.theblissprogrammer.amazon.sdk.stores.sellers.models.SellerModels
-import com.theblissprogrammer.amazon.sdk.common.Result.Companion.failure
-import com.theblissprogrammer.amazon.sdk.common.CompletionResponse
 import com.theblissprogrammer.amazon.sdk.common.LiveDataCompletionResponse
+import com.theblissprogrammer.amazon.sdk.common.LiveDataResult.Companion.failure
 import com.theblissprogrammer.amazon.sdk.enums.DefaultsKeys
 import com.theblissprogrammer.amazon.sdk.enums.DefaultsKeys.Companion.sellerID
 import com.theblissprogrammer.amazon.sdk.errors.DataError
@@ -22,7 +19,7 @@ class SellersWorker(val store: SellersStore,
                     val cacheStore: SellersCacheStore,
                     val preferencesWorker: PreferencesWorkerType): SellersWorkerType {
 
-    override suspend fun fetch(request: SellerModels.Request, completion: CompletionResponse<LiveData<Seller>>) {
+    override suspend fun fetch(request: SellerModels.Request, completion: LiveDataCompletionResponse<Seller>) {
         // Use cache storage if applicable
         val cache = cacheStore.fetch(request = request).await()
 
@@ -63,7 +60,7 @@ class SellersWorker(val store: SellersStore,
         }
     }
 
-    override suspend fun fetchCurrent(completion: CompletionResponse<LiveData<Seller>>) {
+    override suspend fun fetchCurrent(completion: LiveDataCompletionResponse<Seller>) {
         val id = preferencesWorker.get(sellerID)
         val marketplace = preferencesWorker.get(DefaultsKeys.marketplace)
 

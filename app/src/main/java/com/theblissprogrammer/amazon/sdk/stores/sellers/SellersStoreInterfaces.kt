@@ -5,6 +5,7 @@ import com.theblissprogrammer.amazon.sdk.stores.sellers.models.SellerModels
 import com.theblissprogrammer.amazon.sdk.common.Result
 import com.theblissprogrammer.amazon.sdk.common.CompletionResponse
 import com.theblissprogrammer.amazon.sdk.common.LiveDataCompletionResponse
+import com.theblissprogrammer.amazon.sdk.common.LiveDataResult
 import com.theblissprogrammer.amazon.sdk.stores.sellers.models.Seller
 import kotlinx.coroutines.Deferred
 
@@ -17,12 +18,12 @@ interface SellersStore {
 }
 
 interface SellersCacheStore {
-    fun fetch(request: SellerModels.Request): Deferred<Result<LiveData<Seller>>>
-    fun createOrUpdate(request: Seller): Deferred<Result<LiveData<Seller>>>
+    fun fetch(request: SellerModels.Request): Deferred<LiveDataResult<Seller>>
+    fun createOrUpdate(request: Seller): Deferred<LiveDataResult<Seller>>
     fun createOrUpdate(vararg sellers: Seller): Deferred<Result<Void>>
 }
 
 interface SellersWorkerType {
-    suspend fun fetch(request: SellerModels.Request, completion: CompletionResponse<LiveData<Seller>>)
-    suspend fun fetchCurrent(completion: CompletionResponse<LiveData<Seller>>)
+    suspend fun fetch(request: SellerModels.Request, completion: LiveDataCompletionResponse<Seller>)
+    suspend fun fetchCurrent(completion: LiveDataCompletionResponse<Seller>)
 }

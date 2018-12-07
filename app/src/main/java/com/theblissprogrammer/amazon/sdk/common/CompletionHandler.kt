@@ -1,5 +1,6 @@
 package com.theblissprogrammer.amazon.sdk.common
 
+import androidx.lifecycle.LiveData
 import com.theblissprogrammer.amazon.sdk.errors.DataError
 import com.theblissprogrammer.amazon.sdk.errors.NetworkError
 import kotlinx.coroutines.Deferred
@@ -33,5 +34,18 @@ data class NetworkResult<T>(val isSuccess: Boolean = false, val value: T? = null
     }
 }
 
+data class LiveDataResult<T>(val isSuccess: Boolean = false, val value: LiveData<T>? = null, val error: DataError? = null) {
+    companion object {
+        fun <T>success(value: LiveData<T>? = null): LiveDataResult<T> {
+            return LiveDataResult(true, value, null)
+        }
+
+        fun <T>failure(error: DataError? = null): LiveDataResult<T> {
+            return LiveDataResult(false, null, error)
+        }
+    }
+}
+
 typealias CompletionResponse<T> = (Result<T>) -> Unit
-typealias DeferredResult<T> = (Deferred<Result<T>>) -> Unit
+typealias LiveDataCompletionResponse<T> = (LiveDataResult<T>) -> Unit
+typealias DeferredResult<T> = Deferred<Result<T>>
