@@ -1,29 +1,32 @@
 package com.theblissprogrammer.amazon.sdk.stores.orders.models
 
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.ForeignKey.CASCADE
+import androidx.room.PrimaryKey
+
 /**
  * Created by ahmedsaad on 2018-08-05.
  * Copyright (c) 2018. All rights reserved.
  **/
+@Entity(
+    foreignKeys = [
+        ForeignKey(
+            entity = Order::class,
+            parentColumns = ["id"],
+            childColumns = ["orderId"],
+            onDelete = CASCADE
+        )
+    ]
+)
 data class OrderAddress(
-        override var name: String? = null,
-        override var line1: String? = null,
-        override var line2: String? = null,
-        override var city: String? = null,
-        override var state: String? = null,
-        override var postalCode: String? = null,
-        override var country: String? = null,
-        override var email: String? = null) : OrderAddressType {
-
-    constructor(from: OrderAddressType?): this() {
-        from?.let { address: OrderAddressType ->
-            this.name = address.name
-            this.line1 = address.line1
-            this.line2 = address.line2
-            this.city = address.city
-            this.state = address.state
-            this.postalCode = address.postalCode
-            this.country = address.country
-            this.email = address.email
-        }
-    }
-}
+    @PrimaryKey
+    var orderId: String = "",
+    var name: String? = null,
+    var line1: String? = null,
+    var line2: String? = null,
+    var city: String? = null,
+    var state: String? = null,
+    var postalCode: String? = null,
+    var country: String? = null,
+    var email: String? = null)

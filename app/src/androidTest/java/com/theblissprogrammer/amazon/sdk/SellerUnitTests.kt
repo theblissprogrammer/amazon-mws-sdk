@@ -10,6 +10,7 @@ import com.theblissprogrammer.amazon.sdk.TestCredentials.Companion.sellerID
 import com.theblissprogrammer.amazon.sdk.data.AppDatabase
 import com.theblissprogrammer.amazon.sdk.dependencies.HasDependencies
 import com.theblissprogrammer.amazon.sdk.access.MwsSdk
+import com.theblissprogrammer.amazon.sdk.data.MIGRATION_1_2
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.stores.sellers.SellerDAO
 import com.theblissprogrammer.amazon.sdk.stores.sellers.SellersCacheStore
@@ -31,8 +32,8 @@ class SellerUnitTests: HasDependencies {
     private lateinit var sellerDao: SellerDAO
     private lateinit var db: AppDatabase
 
-    private val dataManager by lazy {
-        MwsSdk.dataManager
+    private val sellersWorker by lazy {
+        dependencies.resolveSellersWorker
     }
 
     private val sellersRoomStore: SellersCacheStore by lazy {
@@ -55,7 +56,7 @@ class SellerUnitTests: HasDependencies {
         val context: Context = InstrumentationRegistry.getTargetContext()
         db = Room.inMemoryDatabaseBuilder(
             context, AppDatabase::class.java
-        ).build()
+        ).addMigrations(MIGRATION_1_2).build()
         sellerDao = db.sellerDao()
     }
 
@@ -135,7 +136,7 @@ class SellerUnitTests: HasDependencies {
         runBlocking {
             sellersRoomStore.createOrUpdate(seller).await()
 
-            dataManager.fetchSellerAsync(request = SellerModels.Request(
+            sellersWorker.fetchSellerAsync(request = SellerModels.Request(
                 id = id,
                 marketplace = marketplace
             )) {
@@ -157,7 +158,7 @@ class SellerUnitTests: HasDependencies {
     @Test
     fun fetch_current_seller() {
         runBlocking {
-            dataManager.fetchCurrentSellerAsync {
+            sellersWorker.fetchCurrentSellerAsync {
                 Assert.assertTrue(
                     "An error occurred when there should not be: ${it.error?.localizedMessage ?: it.error}",
                     it.isSuccess

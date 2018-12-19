@@ -1,7 +1,7 @@
 package com.theblissprogrammer.amazon.sdk.stores.reports
 
 import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetwork
-import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderType
+import com.theblissprogrammer.amazon.sdk.stores.orders.models.Order
 import com.theblissprogrammer.amazon.sdk.extensions.fetchReport
 import com.theblissprogrammer.amazon.sdk.stores.fbaFees.models.FBAFeeType
 import com.theblissprogrammer.amazon.sdk.stores.inventories.models.InventoryType
@@ -22,9 +22,9 @@ import kotlinx.coroutines.Deferred
  **/
 class ReportsNetworkStore(val apiSession: APISessionType): ReportsStore {
 
-    override fun fetchOrderReport(request: ReportModels.Request, completion: CompletionResponse<List<OrderType>>):
-            Deferred<Result<List<OrderType>>> {
-        return coroutineNetwork<List<OrderType>> {
+    override fun fetchOrderReport(request: ReportModels.Request, completion: CompletionResponse<List<Order>>):
+            Deferred<Result<List<Order>>> {
+        return coroutineNetwork<List<Order>> {
             fetchReport(request, completion) {
                 OrdersReportXmlParser().parse(it)
             }

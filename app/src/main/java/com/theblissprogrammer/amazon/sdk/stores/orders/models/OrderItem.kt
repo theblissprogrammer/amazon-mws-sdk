@@ -1,29 +1,36 @@
 package com.theblissprogrammer.amazon.sdk.stores.orders.models
 
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.ForeignKey.CASCADE
+import androidx.room.PrimaryKey
+
 
 /**
  * Created by ahmedsaad on 2018-08-05.
  * Copyright (c) 2018. All rights reserved.
  **/
+@Entity(
+    foreignKeys = [
+        ForeignKey(
+            entity = Order::class,
+            parentColumns = ["id"],
+            childColumns = ["orderId"],
+            onDelete = CASCADE
+        )
+    ]
+)
 data class OrderItem(
-        override var asin: String? = null,
-        override var sku: String? = null,
-        override var productName: String? = null,
-        override var quantity: Int? = null,
-        override var currency: String? = null,
-        override var price: Double? = null) : OrderItemType {
-
-    constructor(from: OrderItemType?): this() {
-        from?.let { item: OrderItemType ->
-            this.asin = item.asin
-            this.sku = item.sku
-            this.productName = item.productName
-            this.quantity = item.quantity
-            this.currency = item.currency
-            this.price = item.price
-        }
-    }
-}
+    @PrimaryKey
+    var orderId: String = "",
+    var asin: String? = null,
+    @ColumnInfo(index = true)
+    var sku: String? = null,
+    var productName: String? = null,
+    var quantity: Int? = null,
+    var currency: String? = null,
+    var price: Double? = null)
 
 data class PriceComponent(
         val type: String?,

@@ -75,6 +75,6 @@ interface SDKDependable {
     val resolveAuthenticationService: AuthenticationService
 
     val resolveSellersCacheStore: SellersCacheStore
-    val resolveOrdersCacheStore: OrdersCacheStore?
+    val resolveOrdersCacheStore: OrdersCacheStore
     val resolveInventoriesCacheStore: InventoriesCacheStore?
 }

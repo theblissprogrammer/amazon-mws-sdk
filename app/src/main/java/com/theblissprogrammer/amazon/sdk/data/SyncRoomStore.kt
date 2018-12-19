@@ -4,7 +4,7 @@ import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.enums.ReportType
 import com.theblissprogrammer.amazon.sdk.extensions.coroutineCompletionOnUi
 import com.theblissprogrammer.amazon.sdk.stores.inventories.models.InventoryType
-import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderType
+import com.theblissprogrammer.amazon.sdk.stores.orders.models.Order
 import com.theblissprogrammer.amazon.sdk.stores.products.models.ProductType
 import com.theblissprogrammer.amazon.sdk.stores.reports.ReportsWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.reports.models.ReportModels
@@ -108,10 +108,10 @@ class SyncRoomStore(val preferencesWorker: PreferencesWorkerType,
         }
     }
 
-    private fun seedOrders(completion: CompletionResponse<List<OrderType>>? = null) {
+    private fun seedOrders(completion: CompletionResponse<List<Order>>? = null) {
         val marketplaces = getSellerMarketplaces(preferencesWorker)
         val lastPulledAt = getSyncActivityLastPulledAt(
-                typeName = OrderType::class.java.simpleName,
+                typeName = Order::class.java.simpleName,
                 suffix = marketplaces?.joinToString() ?: "US")
 
         val cal = Calendar.getInstance(TimeZone.getTimeZone("America/Los_Angeles"))
@@ -125,7 +125,7 @@ class SyncRoomStore(val preferencesWorker: PreferencesWorkerType,
         coroutineCompletionOnUi(completion) {
             val timeStamp = cal.time
 
-            fun saveOrders (response: Result<List<OrderType>>) {
+            fun saveOrders (response: Result<List<Order>>) {
                 val value = response.value
                 if (!response.isSuccess || value == null) {
                     LogHelper.e(messages = *arrayOf("Failed to get report orders: ${response.error}"))
@@ -141,7 +141,7 @@ class SyncRoomStore(val preferencesWorker: PreferencesWorkerType,
 
                 coroutineCompletionOnUi(completion) {
                     // Write source data to local storage
-                    /*realmCoroutine<List<OrderType>> { realm ->
+                    /*realmCoroutine<List<Order>> { realm ->
                         val orders = value.toRealmList()
 
                         realm.executeTransaction { _ ->
@@ -174,7 +174,7 @@ class SyncRoomStore(val preferencesWorker: PreferencesWorkerType,
 
             coroutineCompletionOnUi(completion) {
                /* // Write source data to local storage
-                val cached = realmCoroutine<List<OrderType>> { realm ->
+                val cached = realmCoroutine<List<Order>> { realm ->
                     val orders = value.toRealmList()
 
                     realm.executeTransaction { _ ->
@@ -182,7 +182,7 @@ class SyncRoomStore(val preferencesWorker: PreferencesWorkerType,
                     }
 
                     // Persist sync date for next use if applicable
-                    SyncRoomStore.updateSyncActivity(typeName = OrderType::class.java.simpleName,
+                    SyncRoomStore.updateSyncActivity(typeName = Order::class.java.simpleName,
                             lastPulledAt = timeStamp,
                             suffix = marketplaces?.joinToString() ?: "US")
                     LogHelper.d(messages = *arrayOf("Data seed for order report complete for marketplaces " +

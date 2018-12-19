@@ -2,6 +2,7 @@ package com.theblissprogrammer.amazon.sdk.stores.reports.parsers
 
 import android.util.Xml
 import com.theblissprogrammer.amazon.sdk.enums.OrderStatus
+import com.theblissprogrammer.amazon.sdk.enums.marketplaceFromSalesChannel
 import com.theblissprogrammer.amazon.sdk.extensions.*
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.*
 import com.theblissprogrammer.amazon.sdk.extensions.findChildTag
@@ -24,7 +25,7 @@ class ListOrdersXmlParser {
     private val ns: String? = null
 
     @Throws(XmlPullParserException::class, IOException::class)
-    fun parse(input: String): List<Order>? {
+    fun parse(input: String): ListOrders {
         input.byteInputStream().use { inputStream ->
             val parser = Xml.newPullParser()
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
@@ -32,19 +33,25 @@ class ListOrdersXmlParser {
             parser.nextTag()
 
             return parser.findChildTag("ListOrdersResult") {
-                parser.findChildTag("Orders") {
+                val orders = parser.findChildTag("Orders") {
                     parser.findChildTag("Order") {
                         readOrder(parser)
                     }.filterNotNull()
+                }.firstOrNull() ?: listOf()
+
+                val nextToken = parser.findChildTag("NextToken") {
+                    parser.readString("NextToken")
                 }.firstOrNull()
-            }.firstOrNull()
+
+                ListOrders(orders = orders, nextToken = nextToken)
+            }.first()
         }
     }
 
     // Parses the contents of an entry. If it encounters a title, summary, or link tag, hands them off
     // to their respective "read" methods for processing. Otherwise, skips the tag.
     @Throws(XmlPullParserException::class, IOException::class)
-    private fun readOrder(parser: XmlPullParser): Order? {
+    private fun readOrder(parser: XmlPullParser): ListOrder? {
         parser.require(XmlPullParser.START_TAG, ns, "Order")
 
         var id: String? = null
@@ -54,7 +61,6 @@ class ListOrdersXmlParser {
         var salesChannel: String? = null
         var email: String? = null
         var fulfillmentData: FulfillmentData? = null
-        val items: ArrayList<OrderItem> = arrayListOf()
 
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.eventType != XmlPullParser.START_TAG) {
@@ -80,14 +86,20 @@ class ListOrdersXmlParser {
 
         if (email != null) fulfillmentData?.address?.email = email
 
-        return Order(
+        // Set the order id for the address
+        fulfillmentData?.address?.orderId = id
+
+        val order = Order(
                 id = id,
                 purchasedAt = purchasedDate,
                 updatedAt = updatedDate,
                 status = status,
-                salesChannel = salesChannel,
-                buyer = fulfillmentData?.address,
-                items = items
+                marketplace = marketplaceFromSalesChannel(salesChannel)
+        )
+
+        return ListOrder(
+            order = order,
+            buyer = fulfillmentData?.address
         )
     }
 

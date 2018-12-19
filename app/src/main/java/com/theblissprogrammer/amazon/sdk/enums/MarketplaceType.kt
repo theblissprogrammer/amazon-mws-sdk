@@ -91,3 +91,7 @@ enum class MarketplaceType(val id: String) {
             }
         }
 }
+
+fun marketplaceFromSalesChannel(salesChannel: String?): MarketplaceType? {
+    return MarketplaceType.values().firstOrNull { it.salesChannel == salesChannel }
+}

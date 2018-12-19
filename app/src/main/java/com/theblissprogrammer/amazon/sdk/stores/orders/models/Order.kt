@@ -1,5 +1,9 @@
 package com.theblissprogrammer.amazon.sdk.stores.orders.models
 
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.enums.OrderStatus
 import java.util.*
 
@@ -7,28 +11,24 @@ import java.util.*
  * Created by ahmedsaad on 2018-08-05.
  * Copyright (c) 2018. All rights reserved.
  **/
+@Entity
 data class Order(
-    override var id: String = "",
-    override var purchasedAt: Date = Date(0),
-    override var updatedAt: Date = Date(0),
-    override var status: OrderStatus = OrderStatus.Pending,
-    override var salesChannel: String? = null,
-    override var buyer: OrderAddress? = null,
-    override var items: ArrayList<OrderItem>? = null): OrderType {
+    @PrimaryKey
+    var id: String = "",
+    @ColumnInfo(index = true)
+    var purchasedAt: Date = Date(0),
+    var updatedAt: Date = Date(0),
+    var status: OrderStatus = OrderStatus.Pending,
+    var marketplace: MarketplaceType? = null)
 
+data class ListOrders(
+    val orders: List<ListOrder>,
+    val nextToken: String?)
 
-    constructor(from: OrderType?): this() {
-        from?.let { order: OrderType ->
-            this.id = order.id
-            this.purchasedAt = order.purchasedAt
-            this.updatedAt = order.updatedAt
-            this.status = order.status
-            this.salesChannel = order.salesChannel
-            this.buyer = order.buyer
-            this.items = order.items
-        }
-    }
-}
+data class ListOrder(
+    val order: Order,
+    val buyer: OrderAddress?
+)
 
 data class FulfillmentData(
         var address: OrderAddress?)

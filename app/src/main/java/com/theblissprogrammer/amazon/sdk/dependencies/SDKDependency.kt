@@ -204,8 +204,10 @@ open class SDKDependency: SDKDependable {
         )
     }
 
-    override val resolveOrdersCacheStore: OrdersCacheStore?  by lazy {
-         null
+    override val resolveOrdersCacheStore: OrdersCacheStore  by lazy {
+        OrdersRoomStore(
+            orderDao = (resolveDataStore as? DataRoomStore)?.instance()?.orderDao()
+        )
     }
 
     override val resolveInventoriesCacheStore: InventoriesCacheStore?  by lazy {

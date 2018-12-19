@@ -9,7 +9,7 @@ import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
  * Created by ahmedsaad on 2017-11-16.
  * Copyright © 2017. All rights reserved.
  */
-@Entity(primaryKeys = ["id", "marketplace"], indices = [Index(value = ["name"])])
+@Entity(primaryKeys = ["id", "marketplace"])
 data class Seller (
     var id: String = "",
     var marketplace: MarketplaceType = MarketplaceType.US,

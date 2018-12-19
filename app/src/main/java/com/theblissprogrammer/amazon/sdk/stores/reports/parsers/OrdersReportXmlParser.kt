@@ -2,6 +2,7 @@ package com.theblissprogrammer.amazon.sdk.stores.reports.parsers
 
 import android.util.Xml
 import com.theblissprogrammer.amazon.sdk.enums.OrderStatus
+import com.theblissprogrammer.amazon.sdk.enums.marketplaceFromSalesChannel
 import com.theblissprogrammer.amazon.sdk.extensions.*
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.*
 import com.theblissprogrammer.amazon.sdk.extensions.*
@@ -79,9 +80,7 @@ class OrdersReportXmlParser {
                 purchasedAt = purchasedDate,
                 updatedAt = updatedDate,
                 status = status,
-                salesChannel = salesChannel,
-                buyer = fulfillmentData?.address,
-                items = items
+                marketplace = marketplaceFromSalesChannel(salesChannel)
         )
     }
 

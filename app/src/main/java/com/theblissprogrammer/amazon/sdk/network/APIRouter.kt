@@ -137,6 +137,17 @@ sealed class APIRouter: APIRoutable() {
         }()
     }
 
+    class ReadNextOrders(val nextToken: String) : APIRouter() {
+        override val path = "/Orders/2013-09-01"
+        override val queryParameterList = {
+            val map = mutableMapOf<String, String>()
+            map["Action"] = "ListOrdersByNextToken"
+            map["Version"] = "2013-09-01"
+            map["NextToken"] = nextToken
+            map
+        }()
+    }
+
     override fun getURL(constants: ConstantsType,
                         preferencesWorker: PreferencesWorkerType,
                         securityWorker: SecurityWorkerType,
