@@ -1,8 +1,10 @@
 package com.theblissprogrammer.amazon.sdk.extensions
 
 import androidx.room.TypeConverter
+import com.theblissprogrammer.amazon.sdk.enums.FulfillmentChannel
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.enums.OrderStatus
+import java.lang.IllegalArgumentException
 import java.util.*
 
 /**
@@ -22,7 +24,11 @@ class Converters {
 
     @TypeConverter
     fun marketplaceFromString(value: String?): MarketplaceType? {
-        return MarketplaceType.valueOf(value ?: "")
+        return try {
+            MarketplaceType.valueOf(value ?: "")
+        } catch (e: IllegalArgumentException) {
+            null
+        }
     }
 
     @TypeConverter
@@ -32,11 +38,29 @@ class Converters {
 
     @TypeConverter
     fun orderStatusfromString(value: String?): OrderStatus? {
-        return OrderStatus.valueOf(value ?: "")
+        return try {
+            OrderStatus.valueOf(value ?: "")
+        } catch (e: IllegalArgumentException) {
+            null
+        }
     }
 
     @TypeConverter
     fun orderStatusToString(orderStatus: OrderStatus?): String? {
         return orderStatus?.name
+    }
+
+    @TypeConverter
+    fun fulfillmentChannelfromString(value: String?): FulfillmentChannel? {
+        return try {
+            FulfillmentChannel.valueOf(value ?: "")
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+    }
+
+    @TypeConverter
+    fun fulfillmentChannelToString(fulfillmentChannel: FulfillmentChannel?): String? {
+        return fulfillmentChannel?.name
     }
 }

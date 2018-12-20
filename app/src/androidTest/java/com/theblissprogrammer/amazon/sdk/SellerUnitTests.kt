@@ -11,6 +11,7 @@ import com.theblissprogrammer.amazon.sdk.data.AppDatabase
 import com.theblissprogrammer.amazon.sdk.dependencies.HasDependencies
 import com.theblissprogrammer.amazon.sdk.access.MwsSdk
 import com.theblissprogrammer.amazon.sdk.data.MIGRATION_1_2
+import com.theblissprogrammer.amazon.sdk.data.MIGRATION_2_3
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.stores.sellers.SellerDAO
 import com.theblissprogrammer.amazon.sdk.stores.sellers.SellersCacheStore
@@ -56,7 +57,7 @@ class SellerUnitTests: HasDependencies {
         val context: Context = InstrumentationRegistry.getTargetContext()
         db = Room.inMemoryDatabaseBuilder(
             context, AppDatabase::class.java
-        ).addMigrations(MIGRATION_1_2).build()
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
         sellerDao = db.sellerDao()
     }
 

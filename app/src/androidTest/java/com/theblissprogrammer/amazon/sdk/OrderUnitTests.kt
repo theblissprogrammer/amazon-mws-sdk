@@ -9,9 +9,11 @@ import androidx.test.runner.AndroidJUnit4
 import com.theblissprogrammer.amazon.sdk.access.MwsSdk
 import com.theblissprogrammer.amazon.sdk.data.AppDatabase
 import com.theblissprogrammer.amazon.sdk.data.MIGRATION_1_2
+import com.theblissprogrammer.amazon.sdk.data.MIGRATION_2_3
 import com.theblissprogrammer.amazon.sdk.dependencies.HasDependencies
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.enums.OrderStatus
+import com.theblissprogrammer.amazon.sdk.extensions.add
 import com.theblissprogrammer.amazon.sdk.stores.orders.OrderDAO
 import com.theblissprogrammer.amazon.sdk.stores.orders.OrdersCacheStore
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.ListOrder
@@ -24,6 +26,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.*
 import org.junit.runner.RunWith
 import java.io.IOException
+import java.util.*
 
 /**
  * Created by ahmed.saad on 2018-12-07.
@@ -58,7 +61,7 @@ class OrderUnitTests: HasDependencies {
         val context: Context = InstrumentationRegistry.getTargetContext()
         db = Room.inMemoryDatabaseBuilder(
             context, AppDatabase::class.java
-        ).addMigrations(MIGRATION_1_2).build()
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
         orderDao = db.orderDao()
     }
 
@@ -85,6 +88,7 @@ class OrderUnitTests: HasDependencies {
     fun fetch_orders() {
         runBlocking {
             val request = OrderModels.Request(
+                startDate = Date().add(Calendar.DATE, -5),
                 marketplaces = listOf(MarketplaceType.US)
             )
             ordersWorker.fetch(request) {

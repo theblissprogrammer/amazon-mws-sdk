@@ -1,6 +1,7 @@
 package com.theblissprogrammer.amazon.sdk.stores.reports.parsers
 
 import android.util.Xml
+import com.theblissprogrammer.amazon.sdk.enums.FulfillmentChannel
 import com.theblissprogrammer.amazon.sdk.enums.OrderStatus
 import com.theblissprogrammer.amazon.sdk.enums.marketplaceFromSalesChannel
 import com.theblissprogrammer.amazon.sdk.extensions.*
@@ -58,7 +59,11 @@ class ListOrdersXmlParser {
         var status: OrderStatus = OrderStatus.Pending
         var salesChannel: String? = null
         var email: String? = null
+        var fulfillmentChannel: FulfillmentChannel? = null
         var fulfillmentData: FulfillmentData? = null
+        var orderTotal: OrderTotal? = null
+        var numberOfItemsShipped: Int? = null
+        var numberOfItemsUnshipped: Int? = null
 
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.eventType != XmlPullParser.START_TAG) {
@@ -73,6 +78,12 @@ class ListOrdersXmlParser {
                 "OrderStatus" -> status = OrderStatus.valueOf(parser.readString(name))
                 "SalesChannel" -> salesChannel = parser.readString(name)
                 "BuyerEmail" -> email = parser.readString(name)
+                "FulfillmentChannel" -> fulfillmentChannel = FulfillmentChannel.valueOf(parser.readString(name))
+                "NumberOfItemsShipped" -> numberOfItemsShipped = parser.readString(name).toIntOrNull()
+                "NumberOfItemsUnshipped" -> numberOfItemsUnshipped = parser.readString(name).toIntOrNull()
+                "OrderTotal" -> {
+                    orderTotal = readOrderTotal(parser)
+                }
                 "ShippingAddress" -> {
                     fulfillmentData = FulfillmentData(address = readAddress(parser))
                 }
@@ -88,11 +99,15 @@ class ListOrdersXmlParser {
         fulfillmentData?.address?.orderId = id
 
         val order = Order(
-                id = id,
-                purchasedAt = purchasedDate,
-                updatedAt = updatedDate,
-                status = status,
-                marketplace = marketplaceFromSalesChannel(salesChannel)
+            id = id,
+            purchasedAt = purchasedDate,
+            updatedAt = updatedDate,
+            status = status,
+            marketplace = marketplaceFromSalesChannel(salesChannel),
+            numberOfItems = (numberOfItemsShipped ?: 0) + (numberOfItemsUnshipped ?: 0),
+            currency = orderTotal?.currencyCode,
+            amount = orderTotal?.amount,
+            fulfillmentChannel = fulfillmentChannel ?: FulfillmentChannel.MFN
         )
 
         return ListOrder(
@@ -141,6 +156,34 @@ class ListOrdersXmlParser {
                 name = buyerName,
                 line1 = addressLine1,
                 line2 = addressLine2
+        )
+    }
+
+    // Parses the contents of an entry. If it encounters a title, summary, or link tag, hands them off
+    // to their respective "read" methods for processing. Otherwise, skips the tag.
+    @Throws(XmlPullParserException::class, IOException::class)
+    private fun readOrderTotal(parser: XmlPullParser): OrderTotal {
+        parser.require(XmlPullParser.START_TAG, ns, "OrderTotal")
+
+        var currency: String? = null
+        var amount: Double? = null
+
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.eventType != XmlPullParser.START_TAG) {
+                continue
+            }
+
+            val name = parser.name
+            when (name) {
+                "CurrencyCode" -> currency = parser.readString(name)
+                "Amount" -> amount = parser.readString(name).toDoubleOrNull()
+                else -> parser.skip()
+            }
+        }
+
+        return OrderTotal(
+            currencyCode = currency,
+            amount = amount
         )
     }
 }

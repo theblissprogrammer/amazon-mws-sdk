@@ -3,6 +3,7 @@ package com.theblissprogrammer.amazon.sdk.stores.orders.models
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.theblissprogrammer.amazon.sdk.enums.FulfillmentChannel
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.enums.OrderStatus
 import java.util.*
@@ -18,7 +19,11 @@ data class Order(
     @ColumnInfo(index = true)
     var purchasedAt: Date = Date(0),
     var updatedAt: Date = Date(0),
+    var amount: Double? = null,
+    var currency: String? = null,
+    var numberOfItems: Int? = null,
     var status: OrderStatus = OrderStatus.Pending,
+    var fulfillmentChannel: FulfillmentChannel? = null,
     var marketplace: MarketplaceType? = null)
 
 data class ListOrders(
@@ -32,3 +37,7 @@ data class ListOrder(
 
 data class FulfillmentData(
         var address: OrderAddress?)
+
+data class OrderTotal(
+        var currencyCode: String?,
+        var amount: Double?)
