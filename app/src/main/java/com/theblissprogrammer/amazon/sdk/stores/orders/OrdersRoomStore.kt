@@ -20,17 +20,17 @@ import com.theblissprogrammer.amazon.sdk.stores.sellers.insertOrUpdate
  */
 class OrdersRoomStore(val orderDao: OrderDAO?): OrdersCacheStore {
 
-    override fun fetch(request: OrderModels.Request): DeferredLiveResult<List<Order>> {
-        return coroutineRoom<List<Order>> {
+    override fun fetch(request: OrderModels.Request): DeferredLiveResult<Array<Order>> {
+        return coroutineRoom<Array<Order>> {
 
             val items = if (request.id != null) {
-                orderDao?.fetch(id = request.id, marketplaces = request.marketplaces)
+                orderDao?.fetch(id = request.id, marketplaces = request.marketplaces.toTypedArray())
             } else {
                 orderDao?.fetch(
                     startDate = request.startDate,
                     endDate = request.endDate,
-                    orderStatuses = request.orderStatuses,
-                    marketplaces = request.marketplaces
+                    orderStatuses = request.orderStatuses.toTypedArray(),
+                    marketplaces = request.marketplaces.toTypedArray()
                 )
             }
 

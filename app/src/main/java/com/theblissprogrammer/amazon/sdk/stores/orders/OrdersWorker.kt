@@ -18,7 +18,7 @@ class OrdersWorker(val store: OrdersStore,
                    val preferencesWorker: PreferencesWorkerType): OrdersWorkerType {
 
 
-    override suspend fun fetch(request: OrderModels.Request, completion: LiveCompletionResponse<List<Order>>) {
+    override suspend fun fetch(request: OrderModels.Request, completion: LiveCompletionResponse<Array<Order>>) {
         if (request.marketplaces.isEmpty()) {
             val marketplaces = SyncRoomStore.getSellerMarketplaces(preferencesWorker)
             request.marketplaces = marketplaces ?: listOf(MarketplaceType.US)
@@ -29,7 +29,7 @@ class OrdersWorker(val store: OrdersStore,
         // Immediately return local response
         completion(cache)
 
-        val response = store.fetch(request).await()
+        val response = store.fetch(request = request).await()
 
         // Validate if any updates that needs to be stored
         val orders = response.value

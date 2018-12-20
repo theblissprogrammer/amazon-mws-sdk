@@ -31,16 +31,6 @@ class Converters {
     }
 
     @TypeConverter
-    fun marketplaceFromStringList(value: String?): List<MarketplaceType?> {
-        return value?.split(", ")?.map {  MarketplaceType.valueOf(it ?: "") } ?: listOf()
-    }
-
-    @TypeConverter
-    fun marketplaceToStringList(marketplace: List<MarketplaceType?>): String? {
-        return marketplace.map { it?.name }.joinToString(", ")
-    }
-
-    @TypeConverter
     fun orderStatusfromString(value: String?): OrderStatus? {
         return OrderStatus.valueOf(value ?: "")
     }
@@ -48,15 +38,5 @@ class Converters {
     @TypeConverter
     fun orderStatusToString(orderStatus: OrderStatus?): String? {
         return orderStatus?.name
-    }
-
-    @TypeConverter
-    fun orderStatusfromStringList(value: String?): List<OrderStatus?> {
-        return value?.split(", ")?.map {  OrderStatus.valueOf(it ?: "") } ?: listOf()
-    }
-
-    @TypeConverter
-    fun orderStatusToStringList(orderStatus: List<OrderStatus?>): String? {
-        return orderStatus.map {  it?.name }.joinToString(", ")
     }
 }

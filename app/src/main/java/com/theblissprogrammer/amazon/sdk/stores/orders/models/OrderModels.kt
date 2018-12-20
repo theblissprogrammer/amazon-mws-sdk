@@ -19,7 +19,6 @@ sealed class OrderModels {
                 OrderStatus.Pending,
                 OrderStatus.Unshipped,
                 OrderStatus.Shipped,
-                OrderStatus.Shipping,
                 OrderStatus.PartiallyShipped,
                 OrderStatus.PendingAvailability
             ),

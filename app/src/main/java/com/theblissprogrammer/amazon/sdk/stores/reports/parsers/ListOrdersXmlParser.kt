@@ -38,12 +38,7 @@ class ListOrdersXmlParser {
                         readOrder(parser)
                     }.filterNotNull()
                 }.firstOrNull() ?: listOf()
-
-                val nextToken = parser.findChildTag("NextToken") {
-                    parser.readString("NextToken")
-                }.firstOrNull()
-
-                ListOrders(orders = orders, nextToken = nextToken)
+                ListOrders(orders = orders, nextToken = null)
             }.first()
         }
     }

@@ -124,15 +124,22 @@ sealed class APIRouter: APIRoutable() {
                 map["MarketplaceId.Id.${index + 1}"] = marketplace.id
             }
 
-            val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZZZZ", Locale.US)
-            formatter.timeZone = TimeZone.getTimeZone("GMT")
+            request.orderStatuses.forEachIndexed { index, orderStatus ->
+                map["OrderStatus.Status.${index + 1}"] = orderStatus.name
+            }
 
-            val lastPulledAt = SyncRoomStore.getSyncActivityLastPulledAt(
-                    typeName = SeedPayload::class.java.simpleName,
-                    suffix = request.marketplaces.joinToString())
+            if (request.id != null) {
+                map["SellerOrderId"] = request.id
+            } else {
+                val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.US)
+                formatter.timeZone = TimeZone.getTimeZone("GMT")
 
-            map["LastUpdatedAfter"] = formatter.format(lastPulledAt ?: Date().startOfDay().add(Calendar.DATE, -30))
+                map["LastUpdatedAfter"] = formatter.format(request.startDate)
 
+                if (request.endDate.before(Date())) {
+                    map["LastUpdatedBefore"] = formatter.format(request.endDate)
+                }
+            }
             map
         }()
     }

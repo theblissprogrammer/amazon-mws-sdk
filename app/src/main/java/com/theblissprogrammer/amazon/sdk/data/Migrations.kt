@@ -3,8 +3,6 @@ package com.theblissprogrammer.amazon.sdk.data
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.room.migration.Migration
 
-
-
 /**
  * Created by ahmed.saad on 2018-12-19.
  * Copyright © 2018. All rights reserved.

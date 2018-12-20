@@ -48,7 +48,7 @@ fun XmlPullParser.readDate(tag: String): Date {
     require(XmlPullParser.START_TAG, namespace, tag)
     val pubDate = readText()
 
-    val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZZZZ", Locale.US)
+    val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.US)
 
     val date = formatter.parse(pubDate)
     require(XmlPullParser.END_TAG, namespace, tag)

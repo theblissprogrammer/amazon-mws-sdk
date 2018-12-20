@@ -15,13 +15,13 @@ interface OrdersStore {
 }
 
 interface OrdersCacheStore {
-    fun fetch(request: OrderModels.Request): DeferredLiveResult<List<Order>>
+    fun fetch(request: OrderModels.Request): DeferredLiveResult<Array<Order>>
     fun fetchOldestOrder(): DeferredLiveResult<Order>
     fun createOrUpdate(request: ListOrder): DeferredLiveResult<Order>
     fun createOrUpdate(vararg orders: ListOrder): DeferredResult<Void>
 }
 
 interface OrdersWorkerType {
-    suspend fun fetch(request: OrderModels.Request, completion: LiveCompletionResponse<List<Order>>)
+    suspend fun fetch(request: OrderModels.Request, completion: LiveCompletionResponse<Array<Order>>)
     suspend fun fetchOldestOrder(completion: LiveCompletionResponse<Order>)
 }

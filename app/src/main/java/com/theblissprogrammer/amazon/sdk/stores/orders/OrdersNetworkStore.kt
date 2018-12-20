@@ -47,7 +47,7 @@ class OrdersNetworkStore(val apiSession: APISessionType): OrdersStore {
                 } else
                 Result.success(listOrders.orders)
             } catch(e: Exception) {
-                LogHelper.e(messages = *arrayOf("An error occurred while parsing login: " +
+                LogHelper.e(messages = *arrayOf("An error occurred while parsing orders: " +
                         "${e.localizedMessage ?: ""}."))
                 Result.failure(DataError.ParseFailure(e))
             }
@@ -82,7 +82,7 @@ class OrdersNetworkStore(val apiSession: APISessionType): OrdersStore {
             } else
                 Result.success(orders)
         } catch(e: Exception) {
-            LogHelper.e(messages = *arrayOf("An error occurred while parsing login: " +
+            LogHelper.e(messages = *arrayOf("An error occurred while parsing orders by next token: " +
                     "${e.localizedMessage ?: ""}."))
             Result.failure(DataError.ParseFailure(e))
         }

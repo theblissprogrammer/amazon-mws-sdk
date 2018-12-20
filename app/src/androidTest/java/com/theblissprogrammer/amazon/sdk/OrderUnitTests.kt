@@ -10,11 +10,18 @@ import com.theblissprogrammer.amazon.sdk.access.MwsSdk
 import com.theblissprogrammer.amazon.sdk.data.AppDatabase
 import com.theblissprogrammer.amazon.sdk.data.MIGRATION_1_2
 import com.theblissprogrammer.amazon.sdk.dependencies.HasDependencies
+import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
+import com.theblissprogrammer.amazon.sdk.enums.OrderStatus
 import com.theblissprogrammer.amazon.sdk.stores.orders.OrderDAO
 import com.theblissprogrammer.amazon.sdk.stores.orders.OrdersCacheStore
-import org.junit.After
-import org.junit.Before
-import org.junit.Rule
+import com.theblissprogrammer.amazon.sdk.stores.orders.models.ListOrder
+import com.theblissprogrammer.amazon.sdk.stores.orders.models.Order
+import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderModels
+import com.theblissprogrammer.amazon.sdk.stores.sellers.SellerDAO
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
+import org.junit.*
 import org.junit.runner.RunWith
 import java.io.IOException
 
@@ -59,5 +66,85 @@ class OrderUnitTests: HasDependencies {
     @Throws(IOException::class)
     fun closeDb() {
         db.close()
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun saving_and_fetching_live_data() {
+
+        runBlocking {
+            val orders = async(Dispatchers.IO) {
+                orderDao.fetchAllOrders()
+            }.await()
+
+            Assert.assertEquals("The number of sellers must equal to number added.", 1, orders.size)
+        }
+    }
+
+    @Test
+    fun fetch_orders() {
+        runBlocking {
+            val request = OrderModels.Request(
+                marketplaces = listOf(MarketplaceType.US)
+            )
+            ordersWorker.fetch(request) {
+                Assert.assertTrue(
+                    "An error occurred when there should not be: ${it.error?.localizedMessage ?: it.error}",
+                    it.isSuccess
+                )
+                Assert.assertNull("Orders should return a null error.", it.error)
+
+                val orders = getValue(it.value)
+                Assert.assertNotNull("Orders should return valid order object.", orders)
+            }
+        }
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun saving_and_fetching_from_worker() {
+        val id = "1234"
+        val marketplace = MarketplaceType.UK
+        val order = Order(id = id, status = OrderStatus.Shipped, marketplace = marketplace)
+
+        runBlocking {
+            ordersRoomStore.createOrUpdate(ListOrder(order, buyer = null)).await()
+
+            ordersWorker.fetch(request = OrderModels.Request(
+                id = id,
+                marketplaces = listOf(marketplace)
+            )) {
+                Assert.assertTrue(
+                    "An error occurred when there should not be: ${it.error?.localizedMessage ?: it.error}",
+                    it.isSuccess
+                )
+                Assert.assertNull("Order should return a null error.", it.error)
+
+                val order = getValue(it.value)
+                Assert.assertNotNull("Worker should return valid order object.", order)
+                Assert.assertEquals("The order ids should match after saving to db", id, order[0]?.id)
+            }
+        }
+    }
+
+    @Test
+    fun fetch_order_by_id() {
+        runBlocking {
+            val id = "114-0164853-7858633"
+            val marketplace = MarketplaceType.US
+            ordersWorker.fetch(request = OrderModels.Request(
+                marketplaces = listOf(marketplace)
+            )) {
+                Assert.assertTrue(
+                    "An error occurred when there should not be: ${it.error?.localizedMessage ?: it.error}",
+                    it.isSuccess
+                )
+                Assert.assertNull("Order should return a null error.", it.error)
+
+                val order = getValue(it.value)
+                Assert.assertNotNull("Worker should return valid order object.", order)
+                Assert.assertEquals("The order ids should match after saving to db", id, order[0]?.id)
+            }
+        }
     }
 }
