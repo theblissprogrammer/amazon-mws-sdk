@@ -23,7 +23,7 @@ fun <T> coroutineCompletionOnUi (completion: CompletionResponse<T>? = null, call
     }
 }
 
-fun <T> coroutineNetwork (call: () -> Result<T>): Deferred<Result<T>> {
+fun <T> coroutineNetwork (call: suspend () -> Result<T>): Deferred<Result<T>> {
     return GlobalScope.async(Dispatchers.IO) {
         call()
     }

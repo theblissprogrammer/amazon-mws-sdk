@@ -1,10 +1,8 @@
 package com.theblissprogrammer.amazon.sdk.stores.orders
 
-import com.theblissprogrammer.amazon.sdk.common.DeferredResult
+import com.theblissprogrammer.amazon.sdk.common.*
 import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetwork
 import com.theblissprogrammer.amazon.sdk.network.APIRouter
-import com.theblissprogrammer.amazon.sdk.common.Result
-import com.theblissprogrammer.amazon.sdk.common.initDataError
 import com.theblissprogrammer.amazon.sdk.errors.DataError
 import com.theblissprogrammer.amazon.sdk.logging.LogHelper
 import com.theblissprogrammer.amazon.sdk.network.APISessionType
@@ -19,7 +17,7 @@ import com.theblissprogrammer.amazon.sdk.stores.reports.parsers.ListOrdersXmlPar
  **/
 class OrdersNetworkStore(val apiSession: APISessionType): OrdersStore {
 
-    override fun fetch(request: OrderModels.Request): DeferredResult<List<ListOrder>> {
+    override fun fetch(request: OrderModels.Request, completion: SuspendCompletionResponse<List<ListOrder>>): DeferredResult<List<ListOrder>> {
         return coroutineNetwork <List<ListOrder>> {
             val response = apiSession.request(router = APIRouter.ReadOrders(request))
 
@@ -42,8 +40,12 @@ class OrdersNetworkStore(val apiSession: APISessionType): OrdersStore {
                 // Parse response data
                 val listOrders = ListOrdersXmlParser().parse(value.data)
 
+                // Run the call back to save data to db
+                completion(Result.success(listOrders?.orders))
+
                 if (listOrders?.nextToken != null) {
-                    fetchNext(listOrders.nextToken, orders = ArrayList(listOrders.orders))
+
+                    fetchNext(listOrders.nextToken, orders = ArrayList(listOrders.orders), completion = completion)
                 } else
                 Result.success(listOrders?.orders)
             } catch(e: Exception) {
@@ -54,7 +56,8 @@ class OrdersNetworkStore(val apiSession: APISessionType): OrdersStore {
         }
     }
 
-    private fun fetchNext(nextToken: String, orders: ArrayList<ListOrder>): Result<List<ListOrder>> {
+    private suspend fun fetchNext(nextToken: String, orders: ArrayList<ListOrder>, completion: SuspendCompletionResponse<List<ListOrder>>)
+            : Result<List<ListOrder>> {
         val response = apiSession.request(router = APIRouter.ReadNextOrders(nextToken))
 
         // Handle errors
@@ -77,8 +80,11 @@ class OrdersNetworkStore(val apiSession: APISessionType): OrdersStore {
             val listOrders = ListOrdersXmlParser().parse(value.data)
             orders.addAll(listOrders?.orders ?: listOf())
 
+            // Run the call back to save data to db
+            completion(Result.success(listOrders?.orders))
+
             if (listOrders?.nextToken != null) {
-                fetchNext(listOrders.nextToken, orders = orders)
+                fetchNext(listOrders.nextToken, orders = orders, completion = completion)
             } else
                 Result.success(orders)
         } catch(e: Exception) {

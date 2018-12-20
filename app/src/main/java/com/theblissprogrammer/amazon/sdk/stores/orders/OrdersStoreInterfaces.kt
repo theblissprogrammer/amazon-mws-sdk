@@ -1,9 +1,6 @@
 package com.theblissprogrammer.amazon.sdk.stores.orders
 
-import com.theblissprogrammer.amazon.sdk.common.CompletionResponse
-import com.theblissprogrammer.amazon.sdk.common.DeferredLiveResult
-import com.theblissprogrammer.amazon.sdk.common.DeferredResult
-import com.theblissprogrammer.amazon.sdk.common.LiveCompletionResponse
+import com.theblissprogrammer.amazon.sdk.common.*
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.*
 
 /**
@@ -11,7 +8,7 @@ import com.theblissprogrammer.amazon.sdk.stores.orders.models.*
  * Copyright (c) 2018. All rights reserved.
  **/
 interface OrdersStore {
-    fun fetch(request: OrderModels.Request): DeferredResult<List<ListOrder>>
+    fun fetch(request: OrderModels.Request, completion: SuspendCompletionResponse<List<ListOrder>>): DeferredResult<List<ListOrder>>
 }
 
 interface OrdersCacheStore {

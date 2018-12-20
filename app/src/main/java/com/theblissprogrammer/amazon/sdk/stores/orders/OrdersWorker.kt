@@ -29,20 +29,20 @@ class OrdersWorker(val store: OrdersStore,
         // Immediately return local response
         completion(cache)
 
-        val response = store.fetch(request = request).await()
+        store.fetch(request = request) {
+            // Validate if any updates that needs to be stored
+            val orders = it.value
+            if (orders == null || !it.isSuccess) {
+                return@fetch
+            }
 
-        // Validate if any updates that needs to be stored
-        val orders = response.value
-        if (orders == null || !response.isSuccess) {
-            return
-        }
+            val savedElement = this.cacheStore.createOrUpdate(*orders.toTypedArray()).await()
 
-        val savedElement = this.cacheStore.createOrUpdate(*orders.toTypedArray()).await()
-
-        if (!savedElement.isSuccess) {
-            LogHelper.e(messages = *arrayOf("Could not save updated orders locally" +
-                    " from remote storage: ${savedElement.error?.localizedMessage ?: ""}"))
-        }
+            if (!savedElement.isSuccess) {
+                LogHelper.e(messages = *arrayOf("Could not save updated orders locally" +
+                        " from remote storage: ${savedElement.error?.localizedMessage ?: ""}"))
+            }
+        }.await()
     }
 
     override suspend fun fetchOldestOrder(completion: LiveCompletionResponse<Order>) {

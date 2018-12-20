@@ -46,6 +46,7 @@ data class LiveResult<T>(val isSuccess: Boolean = false, val value: LiveData<T>?
     }
 }
 
+typealias SuspendCompletionResponse<T> = suspend (Result<T>) -> Unit
 typealias CompletionResponse<T> = (Result<T>) -> Unit
 typealias LiveCompletionResponse<T> = (LiveResult<T>) -> Unit
 typealias DeferredLiveResult<T> = Deferred<LiveResult<T>>
