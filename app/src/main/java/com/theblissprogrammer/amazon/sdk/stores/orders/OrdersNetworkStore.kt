@@ -42,10 +42,10 @@ class OrdersNetworkStore(val apiSession: APISessionType): OrdersStore {
                 // Parse response data
                 val listOrders = ListOrdersXmlParser().parse(value.data)
 
-                if (listOrders.nextToken != null) {
+                if (listOrders?.nextToken != null) {
                     fetchNext(listOrders.nextToken, orders = ArrayList(listOrders.orders))
                 } else
-                Result.success(listOrders.orders)
+                Result.success(listOrders?.orders)
             } catch(e: Exception) {
                 LogHelper.e(messages = *arrayOf("An error occurred while parsing orders: " +
                         "${e.localizedMessage ?: ""}."))
@@ -75,9 +75,9 @@ class OrdersNetworkStore(val apiSession: APISessionType): OrdersStore {
         return try {
             // Parse response data
             val listOrders = ListOrdersXmlParser().parse(value.data)
-            orders.addAll(listOrders.orders)
+            orders.addAll(listOrders?.orders ?: listOf())
 
-            if (listOrders.nextToken != null) {
+            if (listOrders?.nextToken != null) {
                 fetchNext(listOrders.nextToken, orders = orders)
             } else
                 Result.success(orders)

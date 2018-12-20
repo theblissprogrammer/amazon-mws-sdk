@@ -13,7 +13,7 @@ import kotlin.collections.ArrayList
  **/
 
 @Throws(XmlPullParserException::class, IOException::class)
-fun <T> XmlPullParser.findChildTag(tag: String, call: () -> T): ArrayList<T> {
+fun <T> XmlPullParser.findChildTag(tag: List<String>, call: () -> T): ArrayList<T> {
     val res: ArrayList<T> = arrayListOf()
     while (next() != XmlPullParser.END_TAG) {
         if (eventType != XmlPullParser.START_TAG) {
@@ -21,7 +21,7 @@ fun <T> XmlPullParser.findChildTag(tag: String, call: () -> T): ArrayList<T> {
         }
 
         // Starts by looking for the item tag
-        if (name == tag) {
+        if (tag.contains(name)) {
             res.add(call())
         } else {
             skip()
@@ -30,6 +30,31 @@ fun <T> XmlPullParser.findChildTag(tag: String, call: () -> T): ArrayList<T> {
 
     return res
 }
+
+fun <T> XmlPullParser.findChildTag(tag: String, call: () -> T): ArrayList<T> {
+    return findChildTag(listOf(tag), call)
+}
+
+@Throws(XmlPullParserException::class, IOException::class)
+fun <T> XmlPullParser.findChildTagAsync(tag: List<String>, call: () -> T) {
+    while (next() != XmlPullParser.END_TAG) {
+        if (eventType != XmlPullParser.START_TAG) {
+            continue
+        }
+
+        // Starts by looking for the item tag
+        if (tag.contains(name)) {
+            call()
+        } else {
+            skip()
+        }
+    }
+}
+
+fun <T> XmlPullParser.findChildTagAsync(tag: String, call: () -> T) {
+    findChildTagAsync(listOf(tag), call)
+}
+
 
 
 
@@ -48,7 +73,7 @@ fun XmlPullParser.readDate(tag: String): Date {
     require(XmlPullParser.START_TAG, namespace, tag)
     val pubDate = readText()
 
-    val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.US)
+    val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
 
     val date = formatter.parse(pubDate)
     require(XmlPullParser.END_TAG, namespace, tag)

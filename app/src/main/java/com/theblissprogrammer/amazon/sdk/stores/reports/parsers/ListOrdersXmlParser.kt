@@ -5,15 +5,10 @@ import com.theblissprogrammer.amazon.sdk.enums.OrderStatus
 import com.theblissprogrammer.amazon.sdk.enums.marketplaceFromSalesChannel
 import com.theblissprogrammer.amazon.sdk.extensions.*
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.*
-import com.theblissprogrammer.amazon.sdk.extensions.findChildTag
-import com.theblissprogrammer.amazon.sdk.extensions.readDate
-import com.theblissprogrammer.amazon.sdk.extensions.readString
-import com.theblissprogrammer.amazon.sdk.extensions.skip
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 /**
@@ -25,21 +20,29 @@ class ListOrdersXmlParser {
     private val ns: String? = null
 
     @Throws(XmlPullParserException::class, IOException::class)
-    fun parse(input: String): ListOrders {
+    fun parse(input: String): ListOrders? {
         input.byteInputStream().use { inputStream ->
             val parser = Xml.newPullParser()
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
             parser.setInput(inputStream, null)
             parser.nextTag()
 
-            return parser.findChildTag("ListOrdersResult") {
-                val orders = parser.findChildTag("Orders") {
-                    parser.findChildTag("Order") {
-                        readOrder(parser)
-                    }.filterNotNull()
-                }.firstOrNull() ?: listOf()
-                ListOrders(orders = orders, nextToken = null)
-            }.first()
+            val orders = arrayListOf<ListOrder?>()
+            var nextToken: String? = null
+
+            parser.findChildTagAsync(listOf("ListOrdersResult", "ListOrdersByNextTokenResult")) {
+                parser.findChildTagAsync(listOf("Orders", "NextToken")) {
+                    if (parser.name == "Orders") {
+                        parser.findChildTagAsync("Order") {
+                            orders.add(readOrder(parser))
+                        }
+                    } else {
+                        nextToken = parser.readString("NextToken")
+                    }
+                }
+            }
+
+            return ListOrders(orders = orders.filterNotNull(), nextToken = nextToken)
         }
     }
 
