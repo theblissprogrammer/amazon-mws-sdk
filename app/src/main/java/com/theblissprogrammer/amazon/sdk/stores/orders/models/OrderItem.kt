@@ -23,6 +23,7 @@ import androidx.room.PrimaryKey
 )
 data class OrderItem(
     @PrimaryKey
+    var orderItemId: String = "",
     var orderId: String = "",
     var asin: String? = null,
     @ColumnInfo(index = true)

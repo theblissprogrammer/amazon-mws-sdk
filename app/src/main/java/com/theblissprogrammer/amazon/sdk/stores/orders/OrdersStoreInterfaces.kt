@@ -8,7 +8,8 @@ import com.theblissprogrammer.amazon.sdk.stores.orders.models.*
  * Copyright (c) 2018. All rights reserved.
  **/
 interface OrdersStore {
-    fun fetch(request: OrderModels.Request, completion: SuspendCompletionResponse<List<ListOrder>>): DeferredResult<List<ListOrder>>
+    fun fetch(request: OrderModels.Request): DeferredResult<ListOrders>
+    fun fetchNext(nextToken: String): DeferredResult<ListOrders>
 }
 
 interface OrdersCacheStore {

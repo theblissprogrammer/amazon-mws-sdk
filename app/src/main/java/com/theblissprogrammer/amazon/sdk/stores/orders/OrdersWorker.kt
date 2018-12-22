@@ -29,20 +29,49 @@ class OrdersWorker(val store: OrdersStore,
         // Immediately return local response
         completion(cache)
 
-        store.fetch(request = request) {
-            // Validate if any updates that needs to be stored
-            val orders = it.value
-            if (orders == null || !it.isSuccess) {
-                return@fetch
+        val listOrder = store.fetch(request = request).await()
+
+        if (!listOrder.isSuccess || listOrder.value == null) {
+           return LogHelper.e(messages = *arrayOf("Error occurred while retrieving orders : ${listOrder.error ?: ""}"))
+        }
+
+        val orders = listOrder.value.orders
+
+        val savedElement = this.cacheStore.createOrUpdate(*orders.toTypedArray()).await()
+
+        if (!savedElement.isSuccess) {
+            return LogHelper.e(
+                messages = *arrayOf(
+                    "Could not save updated orders locally" +
+                            " from remote storage: ${savedElement.error?.localizedMessage ?: ""}"
+                )
+            )
+        }
+
+        var nextToken = listOrder.value.nextToken
+        while (nextToken != null) {
+
+            val listOrderNext = store.fetchNext(nextToken = nextToken).await()
+
+            if (!listOrderNext.isSuccess || listOrderNext.value == null) {
+                return LogHelper.e(messages = *arrayOf("Error occurred while retrieving orders next : ${listOrderNext.error ?: ""}"))
             }
 
-            val savedElement = this.cacheStore.createOrUpdate(*orders.toTypedArray()).await()
+            val ordersNext = listOrderNext.value.orders
 
-            if (!savedElement.isSuccess) {
-                LogHelper.e(messages = *arrayOf("Could not save updated orders locally" +
-                        " from remote storage: ${savedElement.error?.localizedMessage ?: ""}"))
+            val savedElementNext = this.cacheStore.createOrUpdate(*ordersNext.toTypedArray()).await()
+
+            if (!savedElementNext.isSuccess) {
+                return LogHelper.e(
+                    messages = *arrayOf(
+                        "Could not save updated orders locally" +
+                                " from remote storage: ${savedElementNext.error?.localizedMessage ?: ""}"
+                    )
+                )
             }
-        }.await()
+
+            nextToken = listOrderNext.value.nextToken
+        }
     }
 
     override suspend fun fetchOldestOrder(completion: LiveCompletionResponse<Order>) {

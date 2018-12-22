@@ -6,9 +6,9 @@ import com.theblissprogrammer.amazon.sdk.network.APIRouter
 import com.theblissprogrammer.amazon.sdk.errors.DataError
 import com.theblissprogrammer.amazon.sdk.logging.LogHelper
 import com.theblissprogrammer.amazon.sdk.network.APISessionType
-import com.theblissprogrammer.amazon.sdk.stores.orders.models.ListOrder
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderModels
 import com.theblissprogrammer.amazon.sdk.parsers.ListOrdersXmlParser
+import com.theblissprogrammer.amazon.sdk.stores.orders.models.ListOrders
 
 
 /**
@@ -17,8 +17,8 @@ import com.theblissprogrammer.amazon.sdk.parsers.ListOrdersXmlParser
  **/
 class OrdersNetworkStore(val apiSession: APISessionType): OrdersStore {
 
-    override fun fetch(request: OrderModels.Request, completion: SuspendCompletionResponse<List<ListOrder>>): DeferredResult<List<ListOrder>> {
-        return coroutineNetwork <List<ListOrder>> {
+    override fun fetch(request: OrderModels.Request): DeferredResult<ListOrders> {
+        return coroutineNetwork <ListOrders> {
             val response = apiSession.request(router = APIRouter.ReadOrders(request))
 
             // Handle errors
@@ -39,14 +39,7 @@ class OrdersNetworkStore(val apiSession: APISessionType): OrdersStore {
             try {
                 // Parse response data
                 val listOrders = ListOrdersXmlParser().parse(value.data)
-
-                // Run the call back to save data to db
-                completion(Result.success(listOrders?.orders))
-
-                if (listOrders?.nextToken != null) {
-                    fetchNext(listOrders.nextToken, orders = ArrayList(listOrders.orders), completion = completion)
-                } else
-                Result.success(listOrders?.orders)
+                Result.success(listOrders)
             } catch(e: Exception) {
                 LogHelper.e(messages = *arrayOf("An error occurred while parsing orders: " +
                         "${e.localizedMessage ?: ""}."))
@@ -55,41 +48,42 @@ class OrdersNetworkStore(val apiSession: APISessionType): OrdersStore {
         }
     }
 
-    private suspend fun fetchNext(nextToken: String, orders: ArrayList<ListOrder>, completion: SuspendCompletionResponse<List<ListOrder>>)
-            : Result<List<ListOrder>> {
-        val response = apiSession.request(router = APIRouter.ReadNextOrders(nextToken))
+    override fun fetchNext(nextToken: String): DeferredResult<ListOrders> {
+        return coroutineNetwork <ListOrders> {
+            val response = apiSession.request(router = APIRouter.ReadNextOrders(nextToken))
 
-        // Handle errors
-        val value = response.value
-        if (value == null || !response.isSuccess) {
-            val error = response.error
+            // Handle errors
+            val value = response.value
+            if (value == null || !response.isSuccess) {
+                val error = response.error
 
-            return if (error != null) {
-                val exception = initDataError(response.error)
-                LogHelper.e(messages = *arrayOf("An error occurred while fetching orders: " +
-                        "${error.description}."))
-                Result.failure(exception)
-            } else {
-                Result.failure(DataError.UnknownReason(null))
+                return@coroutineNetwork  if (error != null) {
+                    val exception = initDataError(response.error)
+                    LogHelper.e(
+                        messages = *arrayOf(
+                            "An error occurred while fetching orders: " +
+                                    "${error.description}."
+                        )
+                    )
+                    Result.failure(exception)
+                } else {
+                    Result.failure(DataError.UnknownReason(null))
+                }
             }
-        }
 
-        return try {
-            // Parse response data
-            val listOrders = ListOrdersXmlParser().parse(value.data)
-            orders.addAll(listOrders?.orders ?: listOf())
-
-            // Run the call back to save data to db
-            completion(Result.success(listOrders?.orders))
-
-            if (listOrders?.nextToken != null) {
-                fetchNext(listOrders.nextToken, orders = orders, completion = completion)
-            } else
-                Result.success(orders)
-        } catch(e: Exception) {
-            LogHelper.e(messages = *arrayOf("An error occurred while parsing orders by next token: " +
-                    "${e.localizedMessage ?: ""}."))
-            Result.failure(DataError.ParseFailure(e))
+             try {
+                // Parse response data
+                val listOrders = ListOrdersXmlParser().parse(value.data)
+                    Result.success(listOrders)
+            } catch (e: Exception) {
+                LogHelper.e(
+                    messages = *arrayOf(
+                        "An error occurred while parsing orders by next token: " +
+                                "${e.localizedMessage ?: ""}."
+                    )
+                )
+                Result.failure(DataError.ParseFailure(e))
+            }
         }
     }
 }
