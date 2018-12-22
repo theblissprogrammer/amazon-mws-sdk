@@ -10,11 +10,15 @@ import java.util.*
 
 fun Date.shortString(): String {
     val outputFmt = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+    outputFmt.timeZone = TimeZone.getTimeZone("GMT")
+
     return outputFmt.format(this)
 }
 
 fun Date.realmString(): String {
     val outputFmt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.US)
+    outputFmt.timeZone = TimeZone.getTimeZone("GMT")
+
     return outputFmt.format(this)
 }
 

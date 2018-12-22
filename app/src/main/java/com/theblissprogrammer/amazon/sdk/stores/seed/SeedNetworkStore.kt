@@ -9,10 +9,10 @@ import com.theblissprogrammer.amazon.sdk.extensions.readReport
 import com.theblissprogrammer.amazon.sdk.extensions.requestReport
 import com.theblissprogrammer.amazon.sdk.stores.reports.ReportsNetworkStore
 import com.theblissprogrammer.amazon.sdk.stores.reports.models.ReportModels
-import com.theblissprogrammer.amazon.sdk.stores.reports.parsers.FBAFeesReportFileParser
-import com.theblissprogrammer.amazon.sdk.stores.reports.parsers.InventoriesReportFileParser
-import com.theblissprogrammer.amazon.sdk.stores.reports.parsers.OrdersReportXmlParser
-import com.theblissprogrammer.amazon.sdk.stores.reports.parsers.ProductsReportFileParser
+import com.theblissprogrammer.amazon.sdk.parsers.FBAFeesReportFileParser
+import com.theblissprogrammer.amazon.sdk.parsers.InventoriesReportFileParser
+import com.theblissprogrammer.amazon.sdk.parsers.OrdersReportXmlParser
+import com.theblissprogrammer.amazon.sdk.parsers.ProductsReportFileParser
 import com.theblissprogrammer.amazon.sdk.stores.seed.models.SeedPayload
 import com.theblissprogrammer.amazon.sdk.common.Result.Companion.success
 import com.theblissprogrammer.amazon.sdk.common.CompletionResponse

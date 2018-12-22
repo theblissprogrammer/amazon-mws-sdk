@@ -14,7 +14,7 @@ import com.theblissprogrammer.amazon.sdk.stores.sellers.models.Seller
  * Created by ahmed.saad on 2018-12-03.
  * Copyright © 2018. All rights reserved.
  */
-@Database(entities = [Seller::class, Order::class], version = 3)
+@Database(entities = [Seller::class, Order::class, OrderAddress::class], version = 4)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun sellerDao(): SellerDAO

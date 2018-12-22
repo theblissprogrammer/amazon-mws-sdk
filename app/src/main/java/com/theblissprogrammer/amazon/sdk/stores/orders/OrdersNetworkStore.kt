@@ -8,7 +8,7 @@ import com.theblissprogrammer.amazon.sdk.logging.LogHelper
 import com.theblissprogrammer.amazon.sdk.network.APISessionType
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.ListOrder
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderModels
-import com.theblissprogrammer.amazon.sdk.stores.reports.parsers.ListOrdersXmlParser
+import com.theblissprogrammer.amazon.sdk.parsers.ListOrdersXmlParser
 
 
 /**
@@ -44,7 +44,6 @@ class OrdersNetworkStore(val apiSession: APISessionType): OrdersStore {
                 completion(Result.success(listOrders?.orders))
 
                 if (listOrders?.nextToken != null) {
-
                     fetchNext(listOrders.nextToken, orders = ArrayList(listOrders.orders), completion = completion)
                 } else
                 Result.success(listOrders?.orders)

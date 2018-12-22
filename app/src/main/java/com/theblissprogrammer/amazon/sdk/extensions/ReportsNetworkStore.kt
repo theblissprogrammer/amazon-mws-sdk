@@ -2,9 +2,9 @@ package com.theblissprogrammer.amazon.sdk.extensions
 
 import com.theblissprogrammer.amazon.sdk.enums.ReportStatus
 import com.theblissprogrammer.amazon.sdk.network.APIRouter
-import com.theblissprogrammer.amazon.sdk.stores.reports.parsers.ReportRequestListXmlParser
+import com.theblissprogrammer.amazon.sdk.parsers.ReportRequestListXmlParser
 import com.theblissprogrammer.amazon.sdk.stores.reports.ReportsNetworkStore
-import com.theblissprogrammer.amazon.sdk.stores.reports.parsers.RequestReportXmlParser
+import com.theblissprogrammer.amazon.sdk.parsers.RequestReportXmlParser
 import com.theblissprogrammer.amazon.sdk.stores.reports.models.ReportModels
 import com.theblissprogrammer.amazon.sdk.stores.reports.models.RequestReport
 import com.theblissprogrammer.amazon.sdk.common.Result

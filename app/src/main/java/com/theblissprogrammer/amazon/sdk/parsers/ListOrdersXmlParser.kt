@@ -1,4 +1,4 @@
-package com.theblissprogrammer.amazon.sdk.stores.reports.parsers
+package com.theblissprogrammer.amazon.sdk.parsers
 
 import android.util.Xml
 import com.theblissprogrammer.amazon.sdk.enums.FulfillmentChannel

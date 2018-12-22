@@ -1,11 +1,10 @@
-package com.theblissprogrammer.amazon.sdk.stores.reports.parsers
+package com.theblissprogrammer.amazon.sdk.parsers
 
 import android.util.Xml
 import com.theblissprogrammer.amazon.sdk.enums.OrderStatus
 import com.theblissprogrammer.amazon.sdk.enums.marketplaceFromSalesChannel
 import com.theblissprogrammer.amazon.sdk.extensions.*
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.*
-import com.theblissprogrammer.amazon.sdk.extensions.*
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException

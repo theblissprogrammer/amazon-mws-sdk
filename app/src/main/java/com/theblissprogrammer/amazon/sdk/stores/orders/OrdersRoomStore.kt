@@ -59,6 +59,9 @@ class OrdersRoomStore(val orderDao: OrderDAO?): OrdersCacheStore {
 
             orderDao?.insertOrUpdate(request.order)
 
+            if (request.buyer != null)
+                orderDao?.insertOrUpdate(request.buyer)
+
             val marketplace = request.order.marketplace
 
             val item = if (marketplace != null) {
@@ -75,10 +78,13 @@ class OrdersRoomStore(val orderDao: OrderDAO?): OrdersCacheStore {
         }
     }
 
-    override fun createOrUpdate(vararg orders: ListOrder): DeferredResult<Void> {
+    override fun createOrUpdate(vararg listOrder: ListOrder): DeferredResult<Void> {
         return coroutineNetwork<Void> {
-            val orders = orders.map { it.order }
+            val orders = listOrder.map { it.order }
+            val buyers = listOrder.mapNotNull { it.buyer }
+
             orderDao?.insert(*orders.toTypedArray())
+            orderDao?.insert(*buyers.toTypedArray())
             Result.success()
         }
     }

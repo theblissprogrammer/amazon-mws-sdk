@@ -7,10 +7,10 @@ import com.theblissprogrammer.amazon.sdk.stores.fbaFees.models.FBAFeeType
 import com.theblissprogrammer.amazon.sdk.stores.inventories.models.InventoryType
 import com.theblissprogrammer.amazon.sdk.stores.products.models.ProductType
 import com.theblissprogrammer.amazon.sdk.stores.reports.models.ReportModels
-import com.theblissprogrammer.amazon.sdk.stores.reports.parsers.FBAFeesReportFileParser
-import com.theblissprogrammer.amazon.sdk.stores.reports.parsers.InventoriesReportFileParser
-import com.theblissprogrammer.amazon.sdk.stores.reports.parsers.OrdersReportXmlParser
-import com.theblissprogrammer.amazon.sdk.stores.reports.parsers.ProductsReportFileParser
+import com.theblissprogrammer.amazon.sdk.parsers.FBAFeesReportFileParser
+import com.theblissprogrammer.amazon.sdk.parsers.InventoriesReportFileParser
+import com.theblissprogrammer.amazon.sdk.parsers.OrdersReportXmlParser
+import com.theblissprogrammer.amazon.sdk.parsers.ProductsReportFileParser
 import com.theblissprogrammer.amazon.sdk.common.Result
 import com.theblissprogrammer.amazon.sdk.common.CompletionResponse
 import com.theblissprogrammer.amazon.sdk.network.APISessionType

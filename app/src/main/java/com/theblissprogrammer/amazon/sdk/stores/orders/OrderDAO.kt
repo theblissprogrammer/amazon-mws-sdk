@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteConstraintException
 import androidx.room.*
 import com.theblissprogrammer.amazon.sdk.enums.OrderStatus
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.Order
+import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderAddress
 import java.util.*
 
 
@@ -18,6 +19,9 @@ interface OrderDAO {
     @Insert(onConflict = OnConflictStrategy.FAIL)
     fun insert(order: Order)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(vararg orders: Order)
+
     @Update(onConflict = OnConflictStrategy.FAIL)
     fun update(order: Order)
 
@@ -27,8 +31,20 @@ interface OrderDAO {
     @Delete
     fun delete(vararg orders: Order)
 
+    @Insert(onConflict = OnConflictStrategy.FAIL)
+    fun insert(address: OrderAddress)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(vararg orders: Order)
+    fun insert(vararg addresses: OrderAddress)
+
+    @Update(onConflict = OnConflictStrategy.FAIL)
+    fun update(address: OrderAddress)
+
+    @Update
+    fun update(vararg addresses: OrderAddress)
+
+    @Delete
+    fun delete(vararg addresses: OrderAddress)
 
     @Query("SELECT * FROM `Order`")
     fun fetchAllOrders(): Array<Order>
@@ -58,5 +74,13 @@ fun OrderDAO.insertOrUpdate(order: Order) {
         insert(order)
     } catch (exception: SQLiteConstraintException) {
         update(order)
+    }
+}
+
+fun OrderDAO.insertOrUpdate(address: OrderAddress) {
+    try {
+        insert(address)
+    } catch (exception: SQLiteConstraintException) {
+        update(address)
     }
 }

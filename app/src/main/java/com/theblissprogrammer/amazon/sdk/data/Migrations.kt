@@ -50,3 +50,23 @@ val MIGRATION_2_3: Migration = object : Migration(2, 3) {
         database.execSQL("ALTER TABLE users_new RENAME TO users")*/
     }
 }
+
+val MIGRATION_3_4: Migration = object : Migration(3, 4) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        // Create the new table
+        //Alter table
+        database.execSQL(
+            "CREATE TABLE `OrderAddress` (`orderId` TEXT NOT NULL, `name` TEXT, `line1` TEXT, `line2` TEXT, `city` TEXT, `state` TEXT, `postalCode` TEXT, `country` TEXT, `email` TEXT, FOREIGN KEY(orderId) REFERENCES `Order`(id) ON DELETE CASCADE, PRIMARY KEY(`orderId`))")
+
+
+        /*// Copy the data
+        database.execSQL(
+            "INSERT INTO users_new (userid, username, last_update) SELECT userid, username, last_update FROM users")
+
+        // Remove the old table
+        database.execSQL("DROP TABLE users")
+
+        // Change the table name to the correct one
+        database.execSQL("ALTER TABLE users_new RENAME TO users")*/
+    }
+}

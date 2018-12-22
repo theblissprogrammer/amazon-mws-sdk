@@ -10,6 +10,7 @@ import com.theblissprogrammer.amazon.sdk.access.MwsSdk
 import com.theblissprogrammer.amazon.sdk.data.AppDatabase
 import com.theblissprogrammer.amazon.sdk.data.MIGRATION_1_2
 import com.theblissprogrammer.amazon.sdk.data.MIGRATION_2_3
+import com.theblissprogrammer.amazon.sdk.data.MIGRATION_3_4
 import com.theblissprogrammer.amazon.sdk.dependencies.HasDependencies
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.enums.OrderStatus
@@ -61,7 +62,7 @@ class OrderUnitTests: HasDependencies {
         val context: Context = InstrumentationRegistry.getTargetContext()
         db = Room.inMemoryDatabaseBuilder(
             context, AppDatabase::class.java
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build()
         orderDao = db.orderDao()
     }
 
@@ -88,7 +89,7 @@ class OrderUnitTests: HasDependencies {
     fun fetch_orders() {
         runBlocking {
             val request = OrderModels.Request(
-                startDate = Date().add(Calendar.DATE, -5),
+                //startDate = Date().add(Calendar.DATE, -5),
                 marketplaces = listOf(MarketplaceType.US)
             )
             ordersWorker.fetch(request) {
