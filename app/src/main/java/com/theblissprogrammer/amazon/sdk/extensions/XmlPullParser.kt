@@ -1,5 +1,6 @@
 package com.theblissprogrammer.amazon.sdk.extensions
 
+import com.theblissprogrammer.amazon.sdk.stores.orders.models.PriceTotal
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
@@ -88,6 +89,33 @@ fun XmlPullParser.readAttribute(tag: String, attribute: String): String {
     return getAttributeValue(null, attribute)
 }
 
+// Parses the contents of an entry. If it encounters a title, summary, or link tag, hands them off
+// to their respective "read" methods for processing. Otherwise, skips the tag.
+@Throws(XmlPullParserException::class, IOException::class)
+fun XmlPullParser.readPrice(tag: String): PriceTotal {
+    require(XmlPullParser.START_TAG, namespace, tag)
+
+    var currency: String? = null
+    var amount: Double? = null
+
+    while (next() != XmlPullParser.END_TAG) {
+        if (eventType != XmlPullParser.START_TAG) {
+            continue
+        }
+
+        when (name) {
+            "CurrencyCode" -> currency = readString(name)
+            "Amount" -> amount = readString(name).toDoubleOrNull()
+            else -> skip()
+        }
+    }
+
+    return PriceTotal(
+        currencyCode = currency,
+        amount = amount
+    )
+}
+
 // For the tags title and summary, extracts their text values.
 @Throws(IOException::class, XmlPullParserException::class)
 fun XmlPullParser.readText(): String {
@@ -98,6 +126,8 @@ fun XmlPullParser.readText(): String {
     }
     return result
 }
+
+
 
 @Throws(XmlPullParserException::class, IOException::class)
 fun XmlPullParser.skip() {

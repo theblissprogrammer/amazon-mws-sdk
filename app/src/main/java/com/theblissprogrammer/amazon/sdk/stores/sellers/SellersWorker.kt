@@ -59,6 +59,8 @@ class SellersWorker(val store: SellersStore,
             LogHelper.e(messages = *arrayOf("Could not save updated user locally" +
                     " from remote storage: ${savedElement.error?.localizedMessage ?: ""}"))
         }
+
+        completion(cache)
     }
 
     override suspend fun fetchCurrentSellerAsync(completion: LiveCompletionResponse<Seller>) {

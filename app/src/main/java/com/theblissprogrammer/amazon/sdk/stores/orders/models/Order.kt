@@ -38,6 +38,6 @@ data class ListOrder(
 data class FulfillmentData(
         var address: OrderAddress?)
 
-data class OrderTotal(
+data class PriceTotal(
         var currencyCode: String?,
         var amount: Double?)

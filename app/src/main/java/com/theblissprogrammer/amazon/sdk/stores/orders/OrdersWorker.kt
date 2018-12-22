@@ -27,7 +27,7 @@ class OrdersWorker(val store: OrdersStore,
         val cache = cacheStore.fetch(request = request).await()
 
         // Immediately return local response
-        completion(cache)
+        //completion(cache)
 
         val listOrder = store.fetch(request = request).await()
 
@@ -72,6 +72,8 @@ class OrdersWorker(val store: OrdersStore,
 
             nextToken = listOrderNext.value.nextToken
         }
+
+        completion(cache)
     }
 
     override suspend fun fetchOldestOrder(completion: LiveCompletionResponse<Order>) {

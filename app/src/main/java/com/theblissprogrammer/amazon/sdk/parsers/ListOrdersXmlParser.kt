@@ -33,12 +33,12 @@ class ListOrdersXmlParser {
 
             parser.findChildTagAsync(listOf("ListOrdersResult", "ListOrdersByNextTokenResult")) {
                 parser.findChildTagAsync(listOf("Orders", "NextToken")) {
-                    if (parser.name == "Orders") {
-                        parser.findChildTagAsync("Order") {
+                    val name = parser.name
+                    when (name) {
+                        "Orders" -> parser.findChildTagAsync("Order") {
                             orders.add(readOrder(parser))
                         }
-                    } else {
-                        nextToken = parser.readString("NextToken")
+                        "NextToken" -> nextToken = parser.readString(name)
                     }
                 }
             }
@@ -61,7 +61,7 @@ class ListOrdersXmlParser {
         var email: String? = null
         var fulfillmentChannel: FulfillmentChannel? = null
         var fulfillmentData: FulfillmentData? = null
-        var orderTotal: OrderTotal? = null
+        var orderTotal: PriceTotal? = null
         var numberOfItemsShipped: Int? = null
         var numberOfItemsUnshipped: Int? = null
 
@@ -82,7 +82,7 @@ class ListOrdersXmlParser {
                 "NumberOfItemsShipped" -> numberOfItemsShipped = parser.readString(name).toIntOrNull()
                 "NumberOfItemsUnshipped" -> numberOfItemsUnshipped = parser.readString(name).toIntOrNull()
                 "OrderTotal" -> {
-                    orderTotal = readOrderTotal(parser)
+                    orderTotal = parser.readPrice(name)
                 }
                 "ShippingAddress" -> {
                     fulfillmentData = FulfillmentData(address = readAddress(parser))
@@ -91,7 +91,7 @@ class ListOrdersXmlParser {
             }
         }
 
-        if (id == null || purchasedDate == null || updatedDate == null) { return null}
+        if (id == null || purchasedDate == null || updatedDate == null) { return null }
 
         if (email != null) fulfillmentData?.address?.email = email
 
@@ -156,34 +156,6 @@ class ListOrdersXmlParser {
                 name = buyerName,
                 line1 = addressLine1,
                 line2 = addressLine2
-        )
-    }
-
-    // Parses the contents of an entry. If it encounters a title, summary, or link tag, hands them off
-    // to their respective "read" methods for processing. Otherwise, skips the tag.
-    @Throws(XmlPullParserException::class, IOException::class)
-    private fun readOrderTotal(parser: XmlPullParser): OrderTotal {
-        parser.require(XmlPullParser.START_TAG, ns, "OrderTotal")
-
-        var currency: String? = null
-        var amount: Double? = null
-
-        while (parser.next() != XmlPullParser.END_TAG) {
-            if (parser.eventType != XmlPullParser.START_TAG) {
-                continue
-            }
-
-            val name = parser.name
-            when (name) {
-                "CurrencyCode" -> currency = parser.readString(name)
-                "Amount" -> amount = parser.readString(name).toDoubleOrNull()
-                else -> parser.skip()
-            }
-        }
-
-        return OrderTotal(
-            currencyCode = currency,
-            amount = amount
         )
     }
 }

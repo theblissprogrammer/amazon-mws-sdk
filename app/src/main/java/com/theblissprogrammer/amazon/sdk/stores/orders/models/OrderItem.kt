@@ -37,3 +37,8 @@ data class PriceComponent(
         val type: String?,
         var currency: String?,
         var amount: Double?)
+
+data class ListOrderItems(
+    val orderItems: List<OrderItem>,
+    val orderId: String?,
+    val nextToken: String?)
