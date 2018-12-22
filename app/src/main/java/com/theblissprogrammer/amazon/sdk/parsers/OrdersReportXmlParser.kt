@@ -4,6 +4,8 @@ import android.util.Xml
 import com.theblissprogrammer.amazon.sdk.enums.OrderStatus
 import com.theblissprogrammer.amazon.sdk.enums.marketplaceFromSalesChannel
 import com.theblissprogrammer.amazon.sdk.extensions.*
+import com.theblissprogrammer.amazon.sdk.stores.orderItems.models.OrderItem
+import com.theblissprogrammer.amazon.sdk.stores.orderItems.models.PriceComponent
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.*
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
@@ -150,12 +152,12 @@ class OrdersReportXmlParser {
         }
 
         return OrderItem(
-                asin = asin,
-                sku = sku,
-                productName = productName,
-                quantity = quantity?.toInt(),
-                currency = priceComponent?.currency,
-                price = priceComponent?.amount
+            asin = asin,
+            sku = sku,
+            productName = productName,
+            quantity = quantity?.toInt(),
+            currency = priceComponent?.currency,
+            price = priceComponent?.amount
         )
     }
 
@@ -186,9 +188,9 @@ class OrdersReportXmlParser {
         }
 
         return PriceComponent(
-                type = type,
-                amount = amount?.toDouble(),
-                currency = currency
+            type = type,
+            amount = amount?.toDouble(),
+            currency = currency
         )
     }
 }

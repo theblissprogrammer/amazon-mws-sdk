@@ -20,6 +20,9 @@ import com.theblissprogrammer.amazon.sdk.security.SecurityWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.inventories.InventoriesCacheStore
 import com.theblissprogrammer.amazon.sdk.stores.inventories.InventoriesStore
 import com.theblissprogrammer.amazon.sdk.stores.inventories.InventoriesWorkerType
+import com.theblissprogrammer.amazon.sdk.stores.orderItems.OrderItemsCacheStore
+import com.theblissprogrammer.amazon.sdk.stores.orderItems.OrderItemsStore
+import com.theblissprogrammer.amazon.sdk.stores.orderItems.OrderItemsWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.orders.OrdersCacheStore
 import com.theblissprogrammer.amazon.sdk.stores.orders.OrdersStore
 import com.theblissprogrammer.amazon.sdk.stores.orders.OrdersWorkerType
@@ -60,6 +63,7 @@ interface SDKDependable {
     val resolveSyncWorker: SyncWorkerType
     val resolveSellersWorker: SellersWorkerType
     val resolveOrdersWorker: OrdersWorkerType
+    val resolveOrderItemsWorker: OrderItemsWorkerType
     val resolveInventoriesWorker: InventoriesWorkerType
     val resolveReportsWorker: ReportsWorkerType
     val resolveSeedWorker: SeedWorkerType
@@ -68,6 +72,7 @@ interface SDKDependable {
     val resolveSyncStore: SyncStore
     val resolveSellersStore: SellersStore
     val resolveOrdersStore: OrdersStore
+    val resolveOrderItemsStore: OrderItemsStore
     val resolveInventoriesStore: InventoriesStore
     val resolveReportsStore: ReportsStore
     val resolveSeedStore: SeedStore
@@ -76,5 +81,6 @@ interface SDKDependable {
 
     val resolveSellersCacheStore: SellersCacheStore
     val resolveOrdersCacheStore: OrdersCacheStore
+    val resolveOrderItemsCacheStore: OrderItemsCacheStore
     val resolveInventoriesCacheStore: InventoriesCacheStore?
 }

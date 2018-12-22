@@ -53,7 +53,8 @@ interface OrderDAO {
     fun fetch(id: String): LiveData<Order>
 
     @Query("SELECT * FROM `Order` WHERE status IN (:orderStatuses) AND marketplace IN (:marketplaces) AND purchasedAt BETWEEN :startDate AND :endDate")
-    fun fetch(startDate: Date, endDate: Date, orderStatuses: Array<OrderStatus>, marketplaces: Array<MarketplaceType>): LiveData<Array<Order>>
+    fun fetch(startDate: Date, endDate: Date, orderStatuses: Array<OrderStatus>,
+              marketplaces: Array<MarketplaceType>): LiveData<Array<Order>>
 
     @Query("SELECT * FROM `Order` WHERE id = :id AND marketplace IN (:marketplaces)")
     fun fetch(id: String, marketplaces: Array<MarketplaceType>): LiveData<Array<Order>>

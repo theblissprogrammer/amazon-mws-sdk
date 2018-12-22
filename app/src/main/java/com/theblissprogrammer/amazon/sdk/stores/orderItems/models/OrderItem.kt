@@ -1,10 +1,11 @@
-package com.theblissprogrammer.amazon.sdk.stores.orders.models
+package com.theblissprogrammer.amazon.sdk.stores.orderItems.models
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.ForeignKey.CASCADE
 import androidx.room.PrimaryKey
+import com.theblissprogrammer.amazon.sdk.stores.orders.models.Order
 
 
 /**
@@ -40,5 +41,5 @@ data class PriceComponent(
 
 data class ListOrderItems(
     val orderItems: List<OrderItem>,
-    val orderId: String?,
+    val orderId: String,
     val nextToken: String?)

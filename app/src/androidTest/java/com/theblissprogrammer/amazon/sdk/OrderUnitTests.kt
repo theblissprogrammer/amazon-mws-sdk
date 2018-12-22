@@ -100,7 +100,7 @@ class OrderUnitTests: HasDependencies {
                 Assert.assertNull("Orders should return a null error.", it.error)
 
                 val orders = getValue(it.value)
-                Assert.assertNotNull("Orders should return valid order object.", orders)
+                Assert.assertEquals("Orders should return valid order object.", 11, orders.size)
             }
         }
     }

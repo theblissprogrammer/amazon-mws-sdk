@@ -4,6 +4,8 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.theblissprogrammer.amazon.sdk.extensions.Converters
+import com.theblissprogrammer.amazon.sdk.stores.orderItems.OrderItemDAO
+import com.theblissprogrammer.amazon.sdk.stores.orderItems.models.OrderItem
 import com.theblissprogrammer.amazon.sdk.stores.orders.OrderDAO
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.Order
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderAddress
@@ -14,9 +16,10 @@ import com.theblissprogrammer.amazon.sdk.stores.sellers.models.Seller
  * Created by ahmed.saad on 2018-12-03.
  * Copyright © 2018. All rights reserved.
  */
-@Database(entities = [Seller::class, Order::class, OrderAddress::class], version = 4)
+@Database(entities = [Seller::class, Order::class, OrderAddress::class, OrderItem::class], version = 5)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun sellerDao(): SellerDAO
     abstract fun orderDao(): OrderDAO
+    abstract fun orderItemDao(): OrderItemDAO
 }

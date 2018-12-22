@@ -16,7 +16,7 @@ interface OrdersCacheStore {
     fun fetch(request: OrderModels.Request): DeferredLiveResult<Array<Order>>
     fun fetchOldestOrder(): DeferredLiveResult<Order>
     fun createOrUpdate(request: ListOrder): DeferredLiveResult<Order>
-    fun createOrUpdate(vararg orders: ListOrder): DeferredResult<Void>
+    fun createOrUpdate(vararg listOrder: ListOrder): DeferredResult<Void>
 }
 
 interface OrdersWorkerType {

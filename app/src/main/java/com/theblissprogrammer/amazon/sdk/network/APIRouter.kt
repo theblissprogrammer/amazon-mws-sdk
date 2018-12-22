@@ -15,6 +15,7 @@ import com.theblissprogrammer.amazon.sdk.extensions.startOfDay
 import com.theblissprogrammer.amazon.sdk.preferences.ConstantsType
 import com.theblissprogrammer.amazon.sdk.preferences.PreferencesWorkerType
 import com.theblissprogrammer.amazon.sdk.security.SecurityWorkerType
+import com.theblissprogrammer.amazon.sdk.stores.orderItems.models.OrderItemModels
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -149,6 +150,28 @@ sealed class APIRouter: APIRoutable() {
         override val queryParameterList = {
             val map = mutableMapOf<String, String>()
             map["Action"] = "ListOrdersByNextToken"
+            map["Version"] = "2013-09-01"
+            map["NextToken"] = nextToken
+            map
+        }()
+    }
+
+    class ReadOrderItems(val id: String) : APIRouter() {
+        override val path = "/Orders/2013-09-01"
+        override val queryParameterList = {
+            val map = mutableMapOf<String, String>()
+            map["Action"] = "ListOrderItems"
+            map["Version"] = "2013-09-01"
+            map["AmazonOrderId"] = id
+            map
+        }()
+    }
+
+    class ReadNextOrderItems(val nextToken: String) : APIRouter() {
+        override val path = "/Orders/2013-09-01"
+        override val queryParameterList = {
+            val map = mutableMapOf<String, String>()
+            map["Action"] = "ListOrderItemsByNextToken"
             map["Version"] = "2013-09-01"
             map["NextToken"] = nextToken
             map

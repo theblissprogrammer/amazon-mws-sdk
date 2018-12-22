@@ -20,11 +20,14 @@ class DataRoomStore(val context: Context, override val preferencesWorker: Prefer
     }
 
     override fun configure() {
-        if (instance() == null)
+        if (instance() == null) {
             databases[this.name] = Room.databaseBuilder(
                 context.applicationContext,
                 AppDatabase::class.java, this.name
-            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build()
+            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                .fallbackToDestructiveMigration()
+                .build()
+        }
     }
 
     override fun delete(sellerID: String) {

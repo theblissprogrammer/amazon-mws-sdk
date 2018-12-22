@@ -28,6 +28,7 @@ import com.theblissprogrammer.amazon.sdk.security.SecurityPreferenceStore
 import com.theblissprogrammer.amazon.sdk.security.SecurityStore
 import com.theblissprogrammer.amazon.sdk.security.SecurityWorker
 import com.theblissprogrammer.amazon.sdk.security.SecurityWorkerType
+import com.theblissprogrammer.amazon.sdk.stores.orderItems.*
 
 open class SDKDependency: SDKDependable {
     override lateinit var application: Application
@@ -100,113 +101,133 @@ open class SDKDependency: SDKDependable {
 
     override val resolveSyncWorker: SyncWorkerType  by lazy {
          SyncWorker(
-                store = resolveSyncStore,
-                dataWorker = resolveDataWorker
+            store = resolveSyncStore,
+            dataWorker = resolveDataWorker
         )
     }
 
     override val resolveSellersWorker: SellersWorkerType  by lazy {
          SellersWorker(
-                store = resolveSellersStore,
-                cacheStore = resolveSellersCacheStore,
-                preferencesWorker = resolvePreferencesWorker
+            store = resolveSellersStore,
+            cacheStore = resolveSellersCacheStore,
+            preferencesWorker = resolvePreferencesWorker
         )
     }
 
     override val resolveOrdersWorker: OrdersWorkerType  by lazy {
          OrdersWorker(
-                store = resolveOrdersStore,
-                cacheStore = resolveOrdersCacheStore,
-                preferencesWorker = resolvePreferencesWorker
+            store = resolveOrdersStore,
+            cacheStore = resolveOrdersCacheStore,
+            preferencesWorker = resolvePreferencesWorker
         )
     }
 
+    override val resolveOrderItemsWorker: OrderItemsWorkerType by lazy {
+        OrderItemsWorker(
+            store = resolveOrderItemsStore,
+            cacheStore = resolveOrderItemsCacheStore
+        )
+    }
+
+
     override val resolveInventoriesWorker: InventoriesWorkerType  by lazy {
          InventoriesWorker(
-                store = resolveInventoriesStore,
-                cacheStore = resolveInventoriesCacheStore
+            store = resolveInventoriesStore,
+            cacheStore = resolveInventoriesCacheStore
         )
     }
 
     override val resolveReportsWorker: ReportsWorkerType  by lazy {
          ReportsWorker(
-                store = resolveReportsStore
+             store = resolveReportsStore
         )
     }
 
     override val resolveSeedWorker: SeedWorkerType  by lazy {
          SeedWorker(
-                store = resolveSeedStore
+             store = resolveSeedStore
         )
     }
 
     override val resolveAuthenticationWorker: AuthenticationWorkerType  by lazy {
          AuthenticationWorker(
-                service = resolveAuthenticationService,
-                preferencesWorker = resolvePreferencesWorker,
-                syncWorker = resolveSyncWorker,
-                securityWorker = resolveSecurityWorker,
-                context = resolveContext,
-                sellersCacheStore = resolveSellersCacheStore
+            service = resolveAuthenticationService,
+            preferencesWorker = resolvePreferencesWorker,
+            syncWorker = resolveSyncWorker,
+            securityWorker = resolveSecurityWorker,
+            context = resolveContext,
+            sellersCacheStore = resolveSellersCacheStore
         )
     }
 
     override val resolveSyncStore: SyncStore  by lazy {
          SyncRoomStore(
-                preferencesWorker = resolvePreferencesWorker,
-                dataWorker = resolveDataWorker,
-                reportsWorker = resolveReportsWorker,
-                seedWorker = resolveSeedWorker
+             preferencesWorker = resolvePreferencesWorker,
+             dataWorker = resolveDataWorker,
+             reportsWorker = resolveReportsWorker,
+             seedWorker = resolveSeedWorker
         )
     }
 
     override val resolveSellersStore: SellersStore  by lazy {
          SellersNetworkStore(
-                httpService = resolveHTTPService
+             httpService = resolveHTTPService
         )
     }
 
     override val resolveOrdersStore: OrdersStore  by lazy {
          OrdersNetworkStore(
-                apiSession = resolveAPISessionService
+             apiSession = resolveAPISessionService
+        )
+    }
+
+    override val resolveOrderItemsStore: OrderItemsStore by lazy {
+        OrderItemsNetworkStore(
+            apiSession = resolveAPISessionService
         )
     }
 
     override val resolveInventoriesStore: InventoriesStore  by lazy {
          InventoriesNetworkStore(
-                apiSession = resolveAPISessionService
+             apiSession = resolveAPISessionService
         )
     }
 
     override val resolveReportsStore: ReportsStore  by lazy {
          ReportsNetworkStore(
-                apiSession = resolveAPISessionService
+            apiSession = resolveAPISessionService
         )
     }
 
     override val resolveSeedStore: SeedStore  by lazy {
          SeedNetworkStore(
-                reportsStore = resolveReportsStore as ReportsNetworkStore,
-                preferencesWorker = resolvePreferencesWorker
+            reportsStore = resolveReportsStore as ReportsNetworkStore,
+            preferencesWorker = resolvePreferencesWorker
         )
     }
 
     override val resolveAuthenticationService: AuthenticationService  by lazy {
          AuthenticationNetworkService(
-                apiSession = resolveAPISessionService,
-                preferencesWorker = resolvePreferencesWorker
+            apiSession = resolveAPISessionService,
+            preferencesWorker = resolvePreferencesWorker
         )
     }
 
     override val resolveSellersCacheStore: SellersCacheStore  by lazy {
         SellersRoomStore(
-             sellerDao = (resolveDataStore as? DataRoomStore)?.instance()?.sellerDao()
+            sellerDao = (resolveDataStore as? DataRoomStore)?.instance()?.sellerDao()
         )
     }
 
     override val resolveOrdersCacheStore: OrdersCacheStore  by lazy {
         OrdersRoomStore(
             orderDao = (resolveDataStore as? DataRoomStore)?.instance()?.orderDao()
+        )
+    }
+
+    override val resolveOrderItemsCacheStore: OrderItemsCacheStore by lazy {
+        OrderItemsRoomStore(
+            orderItemDao = (resolveDataStore as? DataRoomStore)?.instance()?.orderItemDao()
         )
     }
 
@@ -220,10 +241,10 @@ open class SDKDependency: SDKDependable {
 
     override val resolveSignedHelper: SignedHelperType  by lazy {
          SignedRequestsHelper(
-                secretKey = when (region) {
-                    RegionType.EU -> resolveConstants.euAwsSecretKey
-                    else -> resolveConstants.awsSecretKey
-                }
+            secretKey = when (region) {
+                RegionType.EU -> resolveConstants.euAwsSecretKey
+                else -> resolveConstants.awsSecretKey
+            }
         )
     }
 

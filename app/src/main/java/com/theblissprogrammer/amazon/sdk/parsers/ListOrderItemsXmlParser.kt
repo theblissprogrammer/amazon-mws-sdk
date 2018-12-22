@@ -2,6 +2,8 @@ package com.theblissprogrammer.amazon.sdk.parsers
 
 import android.util.Xml
 import com.theblissprogrammer.amazon.sdk.extensions.*
+import com.theblissprogrammer.amazon.sdk.stores.orderItems.models.ListOrderItems
+import com.theblissprogrammer.amazon.sdk.stores.orderItems.models.OrderItem
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.*
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
@@ -41,7 +43,11 @@ class ListOrderItemsXmlParser {
                 }
             }
 
-            return ListOrderItems(orderItems = orderItems.filterNotNull(), orderId = orderId, nextToken = nextToken)
+            return ListOrderItems(
+                orderItems = orderItems.filterNotNull(),
+                orderId = orderId,
+                nextToken = nextToken
+            )
         }
     }
 
