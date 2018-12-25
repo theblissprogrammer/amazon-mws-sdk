@@ -21,6 +21,7 @@ import com.theblissprogrammer.amazon.sdk.stores.sellers.models.SellerModels
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.junit.*
 import org.junit.runner.RunWith
 import java.io.IOException
@@ -58,7 +59,8 @@ class SellerUnitTests: HasDependencies {
         val context: Context = InstrumentationRegistry.getTargetContext()
         db = Room.inMemoryDatabaseBuilder(
             context, AppDatabase::class.java
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build()
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+            .fallbackToDestructiveMigration().build()
         sellerDao = db.sellerDao()
     }
 
@@ -77,10 +79,10 @@ class SellerUnitTests: HasDependencies {
 
         runBlocking {
 
-            val sellerLD = async(Dispatchers.IO) {
+            val sellerLD = withContext(Dispatchers.IO) {
                 sellerDao.insert(seller)
-                sellerDao.fetchAllSellers()
-            }.await()
+        sellerDao.fetchAllSellers()
+            }
 
             val sellers = getValue(sellerLD)
             Assert.assertEquals("The number of sellers must equal to number added.", 1, sellers.size)
@@ -99,10 +101,10 @@ class SellerUnitTests: HasDependencies {
 
         runBlocking {
 
-            val sellerDB = getValue(async(Dispatchers.IO) {
+            val sellerDB = getValue(withContext(Dispatchers.IO) {
                 sellerDao.insert(seller)
                 sellerDao.fetch(id = id, marketplace = marketplace)
-            }.await())
+            })
 
             Assert.assertEquals("The seller ids should match after saving to db", id, sellerDB?.id)
             Assert.assertEquals("The seller marketplaces should match after saving to db", marketplace, sellerDB?.marketplace)

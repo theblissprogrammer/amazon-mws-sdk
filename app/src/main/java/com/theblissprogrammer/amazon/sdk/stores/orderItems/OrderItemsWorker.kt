@@ -18,7 +18,7 @@ class OrderItemsWorker(val store: OrderItemsStore,
         val cache = cacheStore.fetch(request = request).await()
 
         // Immediately return local response
-        // completion(cache)
+        completion(cache)
 
         request.ids.forEach {
             val listOrderItems = store.fetch(id = it).await()
@@ -28,7 +28,7 @@ class OrderItemsWorker(val store: OrderItemsStore,
             }
 
             val orderItems = listOrderItems.value.orderItems
-            orderItems.forEach { orderItem -> orderItem.orderId = listOrderItems.value.orderId }
+            orderItems.forEach { orderItem -> orderItem.orderId = listOrderItems.value.orderId ?: "" }
 
             val savedElement = this.cacheStore.createOrUpdate(*orderItems.toTypedArray()).await()
 
@@ -51,7 +51,7 @@ class OrderItemsWorker(val store: OrderItemsStore,
                 }
 
                 val orderItemsNext = listOrderItemsNext.value.orderItems
-                orderItemsNext.forEach { orderItem -> orderItem.orderId = listOrderItemsNext.value.orderId }
+                orderItemsNext.forEach { orderItem -> orderItem.orderId = listOrderItemsNext.value.orderId ?: "" }
 
                 val savedElementNext = this.cacheStore.createOrUpdate(*orderItemsNext.toTypedArray()).await()
 
