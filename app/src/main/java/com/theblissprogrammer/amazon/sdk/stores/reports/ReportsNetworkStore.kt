@@ -5,7 +5,6 @@ import com.theblissprogrammer.amazon.sdk.stores.orders.models.Order
 import com.theblissprogrammer.amazon.sdk.extensions.fetchReport
 import com.theblissprogrammer.amazon.sdk.stores.fbaFees.models.FBAFeeType
 import com.theblissprogrammer.amazon.sdk.stores.inventories.models.InventoryType
-import com.theblissprogrammer.amazon.sdk.stores.products.models.ProductType
 import com.theblissprogrammer.amazon.sdk.stores.reports.models.ReportModels
 import com.theblissprogrammer.amazon.sdk.parsers.FBAFeesReportFileParser
 import com.theblissprogrammer.amazon.sdk.parsers.InventoriesReportFileParser
@@ -14,6 +13,7 @@ import com.theblissprogrammer.amazon.sdk.parsers.ProductsReportFileParser
 import com.theblissprogrammer.amazon.sdk.common.Result
 import com.theblissprogrammer.amazon.sdk.common.CompletionResponse
 import com.theblissprogrammer.amazon.sdk.network.APISessionType
+import com.theblissprogrammer.amazon.sdk.stores.products.models.Product
 import kotlinx.coroutines.Deferred
 
 /**
@@ -40,9 +40,9 @@ class ReportsNetworkStore(val apiSession: APISessionType): ReportsStore {
         }
     }
 
-    override fun fetchProductReport(request: ReportModels.Request, completion: CompletionResponse<List<ProductType>>):
-            Deferred<Result<List<ProductType>>> {
-        return coroutineNetwork<List<ProductType>> {
+    override fun fetchProductReport(request: ReportModels.Request, completion: CompletionResponse<List<Product>>):
+            Deferred<Result<List<Product>>> {
+        return coroutineNetwork<List<Product>> {
             fetchReport(request, completion) {
                 ProductsReportFileParser().parse(it)
             }

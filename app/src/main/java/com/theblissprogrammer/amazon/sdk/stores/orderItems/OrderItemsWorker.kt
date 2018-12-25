@@ -18,7 +18,7 @@ class OrderItemsWorker(val store: OrderItemsStore,
         val cache = cacheStore.fetch(request = request).await()
 
         // Immediately return local response
-        completion(cache)
+        //completion(cache)
 
         request.ids.forEach {
             val listOrderItems = store.fetch(id = it).await()
