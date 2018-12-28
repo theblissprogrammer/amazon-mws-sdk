@@ -1,7 +1,8 @@
 package com.theblissprogrammer.amazon.sdk.parsers
 
 import com.theblissprogrammer.amazon.sdk.enums.InventoryCondition
-import com.theblissprogrammer.amazon.sdk.stores.inventories.models.Inventory
+import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Inventory
+import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Quantity
 
 
 /**
@@ -25,7 +26,7 @@ class InventoriesReportFileParser {
                     sku = it[skuIndex],
                     asin = it[asinIndex],
                     condition = InventoryCondition.valueOf(it[coniditionIndex]),
-                    quantity = it[quantityIndex].toInt()
+                    quantity = Quantity(total = it[quantityIndex].toInt())
             )
         }
     }

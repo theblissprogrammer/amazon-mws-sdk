@@ -33,7 +33,7 @@ interface OrderItemDAO {
     fun fetch(id: String): LiveData<OrderItem>
 
     @Query("SELECT * FROM OrderItem WHERE orderId = :id")
-    fun fetchByOrderId(id: String): LiveData<List<OrderItem>>
+    fun fetchByOrderId(id: String): LiveData<Array<OrderItem>>
 
     @Query("SELECT * FROM OrderItem WHERE orderId IN (:ids)")
     fun fetchByOrderId(ids: Array<String>): LiveData<Array<OrderItem>>

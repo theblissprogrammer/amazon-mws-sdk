@@ -10,7 +10,7 @@ import com.theblissprogrammer.amazon.sdk.account.AuthenticationNetworkService
 import com.theblissprogrammer.amazon.sdk.data.*
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.enums.RegionType
-import com.theblissprogrammer.amazon.sdk.stores.inventories.*
+import com.theblissprogrammer.amazon.sdk.stores.inventory.*
 import com.theblissprogrammer.amazon.sdk.stores.orders.*
 import com.theblissprogrammer.amazon.sdk.stores.reports.ReportsNetworkStore
 import com.theblissprogrammer.amazon.sdk.stores.reports.ReportsStore
@@ -130,10 +130,10 @@ open class SDKDependency: SDKDependable {
     }
 
 
-    override val resolveInventoriesWorker: InventoriesWorkerType  by lazy {
-         InventoriesWorker(
-            store = resolveInventoriesStore,
-            cacheStore = resolveInventoriesCacheStore
+    override val resolveInventoryWorker: InventoryWorkerType  by lazy {
+         InventoryWorker(
+            store = resolveInventoryStore,
+            cacheStore = resolveInventoryCacheStore
         )
     }
 
@@ -187,8 +187,8 @@ open class SDKDependency: SDKDependable {
         )
     }
 
-    override val resolveInventoriesStore: InventoriesStore  by lazy {
-         InventoriesNetworkStore(
+    override val resolveInventoryStore: InventoryStore  by lazy {
+         InventoryNetworkStore(
              apiSession = resolveAPISessionService
         )
     }
@@ -231,8 +231,10 @@ open class SDKDependency: SDKDependable {
         )
     }
 
-    override val resolveInventoriesCacheStore: InventoriesCacheStore?  by lazy {
-         null
+    override val resolveInventoryCacheStore: InventoryCacheStore  by lazy {
+         InventoryRoomStore(
+             inventoryDao = (resolveDataStore as? DataRoomStore)?.instance()?.inventoryDao()
+         )
     }
 
     private val region: RegionType by lazy {

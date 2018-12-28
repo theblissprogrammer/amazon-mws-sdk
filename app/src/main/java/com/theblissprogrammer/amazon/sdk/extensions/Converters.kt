@@ -2,8 +2,10 @@ package com.theblissprogrammer.amazon.sdk.extensions
 
 import androidx.room.TypeConverter
 import com.theblissprogrammer.amazon.sdk.enums.FulfillmentChannel
+import com.theblissprogrammer.amazon.sdk.enums.InventoryCondition
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.enums.OrderStatus
+import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Quantity
 import java.lang.IllegalArgumentException
 import java.util.*
 
@@ -62,5 +64,29 @@ class Converters {
     @TypeConverter
     fun fulfillmentChannelToString(fulfillmentChannel: FulfillmentChannel?): String? {
         return fulfillmentChannel?.name
+    }
+
+    @TypeConverter
+    fun inventoryConditionfromString(value: String?): InventoryCondition? {
+        return try {
+            InventoryCondition.valueOf(value ?: "")
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+    }
+
+    @TypeConverter
+    fun inventoryConditionToString(inventoryCondition: InventoryCondition?): String? {
+        return inventoryCondition?.name
+    }
+
+    @TypeConverter
+    fun quantityfromString(value: String?): Quantity? {
+        return if (value != null) Quantity(value) else null
+    }
+
+    @TypeConverter
+    fun quantityToString(quantity: Quantity?): String? {
+        return quantity?.toString()
     }
 }

@@ -17,15 +17,17 @@ import com.theblissprogrammer.amazon.sdk.stores.orders.models.Order
             childColumns = ["orderId"],
             onDelete = CASCADE
         )
+    ],
+    indices = [
+        Index(value = ["orderId"]),
+        Index(value = ["sku"])
     ]
 )
 data class OrderItem(
     @PrimaryKey
     var orderItemId: String = "",
-    @ColumnInfo(index = true)
     var orderId: String = "",
     var asin: String? = null,
-    @ColumnInfo(index = true)
     var sku: String? = null,
     var productName: String? = null,
     var quantity: Int? = null,

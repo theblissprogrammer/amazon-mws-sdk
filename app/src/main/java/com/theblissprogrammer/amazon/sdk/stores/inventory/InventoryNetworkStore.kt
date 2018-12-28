@@ -1,24 +1,26 @@
-package com.theblissprogrammer.amazon.sdk.stores.orderItems
+package com.theblissprogrammer.amazon.sdk.stores.inventory
 
-import com.theblissprogrammer.amazon.sdk.common.*
-import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetwork
-import com.theblissprogrammer.amazon.sdk.network.APIRouter
+import com.theblissprogrammer.amazon.sdk.common.DeferredResult
+import com.theblissprogrammer.amazon.sdk.common.Result
+import com.theblissprogrammer.amazon.sdk.common.initDataError
 import com.theblissprogrammer.amazon.sdk.errors.DataError
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetwork
 import com.theblissprogrammer.amazon.sdk.logging.LogHelper
+import com.theblissprogrammer.amazon.sdk.network.APIRouter
+import com.theblissprogrammer.amazon.sdk.stores.inventory.models.InventoryModels
 import com.theblissprogrammer.amazon.sdk.network.APISessionType
-import com.theblissprogrammer.amazon.sdk.parsers.ListOrderItemsXmlParser
-import com.theblissprogrammer.amazon.sdk.stores.orderItems.models.ListOrderItems
-
+import com.theblissprogrammer.amazon.sdk.parsers.ListInventorySupplyXmlParser
+import com.theblissprogrammer.amazon.sdk.stores.inventory.models.ListInventorySupply
 
 /**
- * Created by ahmedsaad on 2018-08-05.
+ * Created by ahmedsaad on 2018-08-07.
  * Copyright (c) 2018. All rights reserved.
  **/
-class OrderItemsNetworkStore(val apiSession: APISessionType): OrderItemsStore {
+class InventoryNetworkStore(val apiSession: APISessionType): InventoryStore {
 
-    override fun fetch(id: String): DeferredResult<ListOrderItems> {
-        return coroutineNetwork <ListOrderItems> {
-            val response = apiSession.request(router = APIRouter.ReadOrderItems(id))
+    override fun fetch(request: InventoryModels.Request): DeferredResult<ListInventorySupply> {
+        return coroutineNetwork <ListInventorySupply> {
+            val response = apiSession.request(router = APIRouter.ReadInventory(request))
 
             // Handle errors
             val value = response.value
@@ -27,7 +29,7 @@ class OrderItemsNetworkStore(val apiSession: APISessionType): OrderItemsStore {
 
                 return@coroutineNetwork if (error != null) {
                     val exception = initDataError(response.error)
-                    LogHelper.e(messages = *arrayOf("An error occurred while fetching order items: " +
+                    LogHelper.e(messages = *arrayOf("An error occurred while fetching inventory: " +
                             "${error.description}."))
                     Result.failure(exception)
                 } else {
@@ -37,19 +39,19 @@ class OrderItemsNetworkStore(val apiSession: APISessionType): OrderItemsStore {
 
             try {
                 // Parse response data
-                val listOrderItems = ListOrderItemsXmlParser().parse(value.data)
-                Result.success(listOrderItems)
+                val listInventorySupply = ListInventorySupplyXmlParser().parse(value.data)
+                Result.success(listInventorySupply)
             } catch(e: Exception) {
-                LogHelper.e(messages = *arrayOf("An error occurred while parsing order items: " +
+                LogHelper.e(messages = *arrayOf("An error occurred while parsing inventory: " +
                         "${e.localizedMessage ?: ""}."))
                 Result.failure(DataError.ParseFailure(e))
             }
         }
     }
 
-    override fun fetchNext(nextToken: String): DeferredResult<ListOrderItems> {
-        return coroutineNetwork <ListOrderItems> {
-            val response = apiSession.request(router = APIRouter.ReadNextOrderItems(nextToken))
+    override fun fetchNext(nextToken: String): DeferredResult<ListInventorySupply> {
+        return coroutineNetwork <ListInventorySupply> {
+            val response = apiSession.request(router = APIRouter.ReadNextInventory(nextToken))
 
             // Handle errors
             val value = response.value
@@ -60,7 +62,7 @@ class OrderItemsNetworkStore(val apiSession: APISessionType): OrderItemsStore {
                     val exception = initDataError(response.error)
                     LogHelper.e(
                         messages = *arrayOf(
-                            "An error occurred while fetching order items by next token: " +
+                            "An error occurred while fetching inventory by next token: " +
                                     "${error.description}."
                         )
                     )
@@ -70,14 +72,14 @@ class OrderItemsNetworkStore(val apiSession: APISessionType): OrderItemsStore {
                 }
             }
 
-             try {
+            try {
                 // Parse response data
-                val listOrderItems = ListOrderItemsXmlParser().parse(value.data)
-                    Result.success(listOrderItems)
+                val listInventorySupply = ListInventorySupplyXmlParser().parse(value.data)
+                Result.success(listInventorySupply)
             } catch (e: Exception) {
                 LogHelper.e(
                     messages = *arrayOf(
-                        "An error occurred while parsing order items by next token: " +
+                        "An error occurred while parsing inventory by next token: " +
                                 "${e.localizedMessage ?: ""}."
                     )
                 )

@@ -1,11 +1,11 @@
 package com.theblissprogrammer.amazon.sdk.stores.reports
 
 import com.theblissprogrammer.amazon.sdk.stores.fbaFees.models.FBAFeeType
-import com.theblissprogrammer.amazon.sdk.stores.inventories.models.InventoryType
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.Order
 import com.theblissprogrammer.amazon.sdk.stores.reports.models.ReportModels
 import com.theblissprogrammer.amazon.sdk.common.Result
 import com.theblissprogrammer.amazon.sdk.common.CompletionResponse
+import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Inventory
 import com.theblissprogrammer.amazon.sdk.stores.products.models.Product
 import kotlinx.coroutines.Deferred
 
@@ -19,8 +19,8 @@ class ReportsWorker(val store: ReportsStore): ReportsWorkerType {
         return store.fetchOrderReport(request, completion = completion)
     }
 
-    override fun fetchInventoryReport(request: ReportModels.Request, completion: CompletionResponse<List<InventoryType>>):
-            Deferred<Result<List<InventoryType>>> {
+    override fun fetchInventoryReport(request: ReportModels.Request, completion: CompletionResponse<List<Inventory>>):
+            Deferred<Result<List<Inventory>>> {
         return store.fetchInventoryReport(request, completion = completion)
     }
 

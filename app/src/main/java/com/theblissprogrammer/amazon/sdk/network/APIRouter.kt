@@ -2,20 +2,16 @@ package com.theblissprogrammer.amazon.sdk.network
 
 import android.net.Uri
 import com.theblissprogrammer.amazon.sdk.account.models.LoginModels
-import com.theblissprogrammer.amazon.sdk.data.SyncRoomStore
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.enums.RegionType
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderModels
 import com.theblissprogrammer.amazon.sdk.stores.reports.models.ReportModels
-import com.theblissprogrammer.amazon.sdk.stores.seed.models.SeedPayload
 import com.theblissprogrammer.amazon.sdk.enums.DefaultsKeys
 import com.theblissprogrammer.amazon.sdk.enums.SecurityProperty
-import com.theblissprogrammer.amazon.sdk.extensions.add
-import com.theblissprogrammer.amazon.sdk.extensions.startOfDay
 import com.theblissprogrammer.amazon.sdk.preferences.ConstantsType
 import com.theblissprogrammer.amazon.sdk.preferences.PreferencesWorkerType
 import com.theblissprogrammer.amazon.sdk.security.SecurityWorkerType
-import com.theblissprogrammer.amazon.sdk.stores.orderItems.models.OrderItemModels
+import com.theblissprogrammer.amazon.sdk.stores.inventory.models.InventoryModels
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -173,6 +169,43 @@ sealed class APIRouter: APIRoutable() {
             val map = mutableMapOf<String, String>()
             map["Action"] = "ListOrderItemsByNextToken"
             map["Version"] = "2013-09-01"
+            map["NextToken"] = nextToken
+            map
+        }()
+    }
+
+    class ReadInventory(val request: InventoryModels.Request) : APIRouter() {
+        override val path = "/FulfillmentInventory/2010-10-01"
+        override val queryParameterList = {
+            val map = mutableMapOf<String, String>()
+            map["Action"] = "ListInventorySupply"
+            map["Version"] = "2010-10-01"
+            map["ResponseGroup"] = "Detailed"
+
+            // MarketplaceId is only available in NA
+            if (request.marketplace.region == RegionType.NA)
+                map["MarketplaceId"] = request.marketplace.id
+
+            if (request.skus.isNotEmpty()) {
+                request.skus.forEachIndexed { index, sku ->
+                    map["SellerSkus.member.${index + 1}"] = sku
+                }
+            } else {
+                val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.US)
+                formatter.timeZone = TimeZone.getTimeZone("GMT")
+
+                map["QueryStartDateTime"] = formatter.format(request.startDate)
+            }
+            map
+        }()
+    }
+
+    class ReadNextInventory(val nextToken: String) : APIRouter() {
+        override val path = "/FulfillmentInventory/2010-10-01"
+        override val queryParameterList = {
+            val map = mutableMapOf<String, String>()
+            map["Action"] = "ListInventorySupplyByNextToken"
+            map["Version"] = "2010-10-01"
             map["NextToken"] = nextToken
             map
         }()

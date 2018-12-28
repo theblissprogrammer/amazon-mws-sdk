@@ -3,7 +3,6 @@ package com.theblissprogrammer.amazon.sdk.data
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.enums.ReportType
 import com.theblissprogrammer.amazon.sdk.extensions.coroutineCompletionOnUi
-import com.theblissprogrammer.amazon.sdk.stores.inventories.models.InventoryType
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.Order
 import com.theblissprogrammer.amazon.sdk.stores.reports.ReportsWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.reports.models.ReportModels
@@ -19,6 +18,7 @@ import com.theblissprogrammer.amazon.sdk.extensions.add
 import com.theblissprogrammer.amazon.sdk.extensions.startOfDay
 import com.theblissprogrammer.amazon.sdk.logging.LogHelper
 import com.theblissprogrammer.amazon.sdk.preferences.PreferencesWorkerType
+import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Inventory
 import com.theblissprogrammer.amazon.sdk.stores.products.models.Product
 import java.util.*
 
@@ -197,10 +197,10 @@ class SyncRoomStore(val preferencesWorker: PreferencesWorkerType,
 
     }
 
-    private fun seedInventories(completion: CompletionResponse<List<InventoryType>>? = null) {
+    private fun seedInventories(completion: CompletionResponse<List<Inventory>>? = null) {
         val marketplaces = getSellerMarketplaces(preferencesWorker)
         val lastPulledAt = getSyncActivityLastPulledAt(
-                typeName = InventoryType::class.java.simpleName,
+                typeName = Inventory::class.java.simpleName,
                 suffix = marketplaces?.joinToString() ?: "US")
 
         if (lastPulledAt != null && lastPulledAt.add(Calendar.MINUTE, 30).after(Date())) {
@@ -218,7 +218,7 @@ class SyncRoomStore(val preferencesWorker: PreferencesWorkerType,
         coroutineCompletionOnUi(completion) {
             val timeStamp = cal.time
 
-            fun saveInventories (response: Result<List<InventoryType>>) {
+            fun saveInventories (response: Result<List<Inventory>>) {
                 val value = response.value
                 if (!response.isSuccess || value == null) {
                     LogHelper.e(messages = *arrayOf("Failed to get report inventories: ${response.error}"))
@@ -234,7 +234,7 @@ class SyncRoomStore(val preferencesWorker: PreferencesWorkerType,
 
                 coroutineCompletionOnUi(completion) {
                     // Write source data to local storage
-                    /*realmCoroutine<List<InventoryType>> { realm ->
+                    /*realmCoroutine<List<Inventory>> { realm ->
                         val inventories = value.toRealmList()
 
                         realm.executeTransaction { _ ->
@@ -267,7 +267,7 @@ class SyncRoomStore(val preferencesWorker: PreferencesWorkerType,
             }
 
             // Write source data to local storage
-            /*val cached = realmCoroutine<List<InventoryType>> { realm ->
+            /*val cached = realmCoroutine<List<Inventory>> { realm ->
                 val inventories = value.toRealmList()
 
                 realm.executeTransaction { _ ->
@@ -275,7 +275,7 @@ class SyncRoomStore(val preferencesWorker: PreferencesWorkerType,
                 }
 
                 // Persist sync date for next use if applicable
-                SyncRoomStore.updateSyncActivity(typeName = InventoryType::class.java.simpleName,
+                SyncRoomStore.updateSyncActivity(typeName = Inventory::class.java.simpleName,
                         lastPulledAt = timeStamp,
                         suffix = marketplaces?.joinToString() ?: "US")
                 LogHelper.d(messages = *arrayOf("Data seed for inventory report complete for marketplaces " +

@@ -125,8 +125,8 @@ class OrderItemUnitTests: HasDependencies {
     fun fetch_order_items() {
         runBlocking {
             val request = OrderModels.Request(
-                startDate = Date().add(Calendar.DATE, -1).startOfDay(),
-                endDate = Date().add(Calendar.DATE, -1).endOfDay(),
+                //startDate = Date().add(Calendar.DATE, -1).startOfDay(),
+                //endDate = Date().add(Calendar.DATE, -1).endOfDay(),
                 marketplaces = listOf(MarketplaceType.US)
             )
             ordersWorker.fetch(request) {

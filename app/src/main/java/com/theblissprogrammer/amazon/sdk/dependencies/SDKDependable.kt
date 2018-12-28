@@ -17,9 +17,9 @@ import com.theblissprogrammer.amazon.sdk.preferences.PreferencesStore
 import com.theblissprogrammer.amazon.sdk.preferences.PreferencesWorkerType
 import com.theblissprogrammer.amazon.sdk.security.SecurityStore
 import com.theblissprogrammer.amazon.sdk.security.SecurityWorkerType
-import com.theblissprogrammer.amazon.sdk.stores.inventories.InventoriesCacheStore
-import com.theblissprogrammer.amazon.sdk.stores.inventories.InventoriesStore
-import com.theblissprogrammer.amazon.sdk.stores.inventories.InventoriesWorkerType
+import com.theblissprogrammer.amazon.sdk.stores.inventory.InventoryCacheStore
+import com.theblissprogrammer.amazon.sdk.stores.inventory.InventoryStore
+import com.theblissprogrammer.amazon.sdk.stores.inventory.InventoryWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.orderItems.OrderItemsCacheStore
 import com.theblissprogrammer.amazon.sdk.stores.orderItems.OrderItemsStore
 import com.theblissprogrammer.amazon.sdk.stores.orderItems.OrderItemsWorkerType
@@ -64,7 +64,7 @@ interface SDKDependable {
     val resolveSellersWorker: SellersWorkerType
     val resolveOrdersWorker: OrdersWorkerType
     val resolveOrderItemsWorker: OrderItemsWorkerType
-    val resolveInventoriesWorker: InventoriesWorkerType
+    val resolveInventoryWorker: InventoryWorkerType
     val resolveReportsWorker: ReportsWorkerType
     val resolveSeedWorker: SeedWorkerType
     val resolveAuthenticationWorker: AuthenticationWorkerType
@@ -73,7 +73,7 @@ interface SDKDependable {
     val resolveSellersStore: SellersStore
     val resolveOrdersStore: OrdersStore
     val resolveOrderItemsStore: OrderItemsStore
-    val resolveInventoriesStore: InventoriesStore
+    val resolveInventoryStore: InventoryStore
     val resolveReportsStore: ReportsStore
     val resolveSeedStore: SeedStore
 
@@ -82,5 +82,5 @@ interface SDKDependable {
     val resolveSellersCacheStore: SellersCacheStore
     val resolveOrdersCacheStore: OrdersCacheStore
     val resolveOrderItemsCacheStore: OrderItemsCacheStore
-    val resolveInventoriesCacheStore: InventoriesCacheStore?
+    val resolveInventoryCacheStore: InventoryCacheStore
 }

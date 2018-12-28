@@ -5,6 +5,22 @@ package com.theblissprogrammer.amazon.sdk.enums
  * Copyright (c) 2018. All rights reserved.
  **/
 enum class InventoryCondition{
-    SELLABLE,
-    UNSELLABLE
+    NewItem,
+    NewWithWarranty,
+    NewOEM,
+    NewOpenBox,
+    UsedLikeNew,
+    UsedVeryGood,
+    UsedGood,
+    UsedAcceptable,
+    UsedPoor,
+    UsedRefurbished,
+    CollectibleLikeNew,
+    CollectibleVeryGood,
+    CollectibleGood,
+    CollectibleAcceptable,
+    CollectiblePoor,
+    RefurbishedWithWarranty,
+    Refurbished,
+    Club
 }
