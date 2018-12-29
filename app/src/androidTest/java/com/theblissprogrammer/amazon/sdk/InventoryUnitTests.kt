@@ -17,6 +17,15 @@ import com.theblissprogrammer.amazon.sdk.enums.OrderStatus
 import com.theblissprogrammer.amazon.sdk.extensions.add
 import com.theblissprogrammer.amazon.sdk.extensions.endOfDay
 import com.theblissprogrammer.amazon.sdk.extensions.startOfDay
+import com.theblissprogrammer.amazon.sdk.stores.inventory.InventoryCacheStore
+import com.theblissprogrammer.amazon.sdk.stores.inventory.InventoryDAO
+import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Inventory
+import com.theblissprogrammer.amazon.sdk.stores.inventory.models.InventoryModels
+import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Quantity
+import com.theblissprogrammer.amazon.sdk.stores.orderItems.OrderItemDAO
+import com.theblissprogrammer.amazon.sdk.stores.orderItems.OrderItemsCacheStore
+import com.theblissprogrammer.amazon.sdk.stores.orderItems.models.OrderItem
+import com.theblissprogrammer.amazon.sdk.stores.orderItems.models.OrderItemModels
 import com.theblissprogrammer.amazon.sdk.stores.orders.OrderDAO
 import com.theblissprogrammer.amazon.sdk.stores.orders.OrdersCacheStore
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.ListOrder
@@ -37,16 +46,16 @@ import java.util.*
  * Copyright © 2018. All rights reserved.
  */
 @RunWith(AndroidJUnit4::class)
-class OrderUnitTests: HasDependencies {
-    private lateinit var orderDao: OrderDAO
+class InventoryUnitTests: HasDependencies {
+    private lateinit var inventoryDao: InventoryDAO
     private lateinit var db: AppDatabase
 
-    private val ordersWorker by lazy {
-        dependencies.resolveOrdersWorker
+    private val inventoryWorker by lazy {
+        dependencies.resolveInventoryWorker
     }
 
-    private val ordersRoomStore: OrdersCacheStore by lazy {
-        dependencies.resolveOrdersCacheStore
+    private val inventoryRoomStore: InventoryCacheStore by lazy {
+        dependencies.resolveInventoryCacheStore
     }
 
     @get:Rule
@@ -67,7 +76,7 @@ class OrderUnitTests: HasDependencies {
             context, AppDatabase::class.java
         ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
             .fallbackToDestructiveMigration().build()
-        orderDao = db.orderDao()
+        inventoryDao = db.inventoryDao()
     }
 
     @After
@@ -79,85 +88,56 @@ class OrderUnitTests: HasDependencies {
     @Test
     @Throws(Exception::class)
     fun saving_and_fetching_db() {
-        val id = "1234"
-        val marketplace = MarketplaceType.UK
-        val order = Order(id = id, status = OrderStatus.Shipped, marketplace = marketplace)
+        val sku = "1234"
+        val saveItem = Inventory(sku = sku, quantity = Quantity(total = 5, instock = 5))
 
         runBlocking {
-            val orders = withContext(Dispatchers.IO) {
-                orderDao.insert(order)
-                orderDao.fetchAllOrders()
+            val inventory = withContext(Dispatchers.IO) {
+                inventoryDao.insert(saveItem)
+                inventoryDao.fetchSync(sku)
             }
 
-            Assert.assertEquals("The number of sellers must equal to number added.", 1, orders.size)
+            Assert.assertNotNull("The number of inventory must equal to number added.", inventory)
+            Assert.assertEquals("The number of inventory sku must equal to the one inserted.", sku, inventory.sku)
+            Assert.assertEquals("The number of inventory quantity total must equal to the one inserted.", 5, inventory.quantity.total)
+            Assert.assertEquals("The number of inventory quantity instock must equal to the one inserted.", 5, inventory.quantity.instock)
         }
     }
 
     @Test
-    fun fetch_orders() {
+    fun fetch_inventory() {
         runBlocking {
-            val request = OrderModels.Request(
-                startDate = Date().add(Calendar.DATE, -5).startOfDay(),
-                endDate = Date().add(Calendar.DATE, -5).endOfDay(),
-                marketplaces = listOf(MarketplaceType.US)
-            )
-            ordersWorker.fetch(request) {
-                Assert.assertTrue(
-                    "An error occurred when there should not be: ${it.error?.localizedMessage ?: it.error}",
-                    it.isSuccess
-                )
-                Assert.assertNull("Orders should return a null error.", it.error)
-
-                val orders = getValue(it.value)
-                Assert.assertNotNull("Orders should return valid order object.", orders)
-            }
-        }
-    }
-
-    @Test
-    @Throws(Exception::class)
-    fun saving_and_fetching_from_worker() {
-        val id = "1234"
-        val marketplace = MarketplaceType.UK
-        val order = Order(id = id, status = OrderStatus.Shipped, marketplace = marketplace)
-
-        runBlocking {
-            ordersRoomStore.createOrUpdate(ListOrder(order, buyer = null)).await()
-
-            ordersWorker.fetch(request = OrderModels.Request(
-                id = id,
-                marketplaces = listOf(marketplace)
+            inventoryWorker.fetch(request = InventoryModels.Request(
+                lastSync = Date().add(Calendar.DATE, -30).startOfDay()
             )) {
                 Assert.assertTrue(
                     "An error occurred when there should not be: ${it.error?.localizedMessage ?: it.error}",
                     it.isSuccess
                 )
-                Assert.assertNull("Order should return a null error.", it.error)
+                Assert.assertNull("Inventory should return a null error.", it.error)
 
-                val order = getValue(it.value)
-                Assert.assertNotNull("Worker should return valid order object.", order)
-                Assert.assertEquals("The order ids should match after saving to db", id, order[0]?.id)
+                val inventory = getValue(it.value)
+                Assert.assertNotNull("Worker should return valid order object.", inventory)
             }
         }
     }
 
     @Test
-    fun fetch_order_by_id() {
+    fun fetch_inventory_by_sku() {
         runBlocking {
-            val id = "114-0164853-7858633"
-            val marketplace = MarketplaceType.US
-            ordersWorker.fetch(request = OrderModels.Request(
-                marketplaces = listOf(marketplace)
+            val sku = "114-8859035-8931444"
+            inventoryWorker.fetch(request = InventoryModels.Request(
+                skus = listOf(sku)
             )) {
                 Assert.assertTrue(
                     "An error occurred when there should not be: ${it.error?.localizedMessage ?: it.error}",
                     it.isSuccess
                 )
-                Assert.assertNull("Order should return a null error.", it.error)
+                Assert.assertNull("Inventory should return a null error.", it.error)
 
-                val order = getValue(it.value)
-                Assert.assertNotNull("Worker should return valid order object.", order)
-                Assert.assertEquals("The order ids should match after saving to db", id, order[0]?.id)
+                val inventory = getValue(it.value)
+                Assert.assertNotNull("Worker should return valid order object.", inventory)
+                Assert.assertEquals("The inventory sku should match after saving to db", sku, inventory[0]?.sku)
             }
         }
     }

@@ -4,6 +4,7 @@ import com.theblissprogrammer.amazon.sdk.common.DeferredLiveResult
 import com.theblissprogrammer.amazon.sdk.common.DeferredResult
 import com.theblissprogrammer.amazon.sdk.common.LiveResult
 import com.theblissprogrammer.amazon.sdk.common.Result
+import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.errors.DataError
 import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetwork
 import com.theblissprogrammer.amazon.sdk.extensions.coroutineRoom
@@ -22,7 +23,7 @@ class InventoryRoomStore(val inventoryDao: InventoryDAO?): InventoryCacheStore {
             val items = if (request.skus.isNotEmpty())
                 inventoryDao?.fetch(request.skus.toTypedArray())
             else
-                null
+                inventoryDao?.fetch(request.marketplace ?: MarketplaceType.US)
 
             if (items == null) {
                 LiveResult.failure(DataError.NonExistent)

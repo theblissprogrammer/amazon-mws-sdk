@@ -8,11 +8,12 @@ import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderModels
 import com.theblissprogrammer.amazon.sdk.stores.reports.models.ReportModels
 import com.theblissprogrammer.amazon.sdk.enums.DefaultsKeys
 import com.theblissprogrammer.amazon.sdk.enums.SecurityProperty
+import com.theblissprogrammer.amazon.sdk.extensions.dateFormatter
+import com.theblissprogrammer.amazon.sdk.extensions.isDateToday
 import com.theblissprogrammer.amazon.sdk.preferences.ConstantsType
 import com.theblissprogrammer.amazon.sdk.preferences.PreferencesWorkerType
 import com.theblissprogrammer.amazon.sdk.security.SecurityWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.inventory.models.InventoryModels
-import java.text.SimpleDateFormat
 import java.util.*
 
 
@@ -67,8 +68,7 @@ sealed class APIRouter: APIRoutable() {
             map["ReportType"] = request.type.id
 
             if (request.date != null) {
-                val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZZZZ", Locale.US)
-                formatter.timeZone = TimeZone.getTimeZone("GMT")
+                val formatter = dateFormatter()
                 map["StartDate"] = formatter.format(request.date)
             }
 
@@ -90,8 +90,7 @@ sealed class APIRouter: APIRoutable() {
             map["MaxCount"] = "100"
 
             if (request.requestFrom != null) {
-                val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZZZZZ", Locale.US)
-                formatter.timeZone = TimeZone.getTimeZone("GMT")
+                val formatter = dateFormatter()
                 map["RequestedFromDate"] = formatter.format(request.requestFrom)
             }
 
@@ -128,13 +127,15 @@ sealed class APIRouter: APIRoutable() {
             if (request.id != null) {
                 map["SellerOrderId"] = request.id
             } else {
-                val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.US)
-                formatter.timeZone = TimeZone.getTimeZone("GMT")
+                val formatter = dateFormatter()
 
-                map["LastUpdatedAfter"] = formatter.format(request.startDate)
+                if (request.startDate == null) {
+                    map["LastUpdatedAfter"] = formatter.format(request.lastSync)
+                } else
+                    map["CreatedAfter"] = formatter.format(request.startDate)
 
                 if (request.endDate.before(Date())) {
-                    map["LastUpdatedBefore"] = formatter.format(request.endDate)
+                    map["CreatedBefore"] = formatter.format(request.endDate)
                 }
             }
             map
@@ -183,18 +184,19 @@ sealed class APIRouter: APIRoutable() {
             map["ResponseGroup"] = "Detailed"
 
             // MarketplaceId is only available in NA
-            if (request.marketplace.region == RegionType.NA)
-                map["MarketplaceId"] = request.marketplace.id
+            request.marketplace?.let {
+                if (it.region == RegionType.NA)
+                    map["MarketplaceId"] = it.id
+            }
 
             if (request.skus.isNotEmpty()) {
                 request.skus.forEachIndexed { index, sku ->
                     map["SellerSkus.member.${index + 1}"] = sku
                 }
             } else {
-                val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.US)
-                formatter.timeZone = TimeZone.getTimeZone("GMT")
+                val formatter = dateFormatter()
 
-                map["QueryStartDateTime"] = formatter.format(request.startDate)
+                map["QueryStartDateTime"] = formatter.format(request.lastSync)
             }
             map
         }()

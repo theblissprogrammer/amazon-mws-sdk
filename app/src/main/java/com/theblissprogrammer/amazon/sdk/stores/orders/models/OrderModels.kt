@@ -12,15 +12,16 @@ import java.util.*
  **/
 sealed class OrderModels {
     class Request(
-            val startDate: Date = Date().startOfDay(),
-            val endDate: Date = Date().endOfDay(),
-            val id: String? = null,
-            val orderStatuses: List<OrderStatus> = listOf(
-                OrderStatus.Pending,
-                OrderStatus.Unshipped,
-                OrderStatus.Shipped,
-                OrderStatus.PartiallyShipped,
-                OrderStatus.PendingAvailability
-            ),
-            var marketplaces: List<MarketplaceType> = listOf()): OrderModels()
+        var lastSync: Date = Date().startOfDay() /* TODO: Change to last synced order datetime */,
+        val startDate: Date? = null, /* To filter by a specific time frame set startDate and endDate */
+        val endDate: Date = Date().endOfDay(),
+        val id: String? = null,
+        val orderStatuses: List<OrderStatus> = listOf(
+            OrderStatus.Pending,
+            OrderStatus.Unshipped,
+            OrderStatus.Shipped,
+            OrderStatus.PartiallyShipped,
+            OrderStatus.PendingAvailability
+        ),
+        var marketplaces: List<MarketplaceType> = listOf()): OrderModels()
 }

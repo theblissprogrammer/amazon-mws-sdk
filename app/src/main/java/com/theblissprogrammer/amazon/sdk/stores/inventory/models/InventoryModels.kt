@@ -10,7 +10,7 @@ import java.util.*
  **/
 sealed class InventoryModels {
     class Request(
-        val skus: List<String>, // Max 50
-        val marketplace: MarketplaceType,
-        val startDate: Date = Date().startOfDay()): InventoryModels()
+        val skus: List<String> = listOf(), // Max 50
+        var marketplace: MarketplaceType? = null,
+        var lastSync: Date = Date().startOfDay() /*Change to last synced inventory datetime*/): InventoryModels()
 }

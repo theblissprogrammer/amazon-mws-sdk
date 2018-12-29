@@ -4,6 +4,7 @@ import android.util.Xml
 import com.theblissprogrammer.amazon.sdk.enums.InventoryCondition
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.enums.SupplyType
+import com.theblissprogrammer.amazon.sdk.enums.marketplaceFromId
 import com.theblissprogrammer.amazon.sdk.extensions.*
 import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Inventory
 import com.theblissprogrammer.amazon.sdk.stores.inventory.models.ListInventorySupply
@@ -50,7 +51,7 @@ class ListInventorySupplyXmlParser {
 
             return ListInventorySupply(
                 inventory = inventory.filterNotNull(),
-                marketplace = MarketplaceType.valueOf(marketplaceId ?: "US"),
+                marketplace = marketplaceFromId(marketplaceId),
                 nextToken = nextToken
             )
         }

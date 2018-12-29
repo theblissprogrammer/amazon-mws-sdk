@@ -8,20 +8,6 @@ import java.util.*
  * Copyright © 2017. All rights reserved.
  */
 
-fun Date.shortString(): String {
-    val outputFmt = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-    outputFmt.timeZone = TimeZone.getTimeZone("GMT")
-
-    return outputFmt.format(this)
-}
-
-fun Date.realmString(): String {
-    val outputFmt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.US)
-    outputFmt.timeZone = TimeZone.getTimeZone("GMT")
-
-    return outputFmt.format(this)
-}
-
 fun Date.add(field: Int = Calendar.DATE, value: Int = 0): Date {
     val cal = Calendar.getInstance()
     cal.time = this
@@ -38,7 +24,7 @@ val Date.isDateInWeekend: Boolean
                 cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
     }
 
-val Date.isDateInToday: Boolean
+val Date.isDateToday: Boolean
     get() {
         return this.startOfDay() == Date().startOfDay()
     }
@@ -64,4 +50,11 @@ fun Date.endOfDay(): Date {
     cal.set(Calendar.MILLISECOND, 59)
 
     return cal.time
+}
+
+fun dateFormatter(): SimpleDateFormat {
+    val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
+    formatter.timeZone = TimeZone.getTimeZone("GMT")
+
+    return formatter
 }

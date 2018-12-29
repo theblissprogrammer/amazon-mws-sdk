@@ -4,7 +4,6 @@ import com.theblissprogrammer.amazon.sdk.stores.orders.models.PriceTotal
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
-import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -74,8 +73,7 @@ fun XmlPullParser.readDate(tag: String): Date {
     require(XmlPullParser.START_TAG, namespace, tag)
     val pubDate = readText()
 
-    val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
-    formatter.timeZone = TimeZone.getTimeZone("GMT")
+    val formatter = dateFormatter()
 
     val date = formatter.parse(pubDate)
     require(XmlPullParser.END_TAG, namespace, tag)

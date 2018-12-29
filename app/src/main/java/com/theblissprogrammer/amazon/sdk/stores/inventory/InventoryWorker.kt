@@ -2,7 +2,10 @@ package com.theblissprogrammer.amazon.sdk.stores.inventory
 
 import com.theblissprogrammer.amazon.sdk.stores.inventory.models.InventoryModels
 import com.theblissprogrammer.amazon.sdk.common.LiveCompletionResponse
+import com.theblissprogrammer.amazon.sdk.enums.DefaultsKeys
+import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.logging.LogHelper
+import com.theblissprogrammer.amazon.sdk.preferences.PreferencesWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Inventory
 
 /**
@@ -10,13 +13,18 @@ import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Inventory
  * Copyright (c) 2018. All rights reserved.
  **/
 class InventoryWorker(val store: InventoryStore,
-                      val cacheStore: InventoryCacheStore): InventoryWorkerType {
+                      val cacheStore: InventoryCacheStore,
+                      val preferencesWorker: PreferencesWorkerType): InventoryWorkerType {
 
     override suspend fun fetch(request: InventoryModels.Request, completion: LiveCompletionResponse<Array<Inventory>>) {
+        if (request.marketplace == null) {
+            request.marketplace = MarketplaceType.valueOf(preferencesWorker.get(DefaultsKeys.marketplace) ?: "US")
+        }
+
         val cache = cacheStore.fetch(request = request).await()
 
         // Immediately return local response
-        //completion(cache)
+        // completion(cache)
 
         val listInventorySupply = store.fetch(request).await()
 

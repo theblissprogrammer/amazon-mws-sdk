@@ -28,16 +28,19 @@ interface InventoryDAO {
     fun delete(vararg inventory: Inventory)
 
     @Query("SELECT * FROM Inventory")
-    fun fetchAllInventorys(): Array<Inventory>
+    fun fetchAllInventories(): Array<Inventory>
 
     @Query("SELECT * FROM Inventory WHERE sku = :sku")
     fun fetch(sku: String): LiveData<Inventory>
+
+    @Query("SELECT * FROM Inventory WHERE sku = :sku")
+    fun fetchSync(sku: String): Inventory
 
     @Query("SELECT * FROM Inventory WHERE sku IN (:skus)")
     fun fetch(skus: Array<String>): LiveData<Array<Inventory>>
 
     @Query("SELECT * FROM Inventory WHERE marketplace = :marketplace")
-    fun fetch(marketplace: MarketplaceType): LiveData<Inventory>
+    fun fetch(marketplace: MarketplaceType): LiveData<Array<Inventory>>
 }
 
 fun InventoryDAO.insertOrUpdate(inventory: Inventory) {

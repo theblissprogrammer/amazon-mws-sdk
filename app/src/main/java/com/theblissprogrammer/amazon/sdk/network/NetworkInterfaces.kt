@@ -2,13 +2,13 @@ package com.theblissprogrammer.amazon.sdk.network
 
 import com.theblissprogrammer.amazon.sdk.common.NetworkResult
 import com.theblissprogrammer.amazon.sdk.enums.NetworkMethod
+import com.theblissprogrammer.amazon.sdk.extensions.dateFormatter
 import com.theblissprogrammer.amazon.sdk.preferences.ConstantsType
 import com.theblissprogrammer.amazon.sdk.preferences.PreferencesWorkerType
 import com.theblissprogrammer.amazon.sdk.security.SecurityWorkerType
 import okhttp3.MediaType
 import okhttp3.Request
 import okhttp3.RequestBody
-import java.text.SimpleDateFormat
 import java.util.*
 
 /**
@@ -51,8 +51,7 @@ abstract class APIRoutable {
         get() {
             val timestamp: String
             val cal = Calendar.getInstance()
-            val dfm = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US)
-            dfm.timeZone = TimeZone.getTimeZone("GMT")
+            val dfm = dateFormatter()
             timestamp = dfm.format(cal.time)
             return timestamp
         }

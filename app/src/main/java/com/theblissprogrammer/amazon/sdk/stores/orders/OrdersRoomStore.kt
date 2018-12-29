@@ -13,6 +13,7 @@ import com.theblissprogrammer.amazon.sdk.stores.orders.models.ListOrder
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.Order
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderModels
 import com.theblissprogrammer.amazon.sdk.stores.sellers.insertOrUpdate
+import java.util.*
 
 /**
  * Created by ahmed.saad on 2018-12-19.
@@ -27,7 +28,7 @@ class OrdersRoomStore(val orderDao: OrderDAO?): OrdersCacheStore {
                 orderDao?.fetch(id = request.id, marketplaces = request.marketplaces.toTypedArray())
             } else {
                 orderDao?.fetch(
-                    startDate = request.startDate,
+                    startDate = request.startDate ?: request.lastSync,
                     endDate = request.endDate,
                     orderStatuses = request.orderStatuses.toTypedArray(),
                     marketplaces = request.marketplaces.toTypedArray()

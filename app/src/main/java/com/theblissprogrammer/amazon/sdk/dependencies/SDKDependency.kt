@@ -132,8 +132,9 @@ open class SDKDependency: SDKDependable {
 
     override val resolveInventoryWorker: InventoryWorkerType  by lazy {
          InventoryWorker(
-            store = resolveInventoryStore,
-            cacheStore = resolveInventoryCacheStore
+             store = resolveInventoryStore,
+             cacheStore = resolveInventoryCacheStore,
+             preferencesWorker = resolvePreferencesWorker
         )
     }
 
@@ -151,12 +152,12 @@ open class SDKDependency: SDKDependable {
 
     override val resolveAuthenticationWorker: AuthenticationWorkerType  by lazy {
          AuthenticationWorker(
-            service = resolveAuthenticationService,
-            preferencesWorker = resolvePreferencesWorker,
-            syncWorker = resolveSyncWorker,
-            securityWorker = resolveSecurityWorker,
-            context = resolveContext,
-            sellersCacheStore = resolveSellersCacheStore
+             service = resolveAuthenticationService,
+             preferencesWorker = resolvePreferencesWorker,
+             syncWorker = resolveSyncWorker,
+             securityWorker = resolveSecurityWorker,
+             context = resolveContext,
+             sellersCacheStore = resolveSellersCacheStore
         )
     }
 
@@ -208,8 +209,8 @@ open class SDKDependency: SDKDependable {
 
     override val resolveAuthenticationService: AuthenticationService  by lazy {
          AuthenticationNetworkService(
-            apiSession = resolveAPISessionService,
-            preferencesWorker = resolvePreferencesWorker
+             apiSession = resolveAPISessionService,
+             preferencesWorker = resolvePreferencesWorker
         )
     }
 
@@ -243,11 +244,11 @@ open class SDKDependency: SDKDependable {
 
     override val resolveSignedHelper: SignedHelperType  by lazy {
          SignedRequestsHelper(
-            secretKey = when (region) {
-                RegionType.EU -> resolveConstants.euAwsSecretKey
-                else -> resolveConstants.awsSecretKey
-            }
-        )
+             secretKey = when (region) {
+                 RegionType.EU -> resolveConstants.euAwsSecretKey
+                 else -> resolveConstants.awsSecretKey
+             }
+         )
     }
 
 }
