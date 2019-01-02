@@ -5,6 +5,7 @@ import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import android.database.sqlite.SQLiteConstraintException
 import androidx.room.*
 import com.theblissprogrammer.amazon.sdk.enums.OrderStatus
+import com.theblissprogrammer.amazon.sdk.stores.common.CommonDAO
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.Order
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderAddress
 import java.util.*
@@ -15,22 +16,7 @@ import java.util.*
  * Copyright © 2018. All rights reserved.
  */
 @Dao
-interface OrderDAO {
-    @Insert(onConflict = OnConflictStrategy.FAIL)
-    fun insert(order: Order)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(vararg orders: Order)
-
-    @Update(onConflict = OnConflictStrategy.FAIL)
-    fun update(order: Order)
-
-    @Update
-    fun update(vararg orders: Order)
-
-    @Delete
-    fun delete(vararg orders: Order)
-
+interface OrderDAO: CommonDAO<Order> {
     @Insert(onConflict = OnConflictStrategy.FAIL)
     fun insert(address: OrderAddress)
 
@@ -67,15 +53,6 @@ interface OrderDAO {
 
     @Query("SELECT * from `Order` ORDER BY purchasedAt ASC LIMIT 1")
     fun fetchOldestOrder(): LiveData<Order>
-}
-
-
-fun OrderDAO.insertOrUpdate(order: Order) {
-    try {
-        insert(order)
-    } catch (exception: SQLiteConstraintException) {
-        update(order)
-    }
 }
 
 fun OrderDAO.insertOrUpdate(address: OrderAddress) {

@@ -21,7 +21,7 @@ class OrderItemsWorker(val store: OrderItemsStore,
         //completion(cache)
 
         request.ids.forEach {
-            val listOrderItems = store.fetch(id = it).await()
+            val listOrderItems = store.fetch(it).await()
 
             if (!listOrderItems.isSuccess || listOrderItems.value == null) {
                 return LogHelper.e(messages = *arrayOf("Error occurred while retrieving orders : ${listOrderItems.error ?: ""}"))

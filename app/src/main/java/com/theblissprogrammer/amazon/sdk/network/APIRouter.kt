@@ -120,13 +120,13 @@ sealed class APIRouter: APIRoutable() {
                 map["MarketplaceId.Id.${index + 1}"] = marketplace.id
             }
 
-            request.orderStatuses.forEachIndexed { index, orderStatus ->
-                map["OrderStatus.Status.${index + 1}"] = orderStatus.name
-            }
-
             if (request.id != null) {
                 map["SellerOrderId"] = request.id
             } else {
+                request.orderStatuses.forEachIndexed { index, orderStatus ->
+                    map["OrderStatus.Status.${index + 1}"] = orderStatus.name
+                }
+
                 val formatter = dateFormatter()
 
                 if (request.startDate == null) {
