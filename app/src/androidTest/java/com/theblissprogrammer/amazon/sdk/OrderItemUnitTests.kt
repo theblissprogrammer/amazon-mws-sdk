@@ -66,6 +66,7 @@ class OrderItemUnitTests: HasDependencies {
             application = InstrumentationRegistry.getTargetContext().applicationContext as Application,
             dependencies = MockSDKDependency()
         )
+        AccountUnitTests().account_login_valid()
     }
 
     @Before

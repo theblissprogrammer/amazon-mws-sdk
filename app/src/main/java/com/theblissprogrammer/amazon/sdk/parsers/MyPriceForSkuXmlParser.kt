@@ -2,7 +2,6 @@ package com.theblissprogrammer.amazon.sdk.parsers
 
 import android.util.Xml
 import com.theblissprogrammer.amazon.sdk.enums.InventoryCondition
-import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.enums.SupplyType
 import com.theblissprogrammer.amazon.sdk.enums.marketplaceFromId
 import com.theblissprogrammer.amazon.sdk.extensions.*
@@ -10,6 +9,8 @@ import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Inventory
 import com.theblissprogrammer.amazon.sdk.stores.inventory.models.ListInventorySupply
 import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Quantity
 import com.theblissprogrammer.amazon.sdk.stores.inventory.models.QuantityType
+import com.theblissprogrammer.amazon.sdk.stores.price.models.MyPriceForSKU
+import com.theblissprogrammer.amazon.sdk.stores.price.models.Price
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
@@ -25,34 +26,35 @@ class MyPriceForSkuXmlParser {
     private val ns: String? = null
 
     @Throws(XmlPullParserException::class, IOException::class)
-    fun parse(input: String): ListInventorySupply {
+    fun parse(input: String): MyPriceForSKU {
         input.byteInputStream().use { inputStream ->
             val parser = Xml.newPullParser()
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
             parser.setInput(inputStream, null)
             parser.nextTag()
 
-            val inventory = arrayListOf<Inventory?>()
-            var nextToken: String? = null
+            val prices = arrayListOf<Price?>()
             var marketplaceId: String? = null
 
-            parser.findChildTagAsync(listOf("ListInventorySupplyResult", "ListInventorySupplyByNextTokenResult")) {
-                parser.findChildTagAsync(listOf("InventorySupplyList", "NextToken", "MarketplaceId")) {
-                    val name = parser.name
-                    when (name) {
-                        "InventorySupplyList" -> parser.findChildTagAsync("member") {
-                            inventory.add(readInventory(parser))
+            parser.findChildTagAsync("GetMyPriceForSKUResult") {
+                parser.findChildTagAsync("Product") {
+                    parser.findChildTagAsync(listOf("Identifiers", "Offers")) {
+                        val name = parser.name
+                        when (name) {
+                            "Identifiers" -> parser.findChildTagAsync("MarketplaceId") {
+                                marketplaceId = parser.readString(name)
+                            }
+                            "Offers" -> parser.findChildTagAsync("Offer") {
+                                prices.add(readPrice(parser))
+                            }
                         }
-                        "NextToken" -> nextToken = parser.readString(name)
-                        "MarketplaceId" -> marketplaceId = parser.readString(name)
                     }
                 }
             }
 
-            return ListInventorySupply(
-                inventory = inventory.filterNotNull(),
-                marketplace = marketplaceFromId(marketplaceId),
-                nextToken = nextToken
+            return MyPriceForSKU(
+                prices = prices.filterNotNull(),
+                marketplace = marketplaceFromId(marketplaceId)
             )
         }
     }
@@ -60,8 +62,8 @@ class MyPriceForSkuXmlParser {
     // Parses the contents of an entry. If it encounters a title, summary, or link tag, hands them off
     // to their respective "read" methods for processing. Otherwise, skips the tag.
     @Throws(XmlPullParserException::class, IOException::class)
-    private fun readInventory(parser: XmlPullParser): Inventory? {
-        parser.require(XmlPullParser.START_TAG, ns, "member")
+    private fun readPrice(parser: XmlPullParser): Price? {
+        parser.require(XmlPullParser.START_TAG, ns, "Offer")
 
         var fnsku: String? = null
         var asin: String? = null
@@ -94,7 +96,8 @@ class MyPriceForSkuXmlParser {
         if (asin == null || condition == null || sku == null) { return null }
 
 
-        return Inventory(
+        return null
+        /*return Price(
             fnsku = fnsku ?: "",
             asin = asin,
             sku = sku,
@@ -105,7 +108,7 @@ class MyPriceForSkuXmlParser {
                 transfer = quantity.filter { it?.supplyType == SupplyType.Transfer }.sumBy { it?.quantity ?: 0 },
                 total = totalQuantity ?: quantity.sumBy { it?.quantity ?: 0 }
             )
-        )
+        )*/
     }
 
     // Parses the contents of an entry. If it encounters a title, summary, or link tag, hands them off

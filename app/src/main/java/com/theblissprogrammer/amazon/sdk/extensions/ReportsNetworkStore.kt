@@ -10,7 +10,6 @@ import com.theblissprogrammer.amazon.sdk.stores.reports.models.RequestReport
 import com.theblissprogrammer.amazon.sdk.common.Result
 import com.theblissprogrammer.amazon.sdk.common.Result.Companion.failure
 import com.theblissprogrammer.amazon.sdk.common.Result.Companion.success
-import com.theblissprogrammer.amazon.sdk.common.CompletionResponse
 import com.theblissprogrammer.amazon.sdk.common.initDataError
 import com.theblissprogrammer.amazon.sdk.errors.DataError
 import com.theblissprogrammer.amazon.sdk.logging.LogHelper
@@ -21,7 +20,7 @@ import com.theblissprogrammer.amazon.sdk.logging.LogHelper
  **/
 
 
-internal fun <T> ReportsNetworkStore.fetchReport(request: ReportModels.Request, completion: CompletionResponse<List<T>>, call: (data: String) -> List<T>): Result<List<T>> {
+internal fun <T> ReportsNetworkStore.processReport(request: ReportModels.Request, call: (data: String) -> List<T>): Result<List<T>> {
     val response: ArrayList<T> = arrayListOf()
 
     val reportRequestList = ReportModels.ReportRequest(
@@ -39,7 +38,6 @@ internal fun <T> ReportsNetworkStore.fetchReport(request: ReportModels.Request, 
 
     if (value?.reportID != null) {
         val report = readReport(value.reportID ?: "", call)
-        completion(report)
 
         val prevReportValues = report.value
 
@@ -99,7 +97,6 @@ internal fun <T> ReportsNetworkStore.fetchReport(request: ReportModels.Request, 
 
     if (status == ReportStatus._DONE_) {
         val report = readReport(reportID, call)
-        completion(report)
 
         val reportValues = report.value
 
@@ -131,7 +128,7 @@ internal fun ReportsNetworkStore.requestReport(request: ReportModels.Request): R
 
     return try {
         // Parse response data
-        val payload = RequestReportXmlParser().parse(response.value?.data ?: "")?.requestID
+        val payload = RequestReportXmlParser().parse(response.value.data)?.requestID
 
         success(payload)
     } catch(e: Exception) {
@@ -162,7 +159,7 @@ internal fun ReportsNetworkStore.fetchReportRequest(request: ReportModels.Report
 
     return try {
         // Parse response data
-        val payload = ReportRequestListXmlParser().parse(response.value?.data ?: "")
+        val payload = ReportRequestListXmlParser().parse(response.value.data)
 
         success(payload)
     } catch(e: Exception) {
@@ -193,7 +190,7 @@ internal fun <T> ReportsNetworkStore.readReport(id: String, call: (data: String)
 
     return try {
         // Parse response data
-        val payload = call(response.value?.data ?: "")
+        val payload = call(response.value.data)
         success(payload)
     } catch(e: Exception) {
         LogHelper.e(messages = *arrayOf("An error occurred while parsing report: " +

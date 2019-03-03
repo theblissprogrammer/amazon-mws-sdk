@@ -1,6 +1,5 @@
 package com.theblissprogrammer.amazon.sdk.stores.orderItems
 
-import android.database.sqlite.SQLiteConstraintException
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import com.theblissprogrammer.amazon.sdk.stores.common.CommonDAO

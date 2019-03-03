@@ -18,7 +18,7 @@ class Converters {
 
     @TypeConverter
     fun dateToTimestamp(date: Date?): Long? {
-        return date?.time?.toLong()
+        return date?.time
     }
 
     @TypeConverter
@@ -79,7 +79,7 @@ class Converters {
 
     @TypeConverter
     fun quantityfromString(value: String?): Quantity? {
-        return if (value != null) Quantity(value) else null
+        return if (!value.isNullOrEmpty()) Quantity(value) else null
     }
 
     @TypeConverter
