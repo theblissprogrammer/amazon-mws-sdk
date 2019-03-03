@@ -1,3 +1,5 @@
+[![](https://jitpack.io/v/theblissprogrammer/android-amazon-mws-sdk.svg)](https://jitpack.io/#theblissprogrammer/android-amazon-mws-sdk)
+
 # NOT STABLE (Unofficial) Android Amazon MWS SDK
 
 This library will help you connect to the Amazon MWS to quickly develop applications to help Amazon Sellers. 
