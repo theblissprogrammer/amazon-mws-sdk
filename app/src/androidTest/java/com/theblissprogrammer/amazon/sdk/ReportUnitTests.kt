@@ -15,6 +15,7 @@ import com.theblissprogrammer.amazon.sdk.dependencies.HasDependencies
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.enums.OrderStatus
 import com.theblissprogrammer.amazon.sdk.enums.ReportType
+import com.theblissprogrammer.amazon.sdk.export.Shopify
 import com.theblissprogrammer.amazon.sdk.extensions.add
 import com.theblissprogrammer.amazon.sdk.extensions.endOfDay
 import com.theblissprogrammer.amazon.sdk.extensions.startOfDay
@@ -50,6 +51,10 @@ class ReportUnitTests: HasDependencies {
         dependencies.resolveReportsWorker
     }
 
+    private val detailsWorker by lazy {
+        dependencies.resolveDetailsWorker
+    }
+
     @get:Rule
     var instantTaskExecutorRule = InstantTaskExecutorRule()
 
@@ -76,6 +81,25 @@ class ReportUnitTests: HasDependencies {
                 Assert.assertNull("Products should return a null error.", it.error)
 
                 Assert.assertNotNull("Products should return valid product object.", it.value)
+            }
+        }
+    }
+
+    @Test
+    fun fetch_product_details() {
+        runBlocking {
+            detailsWorker.fetchProductDetails(listOf()) {
+                Assert.assertTrue(
+                    "An error occurred when there should not be: ${it.error?.localizedMessage ?: it.error}",
+                    it.isSuccess
+                )
+                Assert.assertNull("Products should return a null error.", it.error)
+
+                Assert.assertNotNull("Products should return valid product object.", it.value)
+
+                val productDetails = getValue(it.value)
+
+                Shopify.export(productDetails.toList())
             }
         }
     }

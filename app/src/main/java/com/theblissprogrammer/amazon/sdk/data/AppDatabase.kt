@@ -4,6 +4,8 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.theblissprogrammer.amazon.sdk.extensions.Converters
+import com.theblissprogrammer.amazon.sdk.stores.details.DetailDAO
+import com.theblissprogrammer.amazon.sdk.stores.details.models.Detail
 import com.theblissprogrammer.amazon.sdk.stores.inventory.InventoryDAO
 import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Inventory
 import com.theblissprogrammer.amazon.sdk.stores.orderItems.OrderItemDAO
@@ -11,6 +13,8 @@ import com.theblissprogrammer.amazon.sdk.stores.orderItems.models.OrderItem
 import com.theblissprogrammer.amazon.sdk.stores.orders.OrderDAO
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.Order
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderAddress
+import com.theblissprogrammer.amazon.sdk.stores.products.ProductDAO
+import com.theblissprogrammer.amazon.sdk.stores.products.models.Product
 import com.theblissprogrammer.amazon.sdk.stores.sellers.SellerDAO
 import com.theblissprogrammer.amazon.sdk.stores.sellers.models.Seller
 
@@ -24,9 +28,11 @@ import com.theblissprogrammer.amazon.sdk.stores.sellers.models.Seller
         Order::class,
         OrderAddress::class,
         OrderItem::class,
-        Inventory::class
+        Inventory::class,
+        Product::class,
+        Detail::class
     ],
-    version = 6
+    version = 10
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -34,4 +40,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun orderDao(): OrderDAO
     abstract fun orderItemDao(): OrderItemDAO
     abstract fun inventoryDao(): InventoryDAO
+    abstract fun productDao(): ProductDAO
+    abstract fun detailDao(): DetailDAO
 }

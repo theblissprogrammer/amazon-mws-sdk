@@ -18,7 +18,7 @@ import com.theblissprogrammer.amazon.sdk.stores.inventory.models.InventoryModels
  */
 class InventoryRoomStore(val inventoryDao: InventoryDAO?): InventoryCacheStore {
 
-    override fun fetch(request: InventoryModels.Request): DeferredLiveResult<Array<Inventory>> {
+    override fun fetchAsync(request: InventoryModels.Request): DeferredLiveResult<Array<Inventory>> {
         return coroutineRoom<Array<Inventory>> {
 
             val items = if (request.skus.isNotEmpty())
@@ -34,7 +34,7 @@ class InventoryRoomStore(val inventoryDao: InventoryDAO?): InventoryCacheStore {
         }
     }
 
-    override fun createOrUpdate(request: Inventory): DeferredLiveResult<Inventory> {
+    override fun createOrUpdateAsync(request: Inventory): DeferredLiveResult<Inventory> {
         return coroutineRoom<Inventory> {
 
             inventoryDao?.insertOrUpdate(request)
@@ -49,7 +49,7 @@ class InventoryRoomStore(val inventoryDao: InventoryDAO?): InventoryCacheStore {
         }
     }
 
-    override fun createOrUpdate(vararg inventory: Inventory): DeferredResult<Void> {
+    override fun createOrUpdateAsync(vararg inventory: Inventory): DeferredResult<Void> {
         return coroutineNetwork<Void> {
             inventoryDao?.insert(*inventory)
             Result.success()

@@ -3,20 +3,26 @@ package com.theblissprogrammer.amazon.sdk.stores.common
 import com.theblissprogrammer.amazon.sdk.common.DeferredLiveResult
 import com.theblissprogrammer.amazon.sdk.common.DeferredResult
 import com.theblissprogrammer.amazon.sdk.common.LiveCompletionResponse
+import com.theblissprogrammer.amazon.sdk.common.Result
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetwork
 
 /**
  * Created by ahmed.saad on 2018-12-29.
  * Copyright © 2018. All rights reserved.
  */
 interface CommonStore<T, R> {
-    fun fetch(request: R): DeferredResult<T>
-    fun fetchNext(nextToken: String): DeferredResult<T>
+    fun fetchAsync(request: R): DeferredResult<T>
+    fun fetchNextAsync(nextToken: String): DeferredResult<T> {
+        return coroutineNetwork <T> {
+            Result.failure()
+        }
+    }
 }
 
 interface CommonCacheStore<T, R> {
-    fun fetch(request: R): DeferredLiveResult<Array<T>>
-    fun createOrUpdate(request: T): DeferredLiveResult<T>
-    fun createOrUpdate(vararg inventory: T): DeferredResult<Void>
+    fun fetchAsync(request: R): DeferredLiveResult<Array<T>>
+    fun createOrUpdateAsync(request: T): DeferredLiveResult<T>
+    fun createOrUpdateAsync(vararg inventory: T): DeferredResult<Void>
 }
 
 interface CommonWorkerType<T, R> {

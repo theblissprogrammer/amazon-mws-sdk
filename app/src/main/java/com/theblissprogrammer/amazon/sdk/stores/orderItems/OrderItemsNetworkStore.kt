@@ -16,7 +16,7 @@ import com.theblissprogrammer.amazon.sdk.stores.orderItems.models.ListOrderItems
  **/
 class OrderItemsNetworkStore(val apiSession: APISessionType): OrderItemsStore {
 
-    override fun fetch(id: String): DeferredResult<ListOrderItems> {
+    override fun fetchAsync(id: String): DeferredResult<ListOrderItems> {
         return coroutineNetwork <ListOrderItems> {
             val response = apiSession.request(router = APIRouter.ReadOrderItems(id))
 
@@ -47,7 +47,7 @@ class OrderItemsNetworkStore(val apiSession: APISessionType): OrderItemsStore {
         }
     }
 
-    override fun fetchNext(nextToken: String): DeferredResult<ListOrderItems> {
+    override fun fetchNextAsync(nextToken: String): DeferredResult<ListOrderItems> {
         return coroutineNetwork <ListOrderItems> {
             val response = apiSession.request(router = APIRouter.ReadNextOrderItems(nextToken))
 

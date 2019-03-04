@@ -15,13 +15,13 @@ class OrderItemsWorker(val store: OrderItemsStore,
 
     override suspend fun fetch(request: OrderItemModels.Request, completion: LiveCompletionResponse<Array<OrderItem>>) {
 
-        val cache = cacheStore.fetch(request = request).await()
+        val cache = cacheStore.fetchAsync(request = request).await()
 
         // Immediately return local response
         //completion(cache)
 
         request.ids.forEach {
-            val listOrderItems = store.fetch(it).await()
+            val listOrderItems = store.fetchAsync(it).await()
 
             if (!listOrderItems.isSuccess || listOrderItems.value == null) {
                 return LogHelper.e(messages = *arrayOf("Error occurred while retrieving orders : ${listOrderItems.error ?: ""}"))
@@ -30,7 +30,7 @@ class OrderItemsWorker(val store: OrderItemsStore,
             val orderItems = listOrderItems.value.orderItems
             orderItems.forEach { orderItem -> orderItem.orderId = listOrderItems.value.orderId ?: "" }
 
-            val savedElement = this.cacheStore.createOrUpdate(*orderItems.toTypedArray()).await()
+            val savedElement = this.cacheStore.createOrUpdateAsync(*orderItems.toTypedArray()).await()
 
             if (!savedElement.isSuccess) {
                 return LogHelper.e(
@@ -44,7 +44,7 @@ class OrderItemsWorker(val store: OrderItemsStore,
             var nextToken = listOrderItems.value.nextToken
             while (nextToken != null) {
 
-                val listOrderItemsNext = store.fetchNext(nextToken = nextToken).await()
+                val listOrderItemsNext = store.fetchNextAsync(nextToken = nextToken).await()
 
                 if (!listOrderItemsNext.isSuccess || listOrderItemsNext.value == null) {
                     return LogHelper.e(messages = *arrayOf("Error occurred while retrieving order items next : ${listOrderItemsNext.error ?: ""}"))
@@ -53,7 +53,7 @@ class OrderItemsWorker(val store: OrderItemsStore,
                 val orderItemsNext = listOrderItemsNext.value.orderItems
                 orderItemsNext.forEach { orderItem -> orderItem.orderId = listOrderItemsNext.value.orderId ?: "" }
 
-                val savedElementNext = this.cacheStore.createOrUpdate(*orderItemsNext.toTypedArray()).await()
+                val savedElementNext = this.cacheStore.createOrUpdateAsync(*orderItemsNext.toTypedArray()).await()
 
                 if (!savedElementNext.isSuccess) {
                     return LogHelper.e(

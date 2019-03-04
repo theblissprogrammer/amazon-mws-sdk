@@ -21,12 +21,12 @@ class InventoryWorker(val store: InventoryStore,
             request.marketplace = MarketplaceType.valueOf(preferencesWorker.get(DefaultsKeys.marketplace) ?: "US")
         }
 
-        val cache = cacheStore.fetch(request = request).await()
+        val cache = cacheStore.fetchAsync(request = request).await()
 
         // Immediately return local response
         // completion(cache)
 
-        val listInventorySupply = store.fetch(request).await()
+        val listInventorySupply = store.fetchAsync(request).await()
 
         if (!listInventorySupply.isSuccess || listInventorySupply.value == null) {
             return LogHelper.e(messages = *arrayOf("Error occurred while retrieving inventory : ${listInventorySupply.error ?: ""}"))
@@ -35,7 +35,7 @@ class InventoryWorker(val store: InventoryStore,
         val inventories = listInventorySupply.value.inventory
         inventories.forEach { inventory -> inventory.marketplace = listInventorySupply.value.marketplace }
 
-        val savedElement = this.cacheStore.createOrUpdate(*inventories.toTypedArray()).await()
+        val savedElement = this.cacheStore.createOrUpdateAsync(*inventories.toTypedArray()).await()
 
         if (!savedElement.isSuccess) {
             return LogHelper.e(
@@ -49,7 +49,7 @@ class InventoryWorker(val store: InventoryStore,
         var nextToken = listInventorySupply.value.nextToken
         while (nextToken != null) {
 
-            val listInventorySupplyNext = store.fetchNext(nextToken = nextToken).await()
+            val listInventorySupplyNext = store.fetchNextAsync(nextToken = nextToken).await()
 
             if (!listInventorySupplyNext.isSuccess || listInventorySupplyNext.value == null) {
                 return LogHelper.e(messages = *arrayOf("Error occurred while retrieving inventory next : ${listInventorySupplyNext.error ?: ""}"))
@@ -58,7 +58,7 @@ class InventoryWorker(val store: InventoryStore,
             val inventoriesNext = listInventorySupplyNext.value.inventory
             inventoriesNext.forEach { inventory -> inventory.marketplace = listInventorySupplyNext.value.marketplace }
 
-            val savedElementNext = this.cacheStore.createOrUpdate(*inventoriesNext.toTypedArray()).await()
+            val savedElementNext = this.cacheStore.createOrUpdateAsync(*inventoriesNext.toTypedArray()).await()
 
             if (!savedElementNext.isSuccess) {
                 return LogHelper.e(

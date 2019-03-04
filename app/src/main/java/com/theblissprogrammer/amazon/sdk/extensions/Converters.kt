@@ -11,6 +11,8 @@ import java.util.*
  * Copyright © 2018. All rights reserved.
  */
 class Converters {
+    private val delimiter = "[SALESTRACKERDELIMITER]"
+
     @TypeConverter
     fun fromTimestamp(value: Long?): Date? {
         return value?.let { Date(it) }
@@ -99,5 +101,19 @@ class Converters {
     @TypeConverter
     fun itemConditionToString(itemCondition: ItemCondition?): String? {
         return itemCondition?.name
+    }
+
+    @TypeConverter
+    fun listfromString(value: String?): List<String>? {
+        return try {
+            return value?.split(delimiter)
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+    }
+
+    @TypeConverter
+    fun listToString(list: List<String>?): String? {
+        return list?.joinToString(separator = delimiter)
     }
 }

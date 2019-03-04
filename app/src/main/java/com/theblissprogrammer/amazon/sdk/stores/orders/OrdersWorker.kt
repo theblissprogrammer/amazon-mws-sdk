@@ -2,7 +2,6 @@ package com.theblissprogrammer.amazon.sdk.stores.orders
 
 import com.theblissprogrammer.amazon.sdk.data.SyncRoomStore
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
-import com.theblissprogrammer.amazon.sdk.stores.orders.models.ExpandedOrder
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderModels
 import com.theblissprogrammer.amazon.sdk.common.LiveCompletionResponse
 import com.theblissprogrammer.amazon.sdk.logging.LogHelper
@@ -29,7 +28,7 @@ class OrdersWorker(val store: OrdersStore,
         // Immediately return local response
         //completion(cache)
 
-        val listOrder = store.fetch(request = request).await()
+        val listOrder = store.fetchAsync(request = request).await()
 
         if (!listOrder.isSuccess || listOrder.value == null) {
            return LogHelper.e(messages = *arrayOf("Error occurred while retrieving orders : ${listOrder.error ?: ""}"))
@@ -51,7 +50,7 @@ class OrdersWorker(val store: OrdersStore,
         var nextToken = listOrder.value.nextToken
         while (nextToken != null) {
 
-            val listOrderNext = store.fetchNext(nextToken = nextToken).await()
+            val listOrderNext = store.fetchNextAsync(nextToken = nextToken).await()
 
             if (!listOrderNext.isSuccess || listOrderNext.value == null) {
                 return LogHelper.e(messages = *arrayOf("Error occurred while retrieving orders next : ${listOrderNext.error ?: ""}"))

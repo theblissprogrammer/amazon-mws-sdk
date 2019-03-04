@@ -28,7 +28,10 @@ import com.theblissprogrammer.amazon.sdk.security.SecurityPreferenceStore
 import com.theblissprogrammer.amazon.sdk.security.SecurityStore
 import com.theblissprogrammer.amazon.sdk.security.SecurityWorker
 import com.theblissprogrammer.amazon.sdk.security.SecurityWorkerType
+import com.theblissprogrammer.amazon.sdk.stores.details.*
 import com.theblissprogrammer.amazon.sdk.stores.orderItems.*
+import com.theblissprogrammer.amazon.sdk.stores.products.ProductsCacheStore
+import com.theblissprogrammer.amazon.sdk.stores.products.ProductsRoomStore
 
 open class SDKDependency: SDKDependable {
     override lateinit var application: Application
@@ -138,19 +141,20 @@ open class SDKDependency: SDKDependable {
         )
     }
 
-    override val resolveReportsWorker: ReportsWorkerType  by lazy {
+    override val resolveReportsWorker: ReportsWorkerType by lazy {
          ReportsWorker(
-             store = resolveReportsStore
+             store = resolveReportsStore,
+             productCacheStore = resolveProductsCacheStore
         )
     }
 
-    override val resolveSeedWorker: SeedWorkerType  by lazy {
+    override val resolveSeedWorker: SeedWorkerType by lazy {
          SeedWorker(
              store = resolveSeedStore
         )
     }
 
-    override val resolveAuthenticationWorker: AuthenticationWorkerType  by lazy {
+    override val resolveAuthenticationWorker: AuthenticationWorkerType by lazy {
          AuthenticationWorker(
              service = resolveAuthenticationService,
              preferencesWorker = resolvePreferencesWorker,
@@ -158,6 +162,13 @@ open class SDKDependency: SDKDependable {
              securityWorker = resolveSecurityWorker,
              context = resolveContext,
              sellersCacheStore = resolveSellersCacheStore
+        )
+    }
+
+    override val resolveDetailsWorker: DetailsWorkerType by lazy {
+        DetailsWorker(
+            store = resolveDetailsStore,
+            cacheStore = resolveDetailsCacheStore
         )
     }
 
@@ -207,6 +218,12 @@ open class SDKDependency: SDKDependable {
         )
     }
 
+    override val resolveDetailsStore: DetailsStore by lazy {
+        DetailsNetworkStore(
+            httpService = resolveHTTPService
+        )
+    }
+
     override val resolveAuthenticationService: AuthenticationService  by lazy {
          AuthenticationNetworkService(
              apiSession = resolveAPISessionService,
@@ -236,6 +253,18 @@ open class SDKDependency: SDKDependable {
          InventoryRoomStore(
              inventoryDao = (resolveDataStore as? DataRoomStore)?.instance()?.inventoryDao()
          )
+    }
+
+    override val resolveProductsCacheStore: ProductsCacheStore by lazy {
+        ProductsRoomStore(
+            productDAO = (resolveDataStore as? DataRoomStore)?.instance()?.productDao()
+        )
+    }
+
+    override val resolveDetailsCacheStore: DetailsCacheStore by lazy {
+        DetailsRoomStore(
+            detailDao = (resolveDataStore as? DataRoomStore)?.instance()?.detailDao()
+        )
     }
 
     private val region: RegionType by lazy {

@@ -17,7 +17,7 @@ import com.theblissprogrammer.amazon.sdk.stores.orderItems.models.OrderItemModel
  */
 class OrderItemsRoomStore(val orderItemDao: OrderItemDAO?): OrderItemsCacheStore {
 
-    override fun fetch(request: OrderItemModels.Request): DeferredLiveResult<Array<OrderItem>> {
+    override fun fetchAsync(request: OrderItemModels.Request): DeferredLiveResult<Array<OrderItem>> {
         return coroutineRoom<Array<OrderItem>> {
 
             val items = orderItemDao?.fetchByOrderId(request.ids.toTypedArray())
@@ -30,7 +30,7 @@ class OrderItemsRoomStore(val orderItemDao: OrderItemDAO?): OrderItemsCacheStore
         }
     }
 
-    override fun createOrUpdate(request: OrderItem): DeferredLiveResult<OrderItem> {
+    override fun createOrUpdateAsync(request: OrderItem): DeferredLiveResult<OrderItem> {
         return coroutineRoom<OrderItem> {
 
             orderItemDao?.insertOrUpdate(request)
@@ -45,7 +45,7 @@ class OrderItemsRoomStore(val orderItemDao: OrderItemDAO?): OrderItemsCacheStore
         }
     }
 
-    override fun createOrUpdate(vararg orderItem: OrderItem): DeferredResult<Void> {
+    override fun createOrUpdateAsync(vararg orderItem: OrderItem): DeferredResult<Void> {
         return coroutineNetwork<Void> {
             orderItemDao?.insert(*orderItem)
             Result.success()

@@ -17,6 +17,9 @@ import com.theblissprogrammer.amazon.sdk.preferences.PreferencesStore
 import com.theblissprogrammer.amazon.sdk.preferences.PreferencesWorkerType
 import com.theblissprogrammer.amazon.sdk.security.SecurityStore
 import com.theblissprogrammer.amazon.sdk.security.SecurityWorkerType
+import com.theblissprogrammer.amazon.sdk.stores.details.DetailsCacheStore
+import com.theblissprogrammer.amazon.sdk.stores.details.DetailsStore
+import com.theblissprogrammer.amazon.sdk.stores.details.DetailsWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.inventory.InventoryCacheStore
 import com.theblissprogrammer.amazon.sdk.stores.inventory.InventoryStore
 import com.theblissprogrammer.amazon.sdk.stores.inventory.InventoryWorkerType
@@ -26,6 +29,7 @@ import com.theblissprogrammer.amazon.sdk.stores.orderItems.OrderItemsWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.orders.OrdersCacheStore
 import com.theblissprogrammer.amazon.sdk.stores.orders.OrdersStore
 import com.theblissprogrammer.amazon.sdk.stores.orders.OrdersWorkerType
+import com.theblissprogrammer.amazon.sdk.stores.products.ProductsCacheStore
 import com.theblissprogrammer.amazon.sdk.stores.reports.ReportsStore
 import com.theblissprogrammer.amazon.sdk.stores.reports.ReportsWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.seed.SeedStore
@@ -68,6 +72,7 @@ interface SDKDependable {
     val resolveReportsWorker: ReportsWorkerType
     val resolveSeedWorker: SeedWorkerType
     val resolveAuthenticationWorker: AuthenticationWorkerType
+    val resolveDetailsWorker: DetailsWorkerType
 
     val resolveSyncStore: SyncStore
     val resolveSellersStore: SellersStore
@@ -76,6 +81,7 @@ interface SDKDependable {
     val resolveInventoryStore: InventoryStore
     val resolveReportsStore: ReportsStore
     val resolveSeedStore: SeedStore
+    val resolveDetailsStore: DetailsStore
 
     val resolveAuthenticationService: AuthenticationService
 
@@ -83,4 +89,6 @@ interface SDKDependable {
     val resolveOrdersCacheStore: OrdersCacheStore
     val resolveOrderItemsCacheStore: OrderItemsCacheStore
     val resolveInventoryCacheStore: InventoryCacheStore
+    val resolveDetailsCacheStore: DetailsCacheStore
+    val resolveProductsCacheStore: ProductsCacheStore
 }

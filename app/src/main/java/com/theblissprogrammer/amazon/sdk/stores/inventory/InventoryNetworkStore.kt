@@ -18,7 +18,7 @@ import com.theblissprogrammer.amazon.sdk.stores.inventory.models.ListInventorySu
  **/
 class InventoryNetworkStore(val apiSession: APISessionType): InventoryStore {
 
-    override fun fetch(request: InventoryModels.Request): DeferredResult<ListInventorySupply> {
+    override fun fetchAsync(request: InventoryModels.Request): DeferredResult<ListInventorySupply> {
         return coroutineNetwork <ListInventorySupply> {
             val response = apiSession.request(router = APIRouter.ReadInventory(request))
 
@@ -49,7 +49,7 @@ class InventoryNetworkStore(val apiSession: APISessionType): InventoryStore {
         }
     }
 
-    override fun fetchNext(nextToken: String): DeferredResult<ListInventorySupply> {
+    override fun fetchNextAsync(nextToken: String): DeferredResult<ListInventorySupply> {
         return coroutineNetwork <ListInventorySupply> {
             val response = apiSession.request(router = APIRouter.ReadNextInventory(nextToken))
 
