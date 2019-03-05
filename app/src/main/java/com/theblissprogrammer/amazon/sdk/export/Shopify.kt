@@ -3,6 +3,7 @@ package com.theblissprogrammer.amazon.sdk.export
 import android.os.Environment
 import com.theblissprogrammer.amazon.sdk.stores.details.models.ProductDetail
 import com.theblissprogrammer.amazon.sdk.stores.products.models.Product
+import org.jsoup.Jsoup
 import java.io.File
 import java.io.FileWriter
 
@@ -35,36 +36,68 @@ import java.io.FileWriter
                 writer.append('\n')
 
                 products.forEach {
-                    //writer.append(make(it.products.first()).toString())
+                    writer.append(make(it).toString())
                     writer.append('\n')
+
+                    if (it.detail.images.size > 1) {
+                        it.detail.images.forEachIndexed { index, s ->
+                            if (index == 0) return@forEachIndexed
+
+                            writer.append(
+                                ShopifyProduct(
+                                    Handle = it.detail.asin,
+                                    ImageSrc = s
+                                ).toString()
+                            )
+
+                            writer.append('\n')
+                        }
+                    }
                 }
 
                 writer.flush()
             }
         }
 
-        private fun make(product: Product): ShopifyProduct {
-            val title = product.name.replace(Regex("[,\"]"), "")
-            val description = product.description?.replace(Regex("[,]"), "")
+        private fun make(productDetail: ProductDetail): ShopifyProduct {
+            val product = productDetail.products.first()
+
+            val title = (if (productDetail.detail.title != "Robot Check") productDetail.detail.title else
+                product.name).makeCSVCompatible()
+
+            val description =  Jsoup.parse((productDetail.detail.features ?: "") + " " + (productDetail.detail.description ?: ""))
+                .text().makeCSVCompatible()
 
             return ShopifyProduct(
-                Handle = product.sku,
+                Handle = productDetail.detail.asin,
                 Title = title,
                 Body = description,
-                Vendor = "",
-                Type = product.category,
+                Vendor = productDetail.detail.manufacturer?.makeCSVCompatible() ?: "",
+                Type = productDetail.detail.category?.makeCSVCompatible() ?: product.category ?: "",
                 VariantSKU = product.sku,
-                VariantGrams = "",
+                VariantGrams = productDetail.detail.weight ?: "",
                 VariantInventoryQty = "",
                 VariantPrice = product.sellPrice.toString(),
                 VariantCompareAtPrice = "",
-                VariantBarcode = product.asin,
-                ImageSrc = "",
-                ImagePosition = "",
+                VariantBarcode = productDetail.detail.manufacturerReference?.makeCSVCompatible() ?: product.asin,
+                ImageSrc = productDetail.detail.images[0],
                 SEOTitle = title,
                 SEODescription = description,
-                CostPerItem = ""
+                Published = "TRUE",
+                Option1Name = "Title",
+                Option1Value = "Default Title",
+                VariantInventoryTracker = "amazon_marketplace_web",
+                VariantInventoryPolicy = "deny",
+                VariantFulfillmentService = "amazon_marketplace_web",
+                VariantRequiresShipping = "TRUE",
+                VariantTaxable = "TRUE",
+                GiftCard = "FALSE"
+
             )
         }
     }
+}
+
+fun String.makeCSVCompatible(): String {
+    return "\"${this.replace(Regex("[\"]"), "")}\""
 }

@@ -19,13 +19,13 @@ class DetailsWorker(val store: DetailsStore,
             val details = store.fetchAsync(it).await()
 
             if (!details.isSuccess || details.value == null) {
-                return LogHelper.e(messages = *arrayOf("Error occurred while retrieving details for $it: ${details.error ?: ""}"))
+                return@forEach LogHelper.e(messages = *arrayOf("Error occurred while retrieving details for $it: ${details.error ?: ""}"))
             }
 
             val savedElement = this.cacheStore.createOrUpdateAsync(details.value).await()
 
             if (!savedElement.isSuccess) {
-                return LogHelper.e(
+                return@forEach LogHelper.e(
                     messages = *arrayOf(
                         "Could not save updated details locally for $it" +
                                 " from remote storage: ${savedElement.error?.localizedMessage ?: ""}"

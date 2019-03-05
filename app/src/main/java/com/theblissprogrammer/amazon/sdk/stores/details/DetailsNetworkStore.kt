@@ -102,14 +102,23 @@ class DetailsNetworkStore(val httpService: HTTPServiceType): DetailsStore {
                 return null
             }
 
-            // If Robot Check.. pause and try again
-            if (title[0].contains("Robot Check")) {
-                Thread.sleep(2000)
-                return fetchDetails(asin)
-            }
-
             val values = jsoup.getElementsByClass("dpSectionBodyText").lastOrNull()?.html()
                 ?.replace("&nbsp;", "")?.split("<br>")
+
+            val weight = values?.firstOrNull { it.contains("Weight:") }
+                ?.replace(Regex(".*?Weight:"), "") ?: ""
+
+            val grams = when {
+                weight.contains("pounds") -> {
+                    val pounds = weight.replace("pounds", "").trim().toDoubleOrNull() ?: 0.0
+                    pounds * 453.592
+                }
+                weight.contains("ounces") -> {
+                    val ounces = weight.replace("ounces", "").trim().toDoubleOrNull() ?: 0.0
+                    ounces * 28.3495
+                }
+                else -> 0.0
+            }
 
             Detail(
                 asin = asin,
@@ -118,8 +127,7 @@ class DetailsNetworkStore(val httpService: HTTPServiceType): DetailsStore {
                     ?.replace("Manufacturer:", "")?.trim(),
                 manufacturerReference = values?.firstOrNull { it.contains("Manufacturer reference:") }
                     ?.replace("Manufacturer reference:", "")?.trim(),
-                weight = values?.firstOrNull { it.contains("Weight:") }
-                    ?.replace(Regex(".*?Weight:"), "")?.trim(),
+                weight = grams.toString(),
                 bsr = values?.firstOrNull { it.contains("Sales Rank:") }
                     ?.replace(Regex(".*?Sales Rank:"), "")?.trim()?.toIntOrNull(),
                 category = if (title.size > 1) title.lastOrNull() else null
