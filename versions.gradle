@@ -142,7 +142,7 @@ deps.maven_plugin = "com.github.dcendents:android-maven-gradle-plugin:$versions.
 ext.deps = deps
 
 def build_versions = [:]
-build_versions.min_sdk = 14
+build_versions.min_sdk = 19
 build_versions.target_sdk = 29
 ext.build_versions = build_versions
 
@@ -158,5 +158,6 @@ ext.deps = deps
 def addRepos(RepositoryHandler handler) {
     handler.google()
     handler.jcenter()
+    handler.mavenLocal()
 }
 ext.addRepos = this.&addRepos

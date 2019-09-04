@@ -1,5 +1,7 @@
 package com.theblissprogrammer.amazon.sdk.extensions
 
+import java.util.*
+
 /**
  * Created by ahmedsaad on 2018-04-04.
  * Copyright © 2018. All rights reserved.
@@ -25,7 +27,7 @@ val <k, v> Map<k, v>.scrubbed: Map<String, String>
         val map = hashMapOf<String, String>()
         this.forEach {
             val key = "${it.key}"
-            val value = if (!scrubKeys.contains(key.toLowerCase()) || it.value.toString().isEmpty()) "${it.value}" else "*****"
+            val value = if (!scrubKeys.contains(key.toLowerCase(Locale.getDefault())) || it.value.toString().isEmpty()) "${it.value}" else "*****"
             map[key] = value
         }
 

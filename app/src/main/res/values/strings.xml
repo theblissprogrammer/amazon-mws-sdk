@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">(Unoffical) Amazon MWS SDK</string>
+    <string name="app_name">(Unofficial) Amazon MWS SDK</string>
     <string name="email_user_admin">sereensound@gmail.com</string>
     <string name="email_user_admin_debug">sereensound@gmail.com</string>
 </resources>
