@@ -3,7 +3,6 @@ package com.theblissprogrammer.amazon.sdk.data
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.theblissprogrammer.amazon.sdk.extensions.Converters
 import com.theblissprogrammer.amazon.sdk.stores.details.DetailDAO
 import com.theblissprogrammer.amazon.sdk.stores.details.models.Detail
 import com.theblissprogrammer.amazon.sdk.stores.inventory.InventoryDAO

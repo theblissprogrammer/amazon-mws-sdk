@@ -1,4 +1,4 @@
-package com.theblissprogrammer.amazon.sdk.extensions
+package com.theblissprogrammer.amazon.sdk.data
 
 import androidx.room.TypeConverter
 import com.theblissprogrammer.amazon.sdk.enums.*

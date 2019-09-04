@@ -1,13 +1,22 @@
 apply plugin: 'com.android.library'
-
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'kotlin-allopen'
+apply plugin: 'com.github.dcendents.android-maven'
+
+group = 'com.github.theblissprogrammer'
+
+allOpen {
+    // allows mocking for classes w/o directly opening them for release builds
+    annotation 'com.android.example.github.testing.OpenClass'
+}
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion build_versions.target_sdk
+
     defaultConfig {
-        minSdkVersion 19
-        targetSdkVersion 28
+        minSdkVersion build_versions.min_sdk
+        targetSdkVersion build_versions.target_sdk
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -29,6 +38,15 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+    sourceSets {
+        androidTest.java.srcDirs += "src/test-common/java"
+        test.java.srcDirs += "src/test-common/java"
+    }
+
     testOptions {
         unitTests {
             includeAndroidResources = true
@@ -46,27 +64,33 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation 'androidx.appcompat:appcompat:1.0.2'
-    implementation "androidx.room:room-runtime:$rootProject.roomVersion"
-    kapt "androidx.room:room-compiler:$rootProject.roomVersion"
+    implementation deps.support.app_compat
+    implementation deps.support.broadcast_manager
+    implementation deps.room.runtime
 
+    kapt deps.room.compiler
+    kapt deps.lifecycle.compiler
 
-    implementation "androidx.lifecycle:lifecycle-extensions:$rootProject.lifecycleVersion"
-    implementation "androidx.lifecycle:lifecycle-livedata:$rootProject.lifecycleVersion"
-    kapt "androidx.lifecycle:lifecycle-compiler:$rootProject.lifecycleVersion"
+    implementation deps.okhttp.runtime
 
-    implementation "com.squareup.okhttp3:okhttp:$rootProject.okhttpVersion"
     implementation 'commons-codec:commons-codec:1.10'
     implementation 'org.jsoup:jsoup:1.11.3'
 
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$rootProject.kotlinVersion"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$rootProject.coroutinesVersion"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$rootProject.coroutinesVersion"
+    implementation deps.kotlin.stdlib
+    implementation deps.coroutines.runtime
+    implementation deps.coroutines.core
 
-    androidTestImplementation "androidx.arch.core:core-testing:$rootProject.coreTestingVersion"
-    androidTestImplementation "androidx.test.espresso:espresso-contrib:$rootProject.espressoVersion"
-    androidTestImplementation "androidx.test.espresso:espresso-core:$rootProject.espressoVersion"
-    androidTestImplementation "androidx.test.espresso:espresso-intents:$rootProject.espressoVersion"
-    androidTestImplementation "androidx.test.uiautomator:uiautomator:$rootProject.uiAutomatorVersion"
-    testImplementation "junit:junit:$rootProject.junitVersion"
+    androidTestImplementation deps.arch_core.testing
+    androidTestImplementation deps.espresso.contrib
+    androidTestImplementation deps.espresso.core
+    androidTestImplementation deps.espresso.intents
+    //androidTestImplementation "androidx.test.uiautomator:uiautomator:$rootProject.uiAutomatorVersion"
+    testImplementation deps.junit
+}
+
+// we need all open to run tests which  a we enable only for debug builds.
+project.tasks.whenTaskAdded {
+    if (it.name == "testReleaseUnitTest") {
+        it.enabled = false
+    }
 }
