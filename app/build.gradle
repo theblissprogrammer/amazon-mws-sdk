@@ -25,6 +25,7 @@ android {
                 arg("room.schemaLocation", "$projectDir/schemas".toString())
             }
         }
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -66,6 +67,7 @@ dependencies {
 
     implementation deps.support.app_compat
     implementation deps.support.broadcast_manager
+    implementation deps.multidex
     implementation deps.room.runtime
 
     kapt deps.room.compiler
@@ -75,6 +77,7 @@ dependencies {
 
     implementation 'commons-codec:commons-codec:1.10'
     implementation 'org.jsoup:jsoup:1.11.3'
+    implementation 'com.github.theblissprogrammer:android-kotlin-common:7730f60592'
 
     implementation deps.kotlin.stdlib
     implementation deps.coroutines.runtime
