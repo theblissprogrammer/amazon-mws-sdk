@@ -1,6 +1,7 @@
 package com.theblissprogrammer.amazon.sdk.export
 
 import android.os.Environment
+import com.theblissprogrammer.amazon.sdk.extensions.makeCSVCompatible
 import com.theblissprogrammer.amazon.sdk.stores.details.models.ProductDetail
 import com.theblissprogrammer.amazon.sdk.stores.products.models.Product
 import org.jsoup.Jsoup
@@ -96,8 +97,4 @@ import java.io.FileWriter
             )
         }
     }
-}
-
-fun String.makeCSVCompatible(): String {
-    return "\"${this.replace(Regex("[\"]"), "")}\""
 }

@@ -21,6 +21,6 @@ interface DetailDAO: CommonDAO<Detail> {
     fun fetch(asin: String): LiveData<Detail>
 
     @Transaction
-    @Query("SELECT * from Detail")
-    fun fetchProductDetails(): LiveData<List<ProductDetail>>
+    @Query("SELECT * from Detail WHERE Detail.asin IN (:asins)")
+    fun fetchProductDetails(asins: Array<String>): LiveData<List<ProductDetail>>
 }

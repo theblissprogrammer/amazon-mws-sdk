@@ -27,7 +27,7 @@ class DetailsRoomStore(val detailDao: DetailDAO?): DetailsCacheStore {
     override fun fetchProductDetailAsync(request: List<String>): DeferredLiveResult<List<ProductDetail>> {
         return coroutineRoom<List<ProductDetail>> {
 
-            val items = detailDao?.fetchProductDetails()
+            val items = detailDao?.fetchProductDetails(request.toTypedArray())
             LiveResult.success(items)
         }
     }
