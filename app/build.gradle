@@ -87,7 +87,6 @@ dependencies {
     androidTestImplementation deps.espresso.contrib
     androidTestImplementation deps.espresso.core
     androidTestImplementation deps.espresso.intents
-    //androidTestImplementation "androidx.test.uiautomator:uiautomator:$rootProject.uiAutomatorVersion"
     testImplementation deps.junit
 }
 

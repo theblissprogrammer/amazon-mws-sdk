@@ -5,7 +5,7 @@ package com.theblissprogrammer.amazon.sdk.dependencies
  * Created by ahmedsaad on 2017-11-30.
  * Copyright © 2017. All rights reserved.
  */
-internal interface HasDependencies {
+interface HasDependencies {
     /// Container for dependency instance factories
     val dependencies: SDKDependable
         get() {
