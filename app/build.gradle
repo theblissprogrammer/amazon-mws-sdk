@@ -77,7 +77,6 @@ dependencies {
 
     implementation 'commons-codec:commons-codec:1.10'
     implementation 'org.jsoup:jsoup:1.11.3'
-    implementation 'com.github.theblissprogrammer:android-kotlin-common:7730f60592'
 
     implementation deps.kotlin.stdlib
     implementation deps.coroutines.runtime
