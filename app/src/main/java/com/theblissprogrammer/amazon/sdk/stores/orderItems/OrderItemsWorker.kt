@@ -1,9 +1,12 @@
 package com.theblissprogrammer.amazon.sdk.stores.orderItems
 
 import com.theblissprogrammer.amazon.sdk.common.LiveCompletionResponse
+import com.theblissprogrammer.amazon.sdk.extensions.switchMap
 import com.theblissprogrammer.amazon.sdk.logging.LogHelper
 import com.theblissprogrammer.amazon.sdk.stores.orderItems.models.OrderItem
 import com.theblissprogrammer.amazon.sdk.stores.orderItems.models.OrderItemModels
+import com.theblissprogrammer.amazon.sdk.stores.orders.OrdersWorkerType
+import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderModels
 
 /**
  * Created by ahmedsaad on 2018-08-05.

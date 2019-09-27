@@ -32,6 +32,7 @@ import com.theblissprogrammer.amazon.sdk.stores.details.*
 import com.theblissprogrammer.amazon.sdk.stores.orderItems.*
 import com.theblissprogrammer.amazon.sdk.stores.products.ProductsCacheStore
 import com.theblissprogrammer.amazon.sdk.stores.products.ProductsRoomStore
+import com.theblissprogrammer.amazon.sdk.stores.subscriptions.*
 
 open class SDKDependency: SDKDependable {
     override lateinit var application: Application
@@ -172,6 +173,14 @@ open class SDKDependency: SDKDependable {
         )
     }
 
+    override val resolveSubscriptionsWorker: SubscriptionsWorkerType by lazy {
+        SubscriptionsWorker(
+                store = resolveSubscriptionsStore,
+                cacheStore = resolveSubscriptionsCacheStore,
+                preferencesWorker = resolvePreferencesWorker
+        )
+    }
+
     override val resolveSyncStore: SyncStore  by lazy {
          SyncRoomStore(
              preferencesWorker = resolvePreferencesWorker,
@@ -224,6 +233,12 @@ open class SDKDependency: SDKDependable {
         )
     }
 
+    override val resolveSubscriptionsStore: SubscriptionsStore by lazy {
+        SubscriptionsNetworkStore(
+                constants = resolveConstants
+        )
+    }
+
     override val resolveAuthenticationService: AuthenticationService  by lazy {
          AuthenticationNetworkService(
              apiSession = resolveAPISessionService,
@@ -264,6 +279,12 @@ open class SDKDependency: SDKDependable {
     override val resolveDetailsCacheStore: DetailsCacheStore by lazy {
         DetailsRoomStore(
             detailDao = (resolveDataStore as? DataRoomStore)?.instance()?.detailDao()
+        )
+    }
+
+    override val resolveSubscriptionsCacheStore: SubscriptionsCacheStore by lazy {
+        SubscriptionsRoomStore(
+                subscriptionsDao = (resolveDataStore as? DataRoomStore)?.instance()?.subscriptionsDAO()
         )
     }
 

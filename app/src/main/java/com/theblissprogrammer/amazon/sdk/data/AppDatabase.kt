@@ -16,6 +16,8 @@ import com.theblissprogrammer.amazon.sdk.stores.products.ProductDAO
 import com.theblissprogrammer.amazon.sdk.stores.products.models.Product
 import com.theblissprogrammer.amazon.sdk.stores.sellers.SellerDAO
 import com.theblissprogrammer.amazon.sdk.stores.sellers.models.Seller
+import com.theblissprogrammer.amazon.sdk.stores.subscriptions.SubscriptionsDAO
+import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.Queue
 
 /**
  * Created by ahmed.saad on 2018-12-03.
@@ -29,9 +31,10 @@ import com.theblissprogrammer.amazon.sdk.stores.sellers.models.Seller
         OrderItem::class,
         Inventory::class,
         Product::class,
-        Detail::class
+        Detail::class,
+        Queue::class
     ],
-    version = 10
+    version = 11
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -41,4 +44,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun inventoryDao(): InventoryDAO
     abstract fun productDao(): ProductDAO
     abstract fun detailDao(): DetailDAO
+    abstract fun subscriptionsDAO(): SubscriptionsDAO
 }

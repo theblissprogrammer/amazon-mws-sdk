@@ -75,9 +75,12 @@ dependencies {
 
     implementation deps.okhttp.runtime
 
-    implementation 'commons-codec:commons-codec:1.10'
+    implementation 'commons-codec:commons-codec:1.11'
     implementation 'org.jsoup:jsoup:1.11.3'
 
+    implementation 'com.amazonaws:aws-android-sdk-sqs:2.16.0'
+
+    implementation group: 'org.apache.httpcomponents' , name: 'httpclient-android' , version: '4.3.5.1'
     implementation deps.kotlin.stdlib
     implementation deps.coroutines.runtime
     implementation deps.coroutines.core

@@ -3,6 +3,7 @@ package com.theblissprogrammer.amazon.sdk.common
 import androidx.lifecycle.LiveData
 import com.theblissprogrammer.amazon.sdk.errors.DataError
 import com.theblissprogrammer.amazon.sdk.errors.NetworkError
+import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.Queue
 import kotlinx.coroutines.Deferred
 
 /**
@@ -47,6 +48,7 @@ data class LiveResult<T>(val isSuccess: Boolean = false, val value: LiveData<T>?
 }
 
 typealias SuspendCompletionResponse<T> = suspend (Result<T>) -> Unit
+typealias SuspendLiveCompletionResponse<T> = suspend (LiveResult<T>) -> Unit
 typealias CompletionResponse<T> = (Result<T>) -> Unit
 typealias LiveCompletionResponse<T> = (LiveResult<T>) -> Unit
 typealias DeferredLiveResult<T> = Deferred<LiveResult<T>>

@@ -37,6 +37,9 @@ import com.theblissprogrammer.amazon.sdk.stores.seed.SeedWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.sellers.SellersCacheStore
 import com.theblissprogrammer.amazon.sdk.stores.sellers.SellersStore
 import com.theblissprogrammer.amazon.sdk.stores.sellers.SellersWorkerType
+import com.theblissprogrammer.amazon.sdk.stores.subscriptions.SubscriptionsCacheStore
+import com.theblissprogrammer.amazon.sdk.stores.subscriptions.SubscriptionsStore
+import com.theblissprogrammer.amazon.sdk.stores.subscriptions.SubscriptionsWorkerType
 
 
 /**
@@ -73,6 +76,7 @@ interface SDKDependable {
     val resolveSeedWorker: SeedWorkerType
     val resolveAuthenticationWorker: AuthenticationWorkerType
     val resolveDetailsWorker: DetailsWorkerType
+    val resolveSubscriptionsWorker: SubscriptionsWorkerType
 
     val resolveSyncStore: SyncStore
     val resolveSellersStore: SellersStore
@@ -82,6 +86,7 @@ interface SDKDependable {
     val resolveReportsStore: ReportsStore
     val resolveSeedStore: SeedStore
     val resolveDetailsStore: DetailsStore
+    val resolveSubscriptionsStore: SubscriptionsStore
 
     val resolveAuthenticationService: AuthenticationService
 
@@ -91,4 +96,5 @@ interface SDKDependable {
     val resolveInventoryCacheStore: InventoryCacheStore
     val resolveDetailsCacheStore: DetailsCacheStore
     val resolveProductsCacheStore: ProductsCacheStore
+    val resolveSubscriptionsCacheStore: SubscriptionsCacheStore
 }

@@ -26,6 +26,10 @@ interface ConstantsType: ConstantsStore {
     /// Admob
     val bannerAdUnitID: String
 
+    /// SQS AWS
+    val sqsAwsAccessKeyID: String
+    val sqsAwsSecretKey: String
+
 
     /// Email of admin used for users
     val emailUserAdmin: String

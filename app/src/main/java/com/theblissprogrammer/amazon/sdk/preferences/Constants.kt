@@ -17,6 +17,10 @@ class Constants(val store: ConstantsStore): ConstantsType {
         get() = Companion.awsAccessKeyID
     override val awsSecretKey: String
         get() = Companion.awsSecretKey
+    override val sqsAwsAccessKeyID: String
+        get() = Companion.sqsAwsAccessKeyID
+    override val sqsAwsSecretKey: String
+        get() = Companion.sqsAwsSecretKey
 
     override val euDeveloperAccountNumber: String
         get() = Companion.euDeveloperAccountNumber

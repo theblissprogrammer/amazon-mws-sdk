@@ -28,7 +28,8 @@ class SellersWorker(val store: SellersStore,
         if (cache.error != null && cache.error === DataError.NonExistent) {
             val response = this.store.fetch(request = request).await()
             val value = response.value
-            if (value == null || !response.isSuccess) {
+
+            return if (value == null || !response.isSuccess) {
                 completion(failure(response.error))
             } else {
                 completion(cacheStore.createOrUpdate(value).await())
@@ -59,8 +60,6 @@ class SellersWorker(val store: SellersStore,
             LogHelper.e(messages = *arrayOf("Could not save updated user locally" +
                     " from remote storage: ${savedElement.error?.localizedMessage ?: ""}"))
         }
-
-        completion(cache)
     }
 
     override suspend fun fetchCurrentSellerAsync(completion: LiveCompletionResponse<Seller>) {
