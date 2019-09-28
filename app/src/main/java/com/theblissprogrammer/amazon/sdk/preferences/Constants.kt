@@ -64,7 +64,7 @@ class Constants(val store: ConstantsStore): ConstantsType {
 
         - returns: the obfuscated string in a byte array
          **/
-        /**fun obfuscate(string: String): String {
+        fun obfuscate(string: String): String {
             val text = string.toByteArray(Charsets.UTF_8)
             val cipher = Constants.secretSalt.toByteArray(Charsets.UTF_8)
             val length = cipher.count()
@@ -75,7 +75,7 @@ class Constants(val store: ConstantsStore): ConstantsType {
             }
 
             return encrypted.joinToString()
-        }**/
+        }
 
         /**
         This method reveals the original string from the obfuscated

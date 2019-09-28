@@ -1,20 +1,20 @@
 package com.theblissprogrammer.amazon.sdk.stores.subscriptions
 
+import androidx.lifecycle.LiveData
 import com.amazonaws.auth.AWSCredentials
 import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.services.sqs.AmazonSQSAsyncClient
 import com.amazonaws.services.sqs.AmazonSQSClient
 import com.amazonaws.services.sqs.model.CreateQueueRequest
 import com.amazonaws.services.sqs.model.QueueNameExistsException
-import com.theblissprogrammer.amazon.sdk.common.CompletionResponse
-import com.theblissprogrammer.amazon.sdk.common.LiveCompletionResponse
-import com.theblissprogrammer.amazon.sdk.common.LiveResult
+import com.theblissprogrammer.amazon.sdk.common.*
 import com.theblissprogrammer.amazon.sdk.common.LiveResult.Companion.failure
 import com.theblissprogrammer.amazon.sdk.enums.DefaultsKeys
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.enums.marketplaceFromId
 import com.theblissprogrammer.amazon.sdk.errors.DataError
 import com.theblissprogrammer.amazon.sdk.logging.LogHelper
+import com.theblissprogrammer.amazon.sdk.network.NetworkBoundResource
 import com.theblissprogrammer.amazon.sdk.preferences.PreferencesWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.Queue
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.SubscriptionsModels
@@ -44,6 +44,25 @@ class SubscriptionsWorker(
                 name = queueName,
                 marketplace = marketplaceFromId(marketplace) ?: MarketplaceType.US
         )
+
+        val data = object : NetworkBoundResource<Queue, Queue>() {
+            override suspend fun saveCallResult(item: Queue) {
+                cacheStore.createOrUpdateQueue(item).await()
+            }
+
+            override fun shouldFetch(data: Queue?): Boolean {
+                return data == null || data.url.isNullOrBlank()
+            }
+
+            override fun loadFromDbAsync(): DeferredLiveResult<Queue> {
+                return cacheStore.getQueue(request = request)
+            }
+
+            override fun createCallAsync(): DeferredResult<Queue> {
+                return store.getQueue(request = request)
+            }
+
+        }.asLiveData()
 
         // Use cache storage if applicable
         val cache = cacheStore.getQueue(request = request).await()
