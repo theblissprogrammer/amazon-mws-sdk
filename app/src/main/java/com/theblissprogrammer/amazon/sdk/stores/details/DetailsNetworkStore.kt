@@ -3,7 +3,7 @@ package com.theblissprogrammer.amazon.sdk.stores.details
 import com.theblissprogrammer.amazon.sdk.common.DeferredResult
 import com.theblissprogrammer.amazon.sdk.common.Result
 import com.theblissprogrammer.amazon.sdk.errors.DataError
-import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetwork
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetworkAsync
 import com.theblissprogrammer.amazon.sdk.logging.LogHelper
 import com.theblissprogrammer.amazon.sdk.network.HTTPServiceType
 import com.theblissprogrammer.amazon.sdk.stores.details.models.Detail
@@ -19,8 +19,8 @@ class DetailsNetworkStore(val httpService: HTTPServiceType): DetailsStore {
             " Version/7.0.0.187 Mobile Safari/534.11+"
 
     override fun fetchAsync(asin: String): DeferredResult<Detail> {
-        return coroutineNetwork <Detail> {
-            val detail = fetchDetails(asin) ?: return@coroutineNetwork Result.failure(DataError.UnknownReason(null))
+        return coroutineNetworkAsync <Detail> {
+            val detail = fetchDetails(asin) ?: return@coroutineNetworkAsync Result.failure(DataError.UnknownReason(null))
 
             detail.description = fetchDescription(asin)
             detail.features = fetchFeatures(asin)

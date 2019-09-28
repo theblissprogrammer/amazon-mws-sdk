@@ -1,7 +1,7 @@
 package com.theblissprogrammer.amazon.sdk.stores.orders
 
 import com.theblissprogrammer.amazon.sdk.common.*
-import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetwork
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetworkAsync
 import com.theblissprogrammer.amazon.sdk.network.APIRouter
 import com.theblissprogrammer.amazon.sdk.errors.DataError
 import com.theblissprogrammer.amazon.sdk.logging.LogHelper
@@ -18,7 +18,7 @@ import com.theblissprogrammer.amazon.sdk.stores.orders.models.ListOrders
 class OrdersNetworkStore(val apiSession: APISessionType): OrdersStore {
 
     override fun fetchAsync(request: OrderModels.Request): DeferredResult<ListOrders> {
-        return coroutineNetwork <ListOrders> {
+        return coroutineNetworkAsync <ListOrders> {
             val response = apiSession.request(router = APIRouter.ReadOrders(request))
 
             // Handle errors
@@ -26,7 +26,7 @@ class OrdersNetworkStore(val apiSession: APISessionType): OrdersStore {
             if (value == null || !response.isSuccess) {
                 val error = response.error
 
-                return@coroutineNetwork if (error != null) {
+                return@coroutineNetworkAsync if (error != null) {
                     val exception = initDataError(response.error)
                     LogHelper.e(messages = *arrayOf("An error occurred while fetching orders: " +
                             "${error.description}."))
@@ -49,7 +49,7 @@ class OrdersNetworkStore(val apiSession: APISessionType): OrdersStore {
     }
 
     override fun fetchNextAsync(nextToken: String): DeferredResult<ListOrders> {
-        return coroutineNetwork <ListOrders> {
+        return coroutineNetworkAsync <ListOrders> {
             val response = apiSession.request(router = APIRouter.ReadNextOrders(nextToken))
 
             // Handle errors
@@ -57,7 +57,7 @@ class OrdersNetworkStore(val apiSession: APISessionType): OrdersStore {
             if (value == null || !response.isSuccess) {
                 val error = response.error
 
-                return@coroutineNetwork  if (error != null) {
+                return@coroutineNetworkAsync  if (error != null) {
                     val exception = initDataError(response.error)
                     LogHelper.e(
                         messages = *arrayOf(

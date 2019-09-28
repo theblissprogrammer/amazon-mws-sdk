@@ -1,24 +1,16 @@
 package com.theblissprogrammer.amazon.sdk.stores.subscriptions
 
-import androidx.lifecycle.LiveData
-import com.amazonaws.auth.AWSCredentials
-import com.amazonaws.auth.BasicAWSCredentials
-import com.amazonaws.services.sqs.AmazonSQSAsyncClient
-import com.amazonaws.services.sqs.AmazonSQSClient
-import com.amazonaws.services.sqs.model.CreateQueueRequest
-import com.amazonaws.services.sqs.model.QueueNameExistsException
+import androidx.lifecycle.MutableLiveData
 import com.theblissprogrammer.amazon.sdk.common.*
-import com.theblissprogrammer.amazon.sdk.common.LiveResult.Companion.failure
 import com.theblissprogrammer.amazon.sdk.enums.DefaultsKeys
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.enums.marketplaceFromId
-import com.theblissprogrammer.amazon.sdk.errors.DataError
-import com.theblissprogrammer.amazon.sdk.logging.LogHelper
+import com.theblissprogrammer.amazon.sdk.extensions.switchMap
 import com.theblissprogrammer.amazon.sdk.network.NetworkBoundResource
+import com.theblissprogrammer.amazon.sdk.network.Resource
 import com.theblissprogrammer.amazon.sdk.preferences.PreferencesWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.Queue
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.SubscriptionsModels
-import java.lang.Exception
 
 /**
  * Created by ahmed.saad on 2019-09-26.
@@ -29,78 +21,82 @@ class SubscriptionsWorker(
         val cacheStore: SubscriptionsCacheStore,
         val preferencesWorker: PreferencesWorkerType): SubscriptionsWorkerType {
 
-    override suspend fun getQueue(completion: LiveCompletionResponse<Queue>) {
+    override fun getQueue(completion: LiveResourceResponse<Queue>) {
         val id = preferencesWorker.get(DefaultsKeys.sellerID)
         val marketplace = preferencesWorker.get(DefaultsKeys.marketplace)
 
         if (id.isNullOrBlank() || marketplace.isNullOrBlank()) {
-            completion(failure(DataError.Unauthorized))
+            //completion(failure(DataError.Unauthorized))
             return
         }
 
         val queueName = "$id-$marketplace"
 
-        val request = SubscriptionsModels.Request(
+        val request = SubscriptionsModels.QueueRequest(
                 name = queueName,
                 marketplace = marketplaceFromId(marketplace) ?: MarketplaceType.US
         )
 
         val data = object : NetworkBoundResource<Queue, Queue>() {
-            override suspend fun saveCallResult(item: Queue) {
-                cacheStore.createOrUpdateQueue(item).await()
+            override fun saveCallResult(item: Queue?) {
+                if (item != null) {
+                    cacheStore.createOrUpdateQueue(item)
+                }
             }
 
             override fun shouldFetch(data: Queue?): Boolean {
-                return data == null || data.url.isNullOrBlank()
+                return data == null || data.url.isNullOrBlank() || data.updatedAt == null
             }
 
-            override fun loadFromDbAsync(): DeferredLiveResult<Queue> {
+            override fun loadFromDb(): LiveResult<Queue> {
                 return cacheStore.getQueue(request = request)
             }
 
-            override fun createCallAsync(): DeferredResult<Queue> {
+            override fun createCall(): Result<Queue> {
                 return store.getQueue(request = request)
             }
 
         }.asLiveData()
 
-        // Use cache storage if applicable
-        val cache = cacheStore.getQueue(request = request).await()
+        completion(data)
 
-        // Retrieve missing cache data from cloud if applicable
-        if (cache.error != null && cache.error === DataError.NonExistent) {
-            val response = this.store.getQueue(request = request).await()
-            val value = response.value
+    }
 
-            return if (value == null || !response.isSuccess) {
-                completion(failure(response.error))
-            } else {
-                completion(cacheStore.createOrUpdateQueue(value).await())
+    fun registerDestination(completion: LiveResourceResponse<Void>) {
+        getQueue {
+             val data = it.switchMap { resource ->
+
+                 if (resource?.data?.url == null) {
+                     val data = MutableLiveData<Resource<Void>>()
+
+                     return@switchMap data
+                 }
+
+                 val request = SubscriptionsModels.DestinationRequest(
+                        url = resource.data.url,
+                        marketplace = resource.data.marketplace
+                 )
+
+                 return@switchMap object : NetworkBoundResource<Void, Void>() {
+                     override fun saveCallResult(item: Void?) {
+
+                     }
+
+                     override fun shouldFetch(data: Void?): Boolean {
+                         return true
+                     }
+
+                     override fun loadFromDb(): LiveResult<Void> {
+                         val data = MutableLiveData<Void>().apply { value = null }
+                         return LiveResult.success(data)
+                     }
+
+                     override fun createCall(): Result<Void> {
+                         return store.registerDestination(request)
+                     }
+
+                 }.asLiveData()
             }
-        }
-
-        // Immediately return local response
-        completion(cache)
-
-        val cacheElement = cache.value
-        if (cacheElement == null || !cache.isSuccess) {
-            return
-        }
-
-        val response = this.store.getQueue(request = request).await()
-
-        // Validate if any updates that needs to be stored
-        val element = response.value
-        if (element == null || !response.isSuccess) {
-            return
-        }
-
-        // Update local storage with updated data
-        val savedElement = cacheStore.createOrUpdateQueue(element).await()
-
-        if (!savedElement.isSuccess) {
-            LogHelper.e(messages = *arrayOf("Could not save updated queue locally" +
-                    " from remote storage: ${savedElement.error?.localizedMessage ?: ""}"))
         }
 
     }

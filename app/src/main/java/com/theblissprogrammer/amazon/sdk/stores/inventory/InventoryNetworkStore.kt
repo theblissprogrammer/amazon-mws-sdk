@@ -4,7 +4,7 @@ import com.theblissprogrammer.amazon.sdk.common.DeferredResult
 import com.theblissprogrammer.amazon.sdk.common.Result
 import com.theblissprogrammer.amazon.sdk.common.initDataError
 import com.theblissprogrammer.amazon.sdk.errors.DataError
-import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetwork
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetworkAsync
 import com.theblissprogrammer.amazon.sdk.logging.LogHelper
 import com.theblissprogrammer.amazon.sdk.network.APIRouter
 import com.theblissprogrammer.amazon.sdk.stores.inventory.models.InventoryModels
@@ -19,7 +19,7 @@ import com.theblissprogrammer.amazon.sdk.stores.inventory.models.ListInventorySu
 class InventoryNetworkStore(val apiSession: APISessionType): InventoryStore {
 
     override fun fetchAsync(request: InventoryModels.Request): DeferredResult<ListInventorySupply> {
-        return coroutineNetwork <ListInventorySupply> {
+        return coroutineNetworkAsync <ListInventorySupply> {
             val response = apiSession.request(router = APIRouter.ReadInventory(request))
 
             // Handle errors
@@ -27,7 +27,7 @@ class InventoryNetworkStore(val apiSession: APISessionType): InventoryStore {
             if (value == null || !response.isSuccess) {
                 val error = response.error
 
-                return@coroutineNetwork if (error != null) {
+                return@coroutineNetworkAsync if (error != null) {
                     val exception = initDataError(response.error)
                     LogHelper.e(messages = *arrayOf("An error occurred while fetching inventory: " +
                             "${error.description}."))
@@ -50,7 +50,7 @@ class InventoryNetworkStore(val apiSession: APISessionType): InventoryStore {
     }
 
     override fun fetchNextAsync(nextToken: String): DeferredResult<ListInventorySupply> {
-        return coroutineNetwork <ListInventorySupply> {
+        return coroutineNetworkAsync <ListInventorySupply> {
             val response = apiSession.request(router = APIRouter.ReadNextInventory(nextToken))
 
             // Handle errors
@@ -58,7 +58,7 @@ class InventoryNetworkStore(val apiSession: APISessionType): InventoryStore {
             if (value == null || !response.isSuccess) {
                 val error = response.error
 
-                return@coroutineNetwork  if (error != null) {
+                return@coroutineNetworkAsync  if (error != null) {
                     val exception = initDataError(response.error)
                     LogHelper.e(
                         messages = *arrayOf(

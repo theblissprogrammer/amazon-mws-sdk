@@ -4,8 +4,13 @@ import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
-import com.theblissprogrammer.amazon.sdk.common.DeferredLiveResult
-import com.theblissprogrammer.amazon.sdk.common.DeferredResult
+import androidx.lifecycle.MutableLiveData
+import com.theblissprogrammer.amazon.sdk.common.LiveResult
+import com.theblissprogrammer.amazon.sdk.common.Result
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineBackgroundAsync
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetworkAsync
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineOnIO
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineOnUi
 
 /**
  * Created by ahmed.saad on 2019-09-27.
@@ -19,14 +24,23 @@ abstract class NetworkBoundResource<ResultType, RequestType>
     init {
         result.value = Resource.loading(null)
         @Suppress("LeakingThis")
-        val dbSource = loadFromDbAsync().await()
-        result.addSource(dbSource) { data ->
-            result.removeSource(dbSource)
-            if (shouldFetch(data)) {
-                fetchFromNetwork(dbSource)
-            } else {
-                result.addSource(dbSource) { newData ->
-                    setValue(Resource.success(newData))
+
+        coroutineOnIO {
+            val dbSource = loadFromDb()
+
+            val value = dbSource.value ?: MutableLiveData()
+
+            coroutineOnUi {
+                result.addSource(value) { data ->
+                    result.removeSource(value)
+
+                    if (shouldFetch(data)) {
+                        fetchFromNetwork(value)
+                    } else {
+                        result.addSource(value) { newData ->
+                            setValue(Resource.success(newData))
+                        }
+                    }
                 }
             }
         }
@@ -40,41 +54,56 @@ abstract class NetworkBoundResource<ResultType, RequestType>
     }
 
     private fun fetchFromNetwork(dbSource: LiveData<ResultType>) {
-        val apiResponse = createCall()
+        val call = coroutineNetworkAsync {
+            createCall()
+        }
         // we re-attach dbSource as a new source, it will dispatch its latest value quickly
         result.addSource(dbSource) { newData ->
             setValue(Resource.loading(newData))
         }
-        result.addSource(apiResponse) { response ->
-            result.removeSource(apiResponse)
-            result.removeSource(dbSource)
-            when (response) {
-                is ApiSuccessResponse -> {
-                    appExecutors.diskIO().execute {
-                        saveCallResult(processResponse(response))
-                        appExecutors.mainThread().execute {
-                            // we specially request a new live data,
-                            // otherwise we will get immediately last cached value,
-                            // which may not be updated with latest results received from network.
-                            result.addSource(loadFromDb()) { newData ->
-                                setValue(Resource.success(newData))
-                            }
-                        }
-                    }
-                }
-                is ApiEmptyResponse -> {
-                    appExecutors.mainThread().execute {
-                        // reload from disk whatever we had
-                        result.addSource(loadFromDb()) { newData ->
-                            setValue(Resource.success(newData))
-                        }
-                    }
-                }
-                is ApiErrorResponse -> {
-                    onFetchFailed()
+
+        coroutineOnIO {
+            val apiResonse = call.await()
+
+            coroutineOnUi {
+                result.removeSource(dbSource)
+            }
+
+            if (apiResonse.error != null) {
+                onFetchFailed()
+
+                coroutineOnUi {
                     result.addSource(dbSource) { newData ->
-                        setValue(Resource.error(response.errorMessage, newData))
+                        setValue(Resource.error(apiResonse.error, newData))
                     }
+                }
+
+                return@coroutineOnIO
+            }
+
+            // we specially request a new live data,
+            // otherwise we will get immediately last cached value,
+            // which may not be updated with latest results received from network.
+            val newdbSource = loadFromDb()
+            val value = newdbSource.value ?: MutableLiveData()
+
+            if (apiResonse.value == null) {
+                coroutineOnUi {
+                    result.addSource(value) { newData ->
+                        setValue(Resource.success(newData))
+                    }
+                }
+
+                return@coroutineOnIO
+            }
+
+            coroutineBackgroundAsync {
+                saveCallResult(processResponse(apiResonse))
+            }.await()
+
+            coroutineOnUi {
+                result.addSource(value) { newData ->
+                    setValue(Resource.success(newData))
                 }
             }
         }
@@ -85,17 +114,17 @@ abstract class NetworkBoundResource<ResultType, RequestType>
     fun asLiveData() = result as LiveData<Resource<ResultType>>
 
     @WorkerThread
-    protected open fun processResponse(response: ApiSuccessResponse<RequestType>) = response.body
+    protected open fun processResponse(response: Result<RequestType>) = response.value
 
     @WorkerThread
-    protected abstract suspend fun saveCallResult(item: RequestType)
+    protected abstract fun saveCallResult(item: RequestType?)
 
     @MainThread
     protected abstract fun shouldFetch(data: ResultType?): Boolean
 
     @MainThread
-    protected abstract fun loadFromDbAsync(): DeferredLiveResult<ResultType>
+    protected abstract fun loadFromDb(): LiveResult<ResultType>
 
     @MainThread
-    protected abstract fun createCallAsync(): DeferredResult<RequestType>
+    protected abstract fun createCall(): Result<RequestType>
 }

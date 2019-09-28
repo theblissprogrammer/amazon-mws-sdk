@@ -6,8 +6,8 @@ import com.theblissprogrammer.amazon.sdk.common.LiveResult
 import com.theblissprogrammer.amazon.sdk.common.Result
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.errors.DataError
-import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetwork
-import com.theblissprogrammer.amazon.sdk.extensions.coroutineRoom
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetworkAsync
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineRoomAsync
 import com.theblissprogrammer.amazon.sdk.stores.common.insertOrUpdate
 import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Inventory
 import com.theblissprogrammer.amazon.sdk.stores.inventory.models.InventoryModels
@@ -19,7 +19,7 @@ import com.theblissprogrammer.amazon.sdk.stores.inventory.models.InventoryModels
 class InventoryRoomStore(val inventoryDao: InventoryDAO?): InventoryCacheStore {
 
     override fun fetchAsync(request: InventoryModels.Request): DeferredLiveResult<Array<Inventory>> {
-        return coroutineRoom<Array<Inventory>> {
+        return coroutineRoomAsync<Array<Inventory>> {
 
             val items = if (request.skus.isNotEmpty())
                 inventoryDao?.fetch(request.skus.toTypedArray())
@@ -35,7 +35,7 @@ class InventoryRoomStore(val inventoryDao: InventoryDAO?): InventoryCacheStore {
     }
 
     override fun createOrUpdateAsync(request: Inventory): DeferredLiveResult<Inventory> {
-        return coroutineRoom<Inventory> {
+        return coroutineRoomAsync<Inventory> {
 
             inventoryDao?.insertOrUpdate(request)
 
@@ -50,7 +50,7 @@ class InventoryRoomStore(val inventoryDao: InventoryDAO?): InventoryCacheStore {
     }
 
     override fun createOrUpdateAsync(vararg inventory: Inventory): DeferredResult<Void> {
-        return coroutineNetwork<Void> {
+        return coroutineNetworkAsync<Void> {
             inventoryDao?.insert(*inventory)
             Result.success()
         }

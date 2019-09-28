@@ -34,7 +34,7 @@ import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.Queue
         Detail::class,
         Queue::class
     ],
-    version = 11
+    version = 12
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {

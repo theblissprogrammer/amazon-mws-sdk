@@ -14,6 +14,7 @@ import com.theblissprogrammer.amazon.sdk.preferences.ConstantsType
 import com.theblissprogrammer.amazon.sdk.preferences.PreferencesWorkerType
 import com.theblissprogrammer.amazon.sdk.security.SecurityWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.inventory.models.InventoryModels
+import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.SubscriptionsModels
 import java.util.*
 
 
@@ -209,6 +210,21 @@ sealed class APIRouter: APIRoutable() {
             map["Action"] = "ListInventorySupplyByNextToken"
             map["Version"] = "2010-10-01"
             map["NextToken"] = nextToken
+            map
+        }()
+    }
+
+    class RegisterDestination(val request: SubscriptionsModels.DestinationRequest): APIRouter() {
+        override val path = "/Subscriptions/2013-07-01"
+        override val queryParameterList = {
+            val map = mutableMapOf<String, String>()
+            map["Action"] = "RegisterDestination"
+            map["Version"] = "2013-07-01"
+            map["MarketplaceId"] = request.marketplace.id
+            map["Destination.DeliveryChannel"] = "SQS"
+            map["Destination.AttributeList.member.1.Key"] = "sqsQueueUrl"
+            map["Destination.AttributeList.member.1.Value"] = request.url
+
             map
         }()
     }

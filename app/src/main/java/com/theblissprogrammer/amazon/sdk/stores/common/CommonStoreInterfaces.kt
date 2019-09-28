@@ -4,7 +4,7 @@ import com.theblissprogrammer.amazon.sdk.common.DeferredLiveResult
 import com.theblissprogrammer.amazon.sdk.common.DeferredResult
 import com.theblissprogrammer.amazon.sdk.common.LiveCompletionResponse
 import com.theblissprogrammer.amazon.sdk.common.Result
-import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetwork
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetworkAsync
 
 /**
  * Created by ahmed.saad on 2018-12-29.
@@ -13,7 +13,7 @@ import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetwork
 interface CommonStore<T, R> {
     fun fetchAsync(request: R): DeferredResult<T>
     fun fetchNextAsync(nextToken: String): DeferredResult<T> {
-        return coroutineNetwork <T> {
+        return coroutineNetworkAsync <T> {
             Result.failure()
         }
     }

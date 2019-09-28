@@ -23,26 +23,33 @@ fun <T> coroutineCompletionOnUi (completion: CompletionResponse<T>? = null, call
     }
 }
 
-fun <T> coroutineNetwork (call: suspend () -> Result<T>): Deferred<Result<T>> {
+fun <T> coroutineNetworkAsync (call: suspend () -> Result<T>): Deferred<Result<T>> {
     return GlobalScope.async(Dispatchers.IO) {
         call()
     }
 }
 
-fun <T> coroutineRoom (call: () -> LiveResult<T>): Deferred<LiveResult<T>> {
+fun <T> coroutineBackgroundAsync (call: suspend () -> T): Deferred<T> {
     return GlobalScope.async(Dispatchers.IO) {
+        call()
+    }
+}
+
+fun <T> coroutineRoomAsync (call: () -> LiveResult<T>): Deferred<LiveResult<T>> {
+    return GlobalScope.async(Dispatchers.IO) {
+        call()
+    }
+}
+
+
+fun coroutineOnIO (call: suspend () -> Unit) {
+    GlobalScope.launch(Dispatchers.IO) {
         call()
     }
 }
 
 fun coroutineOnUi (call: suspend () -> Unit) {
     GlobalScope.launch(Dispatchers.Main) {
-        call()
-    }
-}
-
-fun coroutine (call: suspend () -> Unit): Deferred<Unit> {
-    return GlobalScope.async {
         call()
     }
 }

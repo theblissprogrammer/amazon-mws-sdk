@@ -4,8 +4,8 @@ import com.theblissprogrammer.amazon.sdk.common.DeferredLiveResult
 import com.theblissprogrammer.amazon.sdk.common.DeferredResult
 import com.theblissprogrammer.amazon.sdk.common.LiveResult
 import com.theblissprogrammer.amazon.sdk.common.Result
-import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetwork
-import com.theblissprogrammer.amazon.sdk.extensions.coroutineRoom
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetworkAsync
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineRoomAsync
 import com.theblissprogrammer.amazon.sdk.stores.common.insertOrUpdate
 import com.theblissprogrammer.amazon.sdk.stores.details.models.Detail
 import com.theblissprogrammer.amazon.sdk.stores.details.models.ProductDetail
@@ -17,7 +17,7 @@ import com.theblissprogrammer.amazon.sdk.stores.details.models.ProductDetail
 
 class DetailsRoomStore(val detailDao: DetailDAO?): DetailsCacheStore {
     override fun fetchAsync(request: List<String>): DeferredLiveResult<Array<Detail>> {
-        return coroutineRoom<Array<Detail>> {
+        return coroutineRoomAsync<Array<Detail>> {
 
             val items = detailDao?.fetch(request.toTypedArray())
                 LiveResult.success(items)
@@ -25,7 +25,7 @@ class DetailsRoomStore(val detailDao: DetailDAO?): DetailsCacheStore {
     }
 
     override fun fetchProductDetailAsync(request: List<String>): DeferredLiveResult<List<ProductDetail>> {
-        return coroutineRoom<List<ProductDetail>> {
+        return coroutineRoomAsync<List<ProductDetail>> {
 
             val items = detailDao?.fetchProductDetails(request.toTypedArray())
             LiveResult.success(items)
@@ -33,7 +33,7 @@ class DetailsRoomStore(val detailDao: DetailDAO?): DetailsCacheStore {
     }
 
     override fun createOrUpdateAsync(request: Detail): DeferredLiveResult<Detail> {
-        return coroutineRoom<Detail> {
+        return coroutineRoomAsync<Detail> {
 
             detailDao?.insertOrUpdate(request)
 
@@ -44,7 +44,7 @@ class DetailsRoomStore(val detailDao: DetailDAO?): DetailsCacheStore {
     }
 
     override fun createOrUpdateAsync(vararg detail: Detail): DeferredResult<Void> {
-        return coroutineNetwork<Void> {
+        return coroutineNetworkAsync<Void> {
             detailDao?.insert(*detail)
             Result.success()
         }

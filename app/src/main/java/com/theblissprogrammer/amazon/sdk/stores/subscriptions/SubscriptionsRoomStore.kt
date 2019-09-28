@@ -1,9 +1,7 @@
 package com.theblissprogrammer.amazon.sdk.stores.subscriptions
 
-import com.theblissprogrammer.amazon.sdk.common.DeferredLiveResult
 import com.theblissprogrammer.amazon.sdk.common.LiveResult
 import com.theblissprogrammer.amazon.sdk.errors.DataError
-import com.theblissprogrammer.amazon.sdk.extensions.coroutineRoom
 import com.theblissprogrammer.amazon.sdk.stores.common.insertOrUpdate
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.Queue
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.SubscriptionsModels
@@ -14,30 +12,17 @@ import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.Subscriptio
  */
 class SubscriptionsRoomStore(val subscriptionsDao: SubscriptionsDAO?): SubscriptionsCacheStore {
 
-    override fun getQueue(request: SubscriptionsModels.Request): DeferredLiveResult<Queue> {
-        return coroutineRoom<Queue> {
-            val item = subscriptionsDao?.fetchQueue(name = request.name, marketplace = request.marketplace)
+    override fun getQueue(request: SubscriptionsModels.QueueRequest): LiveResult<Queue> {
+        val item = subscriptionsDao?.fetchQueue(name = request.name, marketplace = request.marketplace)
 
-            if (item == null) {
-                LiveResult.failure(DataError.NonExistent)
-            } else {
-                LiveResult.success(item)
-            }
+        return if (item == null) {
+            LiveResult.failure(DataError.NonExistent)
+        } else {
+            LiveResult.success(item)
         }
     }
 
-    override fun createOrUpdateQueue(request: Queue): DeferredLiveResult<Queue> {
-        return coroutineRoom<Queue> {
-
-            subscriptionsDao?.insertOrUpdate(request)
-
-            val item = subscriptionsDao?.fetchQueue(name = request.name, marketplace = request.marketplace)
-
-            if (item == null) {
-                LiveResult.failure(DataError.NonExistent)
-            } else {
-                LiveResult.success(item)
-            }
-        }
+    override fun createOrUpdateQueue(request: Queue) {
+        subscriptionsDao?.insertOrUpdate(request)
     }
 }

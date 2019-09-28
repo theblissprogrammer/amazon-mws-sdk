@@ -1,7 +1,7 @@
 package com.theblissprogrammer.amazon.sdk.stores.sellers
 
 import com.theblissprogrammer.amazon.sdk.common.DeferredResult
-import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetwork
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetworkAsync
 import com.theblissprogrammer.amazon.sdk.stores.sellers.models.Seller
 import com.theblissprogrammer.amazon.sdk.stores.sellers.models.SellerModels
 import com.theblissprogrammer.amazon.sdk.common.Result.Companion.failure
@@ -20,7 +20,7 @@ class SellersNetworkStore(val httpService: HTTPServiceType): SellersStore {
 
     override fun fetch(request: SellerModels.Request) : DeferredResult<Seller> {
 
-        return coroutineNetwork <Seller> {
+        return coroutineNetworkAsync <Seller> {
             val response = httpService.get(request.marketplace.amazonBaseURL + "/sp",
                     parameters = mapOf(Pair("seller", request.id)))
 

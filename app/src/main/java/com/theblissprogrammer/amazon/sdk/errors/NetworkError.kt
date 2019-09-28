@@ -52,7 +52,7 @@ class NetworkError(val urlRequest: Request? = null,
     val description: String
         get() {
             return "${internalError ?: DataError.UnknownReason(null)}\n" +
-                    "        Request: {\n" +
+                    "        QueueRequest: {\n" +
                     "            url: ${urlRequest?.url()?.url()?.toString() ?: ""},\n" +
                     "            method: ${urlRequest?.method() ?: ""},\n" +
                     "            headers: ${urlRequest?.headers()?.toMultimap()?.scrubbed ?: ""},\n" +

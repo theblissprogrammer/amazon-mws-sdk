@@ -1,9 +1,6 @@
 package com.theblissprogrammer.amazon.sdk.stores.subscriptions
 
-import com.theblissprogrammer.amazon.sdk.common.CompletionResponse
-import com.theblissprogrammer.amazon.sdk.common.DeferredLiveResult
-import com.theblissprogrammer.amazon.sdk.common.DeferredResult
-import com.theblissprogrammer.amazon.sdk.common.LiveCompletionResponse
+import com.theblissprogrammer.amazon.sdk.common.*
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.Queue
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.SubscriptionsModels
 
@@ -13,14 +10,15 @@ import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.Subscriptio
  */
 
 interface SubscriptionsStore {
-    fun getQueue(request: SubscriptionsModels.Request): DeferredResult<Queue>
+    fun getQueue(request: SubscriptionsModels.QueueRequest): Result<Queue>
+    fun registerDestination(request: SubscriptionsModels.DestinationRequest): Result<Void>
 }
 
 interface SubscriptionsCacheStore {
-    fun getQueue(request: SubscriptionsModels.Request): DeferredLiveResult<Queue>
-    fun createOrUpdateQueue(request: Queue): DeferredLiveResult<Queue>
+    fun getQueue(request: SubscriptionsModels.QueueRequest): LiveResult<Queue>
+    fun createOrUpdateQueue(request: Queue)
 }
 
 interface SubscriptionsWorkerType {
-    suspend fun getQueue(completion: LiveCompletionResponse<Queue>)
+    fun getQueue(completion: LiveResourceResponse<Queue>)
 }

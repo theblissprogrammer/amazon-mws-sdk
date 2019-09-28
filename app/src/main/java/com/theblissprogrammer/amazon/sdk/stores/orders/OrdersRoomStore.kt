@@ -5,8 +5,8 @@ import com.theblissprogrammer.amazon.sdk.common.DeferredResult
 import com.theblissprogrammer.amazon.sdk.common.LiveResult
 import com.theblissprogrammer.amazon.sdk.common.Result
 import com.theblissprogrammer.amazon.sdk.errors.DataError
-import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetwork
-import com.theblissprogrammer.amazon.sdk.extensions.coroutineRoom
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetworkAsync
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineRoomAsync
 import com.theblissprogrammer.amazon.sdk.stores.common.insertOrUpdate
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.ListOrder
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.Order
@@ -19,7 +19,7 @@ import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderModels
 class OrdersRoomStore(val orderDao: OrderDAO?): OrdersCacheStore {
 
     override fun fetch(request: OrderModels.Request): DeferredLiveResult<Array<Order>> {
-        return coroutineRoom<Array<Order>> {
+        return coroutineRoomAsync<Array<Order>> {
 
             val items = if (request.id != null) {
                 orderDao?.fetch(id = request.id, marketplaces = request.marketplaces.toTypedArray())
@@ -41,7 +41,7 @@ class OrdersRoomStore(val orderDao: OrderDAO?): OrdersCacheStore {
     }
 
     override fun fetchOldestOrder(): DeferredLiveResult<Order> {
-        return coroutineRoom<Order> {
+        return coroutineRoomAsync<Order> {
             val item = orderDao?.fetchOldestOrder()
 
             if (item == null) {
@@ -53,7 +53,7 @@ class OrdersRoomStore(val orderDao: OrderDAO?): OrdersCacheStore {
     }
 
     override fun createOrUpdate(request: ListOrder): DeferredLiveResult<Order> {
-        return coroutineRoom<Order> {
+        return coroutineRoomAsync<Order> {
 
             orderDao?.insertOrUpdate(request.order)
 
@@ -77,7 +77,7 @@ class OrdersRoomStore(val orderDao: OrderDAO?): OrdersCacheStore {
     }
 
     override fun createOrUpdate(vararg listOrder: ListOrder): DeferredResult<Void> {
-        return coroutineNetwork<Void> {
+        return coroutineNetworkAsync<Void> {
             val orders = listOrder.map { it.order }
             val buyers = listOrder.mapNotNull { it.buyer }
 

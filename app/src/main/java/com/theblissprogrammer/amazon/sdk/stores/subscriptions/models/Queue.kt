@@ -2,6 +2,7 @@ package com.theblissprogrammer.amazon.sdk.stores.subscriptions.models
 
 import androidx.room.Entity
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
+import java.util.*
 
 /**
  * Created by ahmed.saad on 2019-09-26.
@@ -11,4 +12,5 @@ import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 data class Queue(
         val name: String = "",
         val url: String? = null,
-        val marketplace: MarketplaceType = MarketplaceType.US)
+        val marketplace: MarketplaceType = MarketplaceType.US,
+        val updatedAt: Date? = null)

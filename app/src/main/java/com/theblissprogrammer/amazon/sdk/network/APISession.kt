@@ -71,7 +71,7 @@ internal class APISession(private val context: Context?,
         val urlRequest = urlRequestBuilder.build()
 
         // Log request/response debugging
-        LogHelper.i(messages = *arrayOf("Request: $urlRequest"))
+        LogHelper.i(messages = *arrayOf("QueueRequest: $urlRequest"))
 
         val response = sessionManager.request(urlRequest)
 

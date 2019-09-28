@@ -3,7 +3,7 @@ package com.theblissprogrammer.amazon.sdk.account
 import com.theblissprogrammer.amazon.sdk.account.models.AccountModels
 import com.theblissprogrammer.amazon.sdk.account.models.LoginModels
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
-import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetwork
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetworkAsync
 import com.theblissprogrammer.amazon.sdk.stores.sellers.models.ListMarketplaceParticipationsXmlParser
 import com.theblissprogrammer.amazon.sdk.stores.sellers.models.Seller
 import com.theblissprogrammer.amazon.sdk.common.Result
@@ -31,7 +31,7 @@ class AuthenticationNetworkService(val apiSession: APISessionType,
 
     /// Pings remote server to verify authorization still valid.
     override fun pingAuthorization(): Deferred<Result<Void>> {
-        return coroutineNetwork <Void> {
+        return coroutineNetworkAsync <Void> {
             val response = apiSession.request(APIRouter.ReadUser())
             val error = initDataError(response.error)
 
@@ -46,7 +46,7 @@ class AuthenticationNetworkService(val apiSession: APISessionType,
 
     override fun login(request: LoginModels.Request): Deferred<Result<AccountModels.ServerResponse>> {
 
-        return coroutineNetwork <AccountModels.ServerResponse> {
+        return coroutineNetworkAsync <AccountModels.ServerResponse> {
             val response = apiSession.request(router = APIRouter.Login(request))
 
             // Handle errors
@@ -54,7 +54,7 @@ class AuthenticationNetworkService(val apiSession: APISessionType,
             if (value == null || !response.isSuccess) {
                 val error = response.error
 
-                return@coroutineNetwork if (error != null) {
+                return@coroutineNetworkAsync if (error != null) {
                     val exception = initDataError(response.error)
                     LogHelper.e(messages = *arrayOf("An error occurred while fetching login: " +
                             "${error.description}."))

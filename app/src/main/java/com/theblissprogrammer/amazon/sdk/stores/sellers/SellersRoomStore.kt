@@ -6,8 +6,8 @@ import com.theblissprogrammer.amazon.sdk.common.LiveResult.Companion.failure
 import com.theblissprogrammer.amazon.sdk.common.LiveResult.Companion.success
 import com.theblissprogrammer.amazon.sdk.common.Result
 import com.theblissprogrammer.amazon.sdk.errors.DataError
-import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetwork
-import com.theblissprogrammer.amazon.sdk.extensions.coroutineRoom
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetworkAsync
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineRoomAsync
 import com.theblissprogrammer.amazon.sdk.stores.common.insertOrUpdate
 import com.theblissprogrammer.amazon.sdk.stores.sellers.models.Seller
 import com.theblissprogrammer.amazon.sdk.stores.sellers.models.SellerModels
@@ -19,7 +19,7 @@ import com.theblissprogrammer.amazon.sdk.stores.sellers.models.SellerModels
 class SellersRoomStore(val sellerDao: SellerDAO?): SellersCacheStore {
 
     override fun fetch(request: SellerModels.Request): DeferredLiveResult<Seller> {
-        return coroutineRoom<Seller> {
+        return coroutineRoomAsync<Seller> {
             val item = sellerDao?.fetch(id = request.id, marketplace = request.marketplace)
 
             if (item == null) {
@@ -31,7 +31,7 @@ class SellersRoomStore(val sellerDao: SellerDAO?): SellersCacheStore {
     }
 
     override fun createOrUpdate(request: Seller): DeferredLiveResult<Seller> {
-        return coroutineRoom<Seller> {
+        return coroutineRoomAsync<Seller> {
 
             sellerDao?.insertOrUpdate(request)
 
@@ -46,7 +46,7 @@ class SellersRoomStore(val sellerDao: SellerDAO?): SellersCacheStore {
     }
 
     override fun createOrUpdate(vararg sellers: Seller): DeferredResult<Void> {
-        return coroutineNetwork<Void> {
+        return coroutineNetworkAsync<Void> {
             sellerDao?.insert(*sellers)
             Result.success()
         }

@@ -235,7 +235,8 @@ open class SDKDependency: SDKDependable {
 
     override val resolveSubscriptionsStore: SubscriptionsStore by lazy {
         SubscriptionsNetworkStore(
-                constants = resolveConstants
+                constants = resolveConstants,
+                apiSession = resolveAPISessionService
         )
     }
 
