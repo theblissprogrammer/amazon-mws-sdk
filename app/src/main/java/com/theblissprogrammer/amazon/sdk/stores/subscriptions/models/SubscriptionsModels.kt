@@ -19,4 +19,7 @@ sealed class SubscriptionsModels {
             val queue: Queue,
             val notificationType: NotificationType,
             val isEnabled: Boolean = true): SubscriptionsModels()
+
+    class PollRequest(
+            val queue: Queue): SubscriptionsModels()
 }

@@ -13,6 +13,7 @@ interface SubscriptionsStore {
     fun getQueue(request: SubscriptionsModels.QueueRequest): Result<Queue>
     fun registerDestination(request: SubscriptionsModels.DestinationRequest): Result<Void>
     fun createSubscription(request: SubscriptionsModels.SubscriptionRequest): Result<Void>
+    fun pollQueue(request: SubscriptionsModels.PollRequest)
 }
 
 interface SubscriptionsCacheStore {
@@ -24,4 +25,5 @@ interface SubscriptionsWorkerType {
     fun getQueue(completion: LiveResourceResponse<Queue>)
     fun registerDestination(request: SubscriptionsModels.DestinationRequest, completion: ResourceResponse<Void>)
     fun createSubscription(request: SubscriptionsModels.SubscriptionRequest, completion: ResourceResponse<Void>)
+    fun pollQueue(request: SubscriptionsModels.PollRequest)
 }

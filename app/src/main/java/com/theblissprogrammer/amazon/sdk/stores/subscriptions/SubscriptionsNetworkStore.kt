@@ -32,12 +32,15 @@ import java.util.*
 class SubscriptionsNetworkStore(val constants: ConstantsType,
                                 val apiSession: APISessionType): SubscriptionsStore {
 
-    override fun getQueue(request: SubscriptionsModels.QueueRequest): Result<Queue> {
+    private val sqs: AmazonSQSClient by lazy {
         val credentials = BasicAWSCredentials(constants.sqsAwsAccessKeyID, constants.sqsAwsSecretKey)
+        AmazonSQSClient(credentials)
+    }
 
-        val sqs = AmazonSQSClient(credentials)
+    override fun getQueue(request: SubscriptionsModels.QueueRequest): Result<Queue> {
+
         val createRequest = CreateQueueRequest(request.name)
-                .addAttributesEntry("ReceiveMessageWaitTimeSeconds", "20")
+                .addAttributesEntry("ReceiveMessageWaitTimeSeconds", "5")
 
         val queueUrl = try {
             val create = sqs.createQueue(createRequest)
@@ -119,6 +122,14 @@ class SubscriptionsNetworkStore(val constants: ConstantsType,
 
 
         return success(null)
+    }
 
+    override fun pollQueue(request: SubscriptionsModels.PollRequest) {
+        val messages = sqs.receiveMessage(request.queue.url).messages?.map {
+            sqs.deleteMessage(request.queue.url, it.receiptHandle)
+
+
+            it.body
+        }
     }
 }

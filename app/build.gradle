@@ -84,6 +84,8 @@ dependencies {
     implementation deps.coroutines.runtime
     implementation deps.coroutines.core
 
+    implementation deps.work.runtime_ktx
+
     androidTestImplementation deps.arch_core.testing
     androidTestImplementation deps.espresso.contrib
     androidTestImplementation deps.espresso.core

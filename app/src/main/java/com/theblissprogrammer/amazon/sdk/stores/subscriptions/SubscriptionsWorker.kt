@@ -3,7 +3,6 @@ package com.theblissprogrammer.amazon.sdk.stores.subscriptions
 import com.theblissprogrammer.amazon.sdk.common.*
 import com.theblissprogrammer.amazon.sdk.enums.DefaultsKeys
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
-import com.theblissprogrammer.amazon.sdk.enums.NotificationType
 import com.theblissprogrammer.amazon.sdk.enums.marketplaceFromId
 import com.theblissprogrammer.amazon.sdk.extensions.*
 import com.theblissprogrammer.amazon.sdk.network.NetworkBoundResource
@@ -81,11 +80,11 @@ class SubscriptionsWorker(
         }
     }
 
-    fun test() {
-        getQueue {
-            /*val data = it.switchMap { resource ->
-                if (resource?.data?.url == null) return@switchMap MutableLiveData<Resource<Void>>()
-            }*/
+    override fun pollQueue(request: SubscriptionsModels.PollRequest) {
+        coroutineOnUi {
+            val data = coroutineBackgroundAsync {
+                store.pollQueue(request)
+            }.await()
         }
     }
 }
