@@ -1,13 +1,12 @@
 package com.theblissprogrammer.amazon.sdk.stores.subscriptions
 
-import androidx.lifecycle.MutableLiveData
 import com.theblissprogrammer.amazon.sdk.common.*
 import com.theblissprogrammer.amazon.sdk.enums.DefaultsKeys
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
+import com.theblissprogrammer.amazon.sdk.enums.NotificationType
 import com.theblissprogrammer.amazon.sdk.enums.marketplaceFromId
-import com.theblissprogrammer.amazon.sdk.extensions.switchMap
+import com.theblissprogrammer.amazon.sdk.extensions.*
 import com.theblissprogrammer.amazon.sdk.network.NetworkBoundResource
-import com.theblissprogrammer.amazon.sdk.network.Resource
 import com.theblissprogrammer.amazon.sdk.preferences.PreferencesWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.Queue
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.SubscriptionsModels
@@ -62,42 +61,31 @@ class SubscriptionsWorker(
 
     }
 
-    fun registerDestination(completion: LiveResourceResponse<Void>) {
-        getQueue {
-             val data = it.switchMap { resource ->
+    override fun registerDestination(request: SubscriptionsModels.DestinationRequest, completion: ResourceResponse<Void>) {
+        coroutineOnUi {
+            val data = coroutineBackgroundAsync {
+                store.registerDestination(request).asResource()
+            }.await()
 
-                 if (resource?.data?.url == null) {
-                     val data = MutableLiveData<Resource<Void>>()
-
-                     return@switchMap data
-                 }
-
-                 val request = SubscriptionsModels.DestinationRequest(
-                        url = resource.data.url,
-                        marketplace = resource.data.marketplace
-                 )
-
-                 return@switchMap object : NetworkBoundResource<Void, Void>() {
-                     override fun saveCallResult(item: Void?) {
-
-                     }
-
-                     override fun shouldFetch(data: Void?): Boolean {
-                         return true
-                     }
-
-                     override fun loadFromDb(): LiveResult<Void> {
-                         val data = MutableLiveData<Void>().apply { value = null }
-                         return LiveResult.success(data)
-                     }
-
-                     override fun createCall(): Result<Void> {
-                         return store.registerDestination(request)
-                     }
-
-                 }.asLiveData()
-            }
+            completion(data)
         }
+    }
 
+    override fun createSubscription(request: SubscriptionsModels.SubscriptionRequest, completion: ResourceResponse<Void>) {
+        coroutineOnUi {
+            val data = coroutineBackgroundAsync {
+                store.createSubscription(request).asResource()
+            }.await()
+
+            completion(data)
+        }
+    }
+
+    fun test() {
+        getQueue {
+            /*val data = it.switchMap { resource ->
+                if (resource?.data?.url == null) return@switchMap MutableLiveData<Resource<Void>>()
+            }*/
+        }
     }
 }

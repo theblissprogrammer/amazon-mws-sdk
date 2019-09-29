@@ -220,10 +220,27 @@ sealed class APIRouter: APIRoutable() {
             val map = mutableMapOf<String, String>()
             map["Action"] = "RegisterDestination"
             map["Version"] = "2013-07-01"
-            map["MarketplaceId"] = request.marketplace.id
+            map["MarketplaceId"] = request.queue.marketplace.id
             map["Destination.DeliveryChannel"] = "SQS"
             map["Destination.AttributeList.member.1.Key"] = "sqsQueueUrl"
-            map["Destination.AttributeList.member.1.Value"] = request.url
+            map["Destination.AttributeList.member.1.Value"] = request.queue.url ?: ""
+
+            map
+        }()
+    }
+
+    class CreateSubscription(val request: SubscriptionsModels.SubscriptionRequest): APIRouter() {
+        override val path = "/Subscriptions/2013-07-01"
+        override val queryParameterList = {
+            val map = mutableMapOf<String, String>()
+            map["Action"] = "CreateSubscription"
+            map["Version"] = "2013-07-01"
+            map["MarketplaceId"] = request.queue.marketplace.id
+            map["Subscription.NotificationType"] = request.notificationType.name
+            map["Subscription.Destination.DeliveryChannel"] = "SQS"
+            map["Subscription.Destination.AttributeList.member.1.Key"] = "sqsQueueUrl"
+            map["Subscription.Destination.AttributeList.member.1.Value"] = request.queue.url ?: ""
+            map["Subscription.IsEnabled"] = request.isEnabled.toString()
 
             map
         }()

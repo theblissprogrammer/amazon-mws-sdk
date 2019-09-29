@@ -1,6 +1,7 @@
 package com.theblissprogrammer.amazon.sdk.stores.subscriptions.models
 
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
+import com.theblissprogrammer.amazon.sdk.enums.NotificationType
 
 /**
  * Created by ahmed.saad on 2019-09-27.
@@ -12,6 +13,10 @@ sealed class SubscriptionsModels {
             val marketplace: MarketplaceType): SubscriptionsModels()
 
     class DestinationRequest(
-            val url: String,
-            val marketplace: MarketplaceType): SubscriptionsModels()
+            val queue: Queue): SubscriptionsModels()
+
+    class SubscriptionRequest(
+            val queue: Queue,
+            val notificationType: NotificationType,
+            val isEnabled: Boolean = true): SubscriptionsModels()
 }

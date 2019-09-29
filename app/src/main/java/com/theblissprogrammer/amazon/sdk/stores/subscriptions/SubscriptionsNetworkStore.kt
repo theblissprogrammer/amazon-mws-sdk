@@ -98,4 +98,27 @@ class SubscriptionsNetworkStore(val constants: ConstantsType,
 
         return success(null)
     }
+
+    override fun createSubscription(request: SubscriptionsModels.SubscriptionRequest): Result<Void> {
+        val response = apiSession.request(router = APIRouter.CreateSubscription(request))
+
+        // Handle errors
+        val value = response.value
+        if (value == null || !response.isSuccess) {
+            val error = response.error
+
+            return if (error != null) {
+                val exception = initDataError(response.error)
+                LogHelper.e(messages = *arrayOf("An error occurred while creating subscription: " +
+                        "${error.description}."))
+                Result.failure(exception)
+            } else {
+                Result.failure(DataError.UnknownReason(null))
+            }
+        }
+
+
+        return success(null)
+
+    }
 }
