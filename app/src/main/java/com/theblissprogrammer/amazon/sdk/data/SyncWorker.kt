@@ -1,11 +1,6 @@
 package com.theblissprogrammer.amazon.sdk.data
 
-import android.accounts.Account
-import android.accounts.AccountManager
-import android.content.ContentResolver
 import android.content.Context
-import android.os.Bundle
-import androidx.core.content.ContextCompat.getSystemService
 import com.theblissprogrammer.amazon.sdk.stores.seed.models.SeedPayload
 import com.theblissprogrammer.amazon.sdk.common.CompletionResponse as AmznResult
 import kotlinx.coroutines.Dispatchers
@@ -13,12 +8,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 class SyncWorker(private val store: SyncStore,
-                 private val dataWorker: DataWorkerType,
-                 private val context: Context): SyncWorkerType {
-
-    private val syncAccount by lazy {
-        createSyncAccount()
-    }
+                 private val dataWorker: DataWorkerType): SyncWorkerType {
 
     override fun configure() {
 
@@ -43,12 +33,12 @@ class SyncWorker(private val store: SyncStore,
     /**
      * Create a new dummy account for the sync adapter
      */
-    private fun createSyncAccount(): Account {
+    /*private fun createSyncAccount(): Account {
         val accountManager = context.getSystemService(Context.ACCOUNT_SERVICE) as AccountManager
         return Account(ACCOUNT, ACCOUNT_TYPE).also { newAccount ->
             accountManager.addAccountExplicitly(newAccount, null, null)
         }
-    }
+    } */
 
     override fun delete(sellerID: String) {
         dataWorker.delete(sellerID)

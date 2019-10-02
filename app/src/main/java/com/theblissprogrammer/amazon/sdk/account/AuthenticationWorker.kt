@@ -15,17 +15,11 @@ import com.theblissprogrammer.amazon.sdk.enums.DefaultsKeys
 import com.theblissprogrammer.amazon.sdk.enums.DefaultsKeys.Companion.sellerID
 import com.theblissprogrammer.amazon.sdk.enums.SecurityProperty
 import com.theblissprogrammer.amazon.sdk.errors.DataError
-import com.theblissprogrammer.amazon.sdk.extensions.ACTION_AUTHENTICATION_DID_LOGIN
-import com.theblissprogrammer.amazon.sdk.extensions.ACTION_AUTHENTICATION_DID_LOGOUT
-import com.theblissprogrammer.amazon.sdk.extensions.SELLER_ID
+import com.theblissprogrammer.amazon.sdk.extensions.*
 import com.theblissprogrammer.amazon.sdk.logging.LogHelper
 import com.theblissprogrammer.amazon.sdk.preferences.PreferencesWorkerType
 import com.theblissprogrammer.amazon.sdk.security.SecurityWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.sellers.models.Seller
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 
 /**
@@ -46,48 +40,79 @@ class AuthenticationWorker(val service: AuthenticationService,
             get() = service.isAuthorized && !preferencesWorker.get(sellerID).isNullOrEmpty()
 
     /// Pings remote service to verify authorization still valid.
-    override suspend fun pingAuthorization(completion: CompletionResponse<Void>) {
-        completion(service.pingAuthorization().await())
+    override fun pingAuthorization(completion: CompletionResponse<Void>) {
+        coroutineOnUi {
+            val data = coroutineBackgroundAsync {
+                service.pingAuthorization()
+            }.await()
+
+            completion(data)
+        }
     }
 
-    override suspend fun login(request: LoginModels.Request,
+    override fun login(request: LoginModels.Request,
                        completion: CompletionResponse<AccountModels.Response>) {
+
         // Validate input
         if (request.sellerID.isBlank() ||
                 request.token.isBlank()) {
            return completion(failure(DataError.Incomplete))
         }
-        val response = service.login(request).await()
 
-        val value = response.value
-        if (value?.sellers == null || value.sellers.isEmpty() || !response.isSuccess) {
-            completion(failure(response.error))
-            return
-        }
+        coroutineOnIO {
+            val response = coroutineBackgroundAsync {
+                service.login(request)
+            }.await()
 
-        if (value.token.isEmpty()) {
-            LogHelper.e(messages = *arrayOf("Could not extract authorization token from login response."))
-            completion(failure(DataError.Unauthorized))
-            return
-        }
+            val value = response.value
+            if (value?.sellers == null || value.sellers.isEmpty() || !response.isSuccess) {
+                coroutineOnUi {
+                    completion(failure(response.error))
+                }
+                return@coroutineOnIO
+            }
 
-        val default = value.sellers.first { it.marketplace == request.marketplace }
-        authenticated(default, token = value.token) {
+            if (value.token.isEmpty()) {
+                LogHelper.e(messages = *arrayOf("Could not extract authorization token from login response."))
+                coroutineOnUi {
+                    completion(failure(DataError.Unauthorized))
+                }
+                return@coroutineOnIO
+            }
+
+            val default = value.sellers.first { it.marketplace == request.marketplace }
+
+            // Clear previous tasks if any
+            syncWorker.clear()
+
+            // Store user info for later use on app start and db initialization
+            securityWorker.set(key = SecurityProperty.TOKEN(default.marketplace.region.name), value = value.token)
+
+            preferencesWorker.set(default.id, key = sellerID)
+            preferencesWorker.set(default.marketplace.name, key = DefaultsKeys.marketplace)
+
             /// Save sellers to cache
-            value.sellers.forEach {seller ->  sellersCacheStore.createOrUpdate(seller).await() }
+            sellersCacheStore.createOrUpdate(*value.sellers.toTypedArray()).await()
 
             // Notify application authentication occurred and ready
             if (context != null){
                 val intent = Intent()
                 intent.action = ACTION_AUTHENTICATION_DID_LOGIN
-                intent.putExtra(SELLER_ID, it.value?.seller?.id)
+                intent.putExtra(SELLER_ID, default.id)
 
                 LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
             }
 
             LogHelper.i(messages = *arrayOf("Login complete for user #${value.sellers.first().id}."))
 
-            completion(success(it.value))
+            coroutineOnUi {
+                completion(success(AccountModels.Response(seller = default)))
+            }
+
+            // Load remote data locally before proceeding
+            syncWorker.configure()
+
+            syncWorker.remotePull()
         }
     }
 
@@ -116,20 +141,6 @@ class AuthenticationWorker(val service: AuthenticationService,
     /// Used for handling successfully completed signup or login
     private suspend fun authenticated(seller: Seller, token: String, completion: suspend (Result<AccountModels.Response>) -> Unit){
 
-        // Clear previous tasks if any
-        syncWorker.clear()
 
-        // Store user info for later use on app start and db initialization
-        securityWorker.set(key = SecurityProperty.TOKEN(seller.marketplace.region.name), value = token)
-        preferencesWorker.set(seller.id, key = sellerID)
-        preferencesWorker.set(seller.marketplace.name, key = DefaultsKeys.marketplace)
-
-        completion(success(AccountModels.Response(seller = seller)))
-
-        // Load remote data locally before proceeding
-        syncWorker.configure()
-        /*syncWorker.remotePull {
-            completion(success(AccountModels.Response(seller = seller)))
-        }*/
     }
 }

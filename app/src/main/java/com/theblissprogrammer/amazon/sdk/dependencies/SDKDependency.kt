@@ -106,8 +106,7 @@ open class SDKDependency: SDKDependable {
     override val resolveSyncWorker: SyncWorkerType  by lazy {
          SyncWorker(
                  store = resolveSyncStore,
-                 dataWorker = resolveDataWorker,
-                 context = resolveContext
+                 dataWorker = resolveDataWorker
         )
     }
 

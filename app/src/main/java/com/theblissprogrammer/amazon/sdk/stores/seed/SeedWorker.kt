@@ -2,6 +2,8 @@ package com.theblissprogrammer.amazon.sdk.stores.seed
 
 import com.theblissprogrammer.amazon.sdk.stores.seed.models.SeedPayload
 import com.theblissprogrammer.amazon.sdk.common.CompletionResponse
+import com.theblissprogrammer.amazon.sdk.enums.ReportType
+import com.theblissprogrammer.amazon.sdk.stores.reports.models.ReportModels
 import java.util.*
 
 /**

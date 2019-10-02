@@ -30,60 +30,55 @@ class AuthenticationNetworkService(val apiSession: APISessionType,
             get() = apiSession.isAuthorized
 
     /// Pings remote server to verify authorization still valid.
-    override fun pingAuthorization(): Deferred<Result<Void>> {
-        return coroutineNetworkAsync <Void> {
-            val response = apiSession.request(APIRouter.ReadUser())
-            val error = initDataError(response.error)
+    override fun pingAuthorization(): Result<Void> {
+        val response = apiSession.request(APIRouter.ReadUser())
+        val error = initDataError(response.error)
 
-            /* Only explicit unauthorized error will be checked */
-            if (response.isSuccess && error is DataError.Other) {
-                success()
-            } else {
-                failure(error)
-            }
+        /* Only explicit unauthorized error will be checked */
+        return if (response.isSuccess && error is DataError.Other) {
+            success()
+        } else {
+            failure(error)
         }
     }
 
-    override fun login(request: LoginModels.Request): Deferred<Result<AccountModels.ServerResponse>> {
+    override fun login(request: LoginModels.Request): Result<AccountModels.ServerResponse> {
+        val response = apiSession.request(router = APIRouter.Login(request))
 
-        return coroutineNetworkAsync <AccountModels.ServerResponse> {
-            val response = apiSession.request(router = APIRouter.Login(request))
+        // Handle errors
+        val value = response.value
+        if (value == null || !response.isSuccess) {
+            val error = response.error
 
-            // Handle errors
-            val value = response.value
-            if (value == null || !response.isSuccess) {
-                val error = response.error
-
-                return@coroutineNetworkAsync if (error != null) {
-                    val exception = initDataError(response.error)
-                    LogHelper.e(messages = *arrayOf("An error occurred while fetching login: " +
-                            "${error.description}."))
-                    failure(exception)
-                } else {
-                    failure(DataError.UnknownReason(null))
-                }
+            return if (error != null) {
+                val exception = initDataError(response.error)
+                LogHelper.e(messages = *arrayOf("An error occurred while fetching login: " +
+                        "${error.description}."))
+                failure(exception)
+            } else {
+                failure(DataError.UnknownReason(null))
             }
+        }
 
-            try {
-                // Parse response data
-                val sellers = ListMarketplaceParticipationsXmlParser().parse(value.data)?.map {
-                    Seller(
-                            id = it.sellerID,
-                            marketplace = it.marketplaceType ?: MarketplaceType.US
-                    )
-                } ?: throw DataError.BadRequest
-
-                val serverResponse = AccountModels.ServerResponse(
-                        sellers = sellers,
-                        token = request.token
+        return try {
+            // Parse response data
+            val sellers = ListMarketplaceParticipationsXmlParser().parse(value.data)?.map {
+                Seller(
+                        id = it.sellerID,
+                        marketplace = it.marketplaceType ?: MarketplaceType.US
                 )
+            } ?: throw DataError.BadRequest
 
-                success(serverResponse)
-            } catch(e: Exception) {
-                LogHelper.e(messages = *arrayOf("An error occurred while parsing login: " +
-                        "${e.localizedMessage ?: ""}."))
-                failure(DataError.ParseFailure(e))
-            }
+            val serverResponse = AccountModels.ServerResponse(
+                    sellers = sellers,
+                    token = request.token
+            )
+
+            success(serverResponse)
+        } catch(e: Exception) {
+            LogHelper.e(messages = *arrayOf("An error occurred while parsing login: " +
+                    "${e.localizedMessage ?: ""}."))
+            failure(DataError.ParseFailure(e))
         }
     }
 }

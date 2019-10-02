@@ -13,14 +13,14 @@ import kotlinx.coroutines.Deferred
 
 interface AuthenticationService {
     val isAuthorized: Boolean
-    fun pingAuthorization(): Deferred<Result<Void>>
-    fun login(request: LoginModels.Request): Deferred<Result<AccountModels.ServerResponse>>
+    fun pingAuthorization(): Result<Void>
+    fun login(request: LoginModels.Request): Result<AccountModels.ServerResponse>
 }
 
 interface AuthenticationWorkerType {
     val isAuthorized: Boolean
-    suspend fun pingAuthorization(completion: CompletionResponse<Void>)
-    suspend fun login(request: LoginModels.Request,
+    fun pingAuthorization(completion: CompletionResponse<Void>)
+    fun login(request: LoginModels.Request,
               completion: CompletionResponse<AccountModels.Response>)
     fun logout()
 }

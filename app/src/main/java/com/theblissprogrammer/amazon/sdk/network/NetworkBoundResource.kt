@@ -22,7 +22,7 @@ abstract class NetworkBoundResource<ResultType, RequestType>
     private val result = MediatorLiveData<Resource<ResultType>>()
 
     init {
-        result.value = Resource.loading(null)
+        setValue(Resource.loading(null))
         @Suppress("LeakingThis")
 
         coroutineOnIO {

@@ -13,6 +13,7 @@ import com.theblissprogrammer.amazon.sdk.common.Result.Companion.failure
 import com.theblissprogrammer.amazon.sdk.common.Result.Companion.success
 import com.theblissprogrammer.amazon.sdk.common.CompletionResponse
 import com.theblissprogrammer.amazon.sdk.enums.DefaultsKeys
+import com.theblissprogrammer.amazon.sdk.enums.marketplaceFromId
 import com.theblissprogrammer.amazon.sdk.errors.DataError
 import com.theblissprogrammer.amazon.sdk.extensions.add
 import com.theblissprogrammer.amazon.sdk.extensions.startOfDay
@@ -52,65 +53,29 @@ class SyncRoomStore(val preferencesWorker: PreferencesWorkerType,
         val marketplaces = getSellerMarketplaces(preferencesWorker)
         val lastPulledAt = getSyncActivityLastPulledAt(
                 typeName = SeedPayload::class.java.simpleName,
-                suffix = marketplaces?.joinToString() ?: "US")
+                suffix = marketplaces.joinToString())
 
         if (lastPulledAt != null && lastPulledAt.add(Calendar.MINUTE, 30).after(Date())) {
             completion?.invoke(failure(DataError.NonExistent))
             return
         }
 
-        coroutineCompletionOnUi(completion) {
-            val cal = Calendar.getInstance(TimeZone.getTimeZone("America/Los_Angeles"))
-            val timeStamp = cal.time
+        val request = ReportModels.Request(
+                type = ReportType.OrderByUpdateDate,
+                date = lastPulledAt ?: Date().startOfDay().add(Calendar.DATE, -30),
+                marketplaces = marketplaces
+        )
 
-            seedWorker.fetchPayload(newerThan = lastPulledAt ?: timeStamp.startOfDay().add(Calendar.DATE, -30)) {
-                // Handle errors if applicable
-                val value = it.value
-                if (!it.isSuccess || value == null) {
-                    val error = it.error ?: DataError.UnknownReason(null)
-                    LogHelper.e(messages = *arrayOf("Failed to get seed payload: $error"))
-                    completion?.invoke(failure(error))
-                    return@fetchPayload
-                }
+        reportsWorker.requestReport(request)
 
-                // Ensure there is data before proceeding
-                if (value.isEmpty) {
-                    LogHelper.d(messages = *arrayOf("Data seed for payload not modified for marketplaces ${marketplaces?.joinToString()}."))
-                    completion?.invoke(success(value))
-                    return@fetchPayload
-                }
-
-                // Write source data to local storage
-                /*callRealmInBackgroundWithCompletionOnUi(completion = completion) { realm, tcs ->
-                    // Transform data
-                    val orders = value.orders.toRealmList()
-                    val inventories = value.inventories.toRealmList()
-                    val products = value.products.toRealmList()
-                    val fbaFees = value.fbaFees.toRealmList()
-
-                    realm.executeTransaction {
-                        realm.insertOrUpdate(orders)
-                        realm.insertOrUpdate(inventories)
-                        realm.insertOrUpdate(products)
-                        realm.insertOrUpdate(fbaFees)
-                    }
-
-                    // Persist sync date for next use if applicable
-                    SyncRoomStore.updateSyncActivity(typeName = SeedPayload::class.java.simpleName,
-                            lastPulledAt = timeStamp,
-                            suffix = marketplaces?.joinToString() ?: "US")
-                    LogHelper.d(messages = *arrayOf("Data seed for secondary payload complete."))
-
-
-                    tcs.setResult(value)
-                }*/
-            }
-        }
+        completion?.invoke(success(null))
     }
 
     companion object {
         /// Determine region ID stored in user object
-        fun getSellerMarketplaces(preferencesWorker: PreferencesWorkerType): List<MarketplaceType>? {
+        fun getSellerMarketplaces(preferencesWorker: PreferencesWorkerType): List<MarketplaceType> {
+
+            return listOf(marketplaceFromId(preferencesWorker.get(DefaultsKeys.marketplace)) ?: MarketplaceType.US)
 
             /*val realm = Realm.getDefaultInstance()
             return try {
@@ -128,7 +93,6 @@ class SyncRoomStore(val preferencesWorker: PreferencesWorkerType,
             } finally {
                 realm.close()
             }*/
-            return null
         }
 
         /// Get sync activity for type.
