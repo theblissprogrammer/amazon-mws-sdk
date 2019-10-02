@@ -1,9 +1,7 @@
 package com.theblissprogrammer.amazon.sdk.stores.common
 
-import com.theblissprogrammer.amazon.sdk.common.DeferredLiveResult
-import com.theblissprogrammer.amazon.sdk.common.DeferredResult
-import com.theblissprogrammer.amazon.sdk.common.LiveCompletionResponse
-import com.theblissprogrammer.amazon.sdk.common.Result
+import com.theblissprogrammer.amazon.sdk.common.*
+import com.theblissprogrammer.amazon.sdk.errors.DataError
 import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetworkAsync
 
 /**
@@ -17,14 +15,17 @@ interface CommonStore<T, R> {
             Result.failure()
         }
     }
+    fun fetch(request: R): Result<T> { return Result.failure(DataError.NonExistent) }
 }
 
 interface CommonCacheStore<T, R> {
     fun fetchAsync(request: R): DeferredLiveResult<Array<T>>
     fun createOrUpdateAsync(request: T): DeferredLiveResult<T>
     fun createOrUpdateAsync(vararg inventory: T): DeferredResult<Void>
+    fun createOrUpdate(items: List<T>) {}
 }
 
 interface CommonWorkerType<T, R> {
-    suspend fun fetch(request: R, completion: LiveCompletionResponse<Array<T>>)
+    suspend fun fetchAsync(request: R, completion: LiveCompletionResponse<Array<T>>) {}
+    fun fetch(request: R, completion: LiveResourceResponse<Array<T>>) {}
 }

@@ -13,12 +13,13 @@ import com.theblissprogrammer.amazon.sdk.stores.orders.models.*
 interface OrdersStore: CommonStore<ListOrders, OrderModels.Request>
 
 interface OrdersCacheStore {
-    fun fetch(request: OrderModels.Request): DeferredLiveResult<Array<Order>>
-    fun fetchOldestOrder(): DeferredLiveResult<Order>
-    fun createOrUpdate(request: ListOrder): DeferredLiveResult<Order>
-    fun createOrUpdate(vararg listOrder: ListOrder): DeferredResult<Void>
+    fun fetch(request: OrderModels.Request): LiveResult<Array<OrderDetail>>
+    fun fetchOldestOrder(): LiveResult<Order>
+    fun createOrUpdate(request: ListOrder)
+    fun createOrUpdate(vararg listOrder: ListOrder)
+    fun createOrUpdate(orders: List<Order>)
 }
 
-interface OrdersWorkerType: CommonWorkerType<Order, OrderModels.Request> {
+interface OrdersWorkerType: CommonWorkerType<OrderDetail, OrderModels.Request> {
     suspend fun fetchOldestOrder(completion: LiveCompletionResponse<Order>)
 }

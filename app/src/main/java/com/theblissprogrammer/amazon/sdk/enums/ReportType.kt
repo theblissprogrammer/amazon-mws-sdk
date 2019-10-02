@@ -11,6 +11,7 @@ enum class ReportType(val id: String) {
     InventoryMFN("_GET_FLAT_FILE_OPEN_LISTINGS_DATA_"),
     AllListings("_GET_MERCHANT_LISTINGS_ALL_DATA_"),
     FBAFees("_GET_FBA_ESTIMATED_FBA_FEES_TXT_DATA_"),
+    FBAMYIInventory("_GET_FBA_MYI_ALL_INVENTORY_DATA_"),
     Unknown("");
 
     companion object {

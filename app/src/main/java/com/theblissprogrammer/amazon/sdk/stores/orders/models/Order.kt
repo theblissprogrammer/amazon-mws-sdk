@@ -1,11 +1,10 @@
 package com.theblissprogrammer.amazon.sdk.stores.orders.models
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.room.*
 import com.theblissprogrammer.amazon.sdk.enums.FulfillmentChannel
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.enums.OrderStatus
+import com.theblissprogrammer.amazon.sdk.stores.orderItems.models.OrderItem
 import java.util.*
 
 /**
@@ -25,6 +24,13 @@ data class Order(
     var status: OrderStatus = OrderStatus.Pending,
     var fulfillmentChannel: FulfillmentChannel? = null,
     var marketplace: MarketplaceType? = null)
+
+data class OrderDetail(
+        @Embedded
+        val order: Order,
+        @Relation(parentColumn = "id", entityColumn = "orderId", entity = OrderItem::class)
+        val items: List<OrderItem>
+)
 
 data class ListOrders(
     val orders: List<ListOrder>,

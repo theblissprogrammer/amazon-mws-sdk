@@ -17,6 +17,10 @@ sealed class ReportModels {
         var date: Date? = null,
         val marketplaces: List<MarketplaceType>): ReportModels()
 
+    class ReadRequest(
+        val type: ReportType,
+        val id: String): ReportModels()
+
     class ReportRequest(
         var requestFrom: Date? = null,
         var types: List<ReportType> = listOf(),

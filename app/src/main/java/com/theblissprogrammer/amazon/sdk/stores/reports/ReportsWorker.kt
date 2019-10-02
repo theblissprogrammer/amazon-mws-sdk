@@ -3,8 +3,14 @@ package com.theblissprogrammer.amazon.sdk.stores.reports
 import com.theblissprogrammer.amazon.sdk.stores.reports.models.ReportModels
 import com.theblissprogrammer.amazon.sdk.common.CompletionResponse
 import com.theblissprogrammer.amazon.sdk.common.Result
+import com.theblissprogrammer.amazon.sdk.common.asResource
 import com.theblissprogrammer.amazon.sdk.enums.ReportType
 import com.theblissprogrammer.amazon.sdk.errors.DataError
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineBackgroundAsync
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineOnIO
+import com.theblissprogrammer.amazon.sdk.stores.orderItems.OrderItemsCacheStore
+import com.theblissprogrammer.amazon.sdk.stores.orders.OrdersCacheStore
+import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderDetail
 import com.theblissprogrammer.amazon.sdk.stores.products.ProductsCacheStore
 import com.theblissprogrammer.amazon.sdk.stores.products.models.Product
 
@@ -13,6 +19,8 @@ import com.theblissprogrammer.amazon.sdk.stores.products.models.Product
  * Copyright (c) 2018. All rights reserved.
  **/
 class ReportsWorker(val store: ReportsStore,
+                    val ordersCacheStore: OrdersCacheStore,
+                    val itemsCacheStore: OrderItemsCacheStore,
                     val productCacheStore: ProductsCacheStore): ReportsWorkerType {
 
     override suspend fun <T> fetchReport(request: ReportModels.Request, completion: CompletionResponse<List<T>>) {
@@ -31,5 +39,35 @@ class ReportsWorker(val store: ReportsStore,
         }
 
         completion(result)
+    }
+
+    override fun requestReport(request: ReportModels.Request) {
+        coroutineOnIO {
+            coroutineBackgroundAsync {
+                store.requestReport(request)
+            }.await()
+        }
+    }
+
+    override fun processReport(request: ReportModels.ReadRequest) {
+        coroutineOnIO {
+            val resource = coroutineBackgroundAsync {
+                store.readReport(request).asResource()
+            }.await()
+
+            if (resource.data == null) return@coroutineOnIO
+
+            when (request.type) {
+                ReportType.OrderByUpdateDate, ReportType.OrderByOrderDate -> {
+                    val list = resource.data as List<OrderDetail>
+                    val orders = list.map { it.order }
+                    val items = list.flatMap { it.items }
+
+                    ordersCacheStore.createOrUpdate(orders)
+                    itemsCacheStore.createOrUpdate(items)
+                }
+                else -> {}
+            }
+        }
     }
 }

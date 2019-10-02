@@ -5,8 +5,6 @@ import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.enums.ReportStatus
 import com.theblissprogrammer.amazon.sdk.enums.ReportType
 import com.theblissprogrammer.amazon.sdk.extensions.fetchReportRequest
-import com.theblissprogrammer.amazon.sdk.extensions.readReport
-import com.theblissprogrammer.amazon.sdk.extensions.requestReport
 import com.theblissprogrammer.amazon.sdk.stores.reports.ReportsNetworkStore
 import com.theblissprogrammer.amazon.sdk.stores.reports.models.ReportModels
 import com.theblissprogrammer.amazon.sdk.parsers.FBAFeesReportFileParser
@@ -37,7 +35,7 @@ class SeedNetworkStore(val reportsStore: ReportsNetworkStore,
     override fun fetchPayload(newerThan: Date?, completion: CompletionResponse<SeedPayload>) {
         val payload = SeedPayload()
 
-        var reportRequestList = ReportModels.ReportRequest(
+        /*var reportRequestList = ReportModels.ReportRequest(
                 requestFrom = newerThan,
                 types = reports,
                 statuses = listOf(ReportStatus._DONE_)
@@ -145,7 +143,7 @@ class SeedNetworkStore(val reportsStore: ReportsNetworkStore,
                     reportRequestList.ids.remove(requestReport.requestID)
                 }
             }
-        }
+        }*/
 
 
         completion(success(payload))

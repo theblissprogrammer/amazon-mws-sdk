@@ -5,6 +5,9 @@ package com.theblissprogrammer.amazon.sdk.enums
  * Copyright (c) 2018. All rights reserved.
  **/
 enum class InventoryCondition{
+    New,
+    Used,
+    Unknown,
     NewItem,
     NewWithWarranty,
     NewOEM,

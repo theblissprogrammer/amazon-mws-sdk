@@ -21,10 +21,9 @@ import com.theblissprogrammer.amazon.sdk.stores.orders.models.Order
     indices = [
         Index(value = ["orderId"]),
         Index(value = ["sku"])
-    ]
+    ], primaryKeys = ["orderItemId","orderId"]
 )
 data class OrderItem(
-    @PrimaryKey
     var orderItemId: String = "",
     var orderId: String = "",
     var asin: String? = null,

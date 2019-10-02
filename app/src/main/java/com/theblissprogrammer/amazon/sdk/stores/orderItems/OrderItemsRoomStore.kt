@@ -52,4 +52,8 @@ class OrderItemsRoomStore(val orderItemDao: OrderItemDAO?): OrderItemsCacheStore
         }
     }
 
+    override fun createOrUpdate(items: List<OrderItem>) {
+        orderItemDao?.insert(*items.toTypedArray())
+    }
+
 }

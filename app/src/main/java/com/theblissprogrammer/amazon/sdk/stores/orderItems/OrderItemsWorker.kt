@@ -13,7 +13,7 @@ class OrderItemsWorker(val store: OrderItemsStore,
                        val cacheStore: OrderItemsCacheStore): OrderItemsWorkerType {
 
 
-    override suspend fun fetch(request: OrderItemModels.Request, completion: LiveCompletionResponse<Array<OrderItem>>) {
+    override suspend fun fetchAsync(request: OrderItemModels.Request, completion: LiveCompletionResponse<Array<OrderItem>>) {
 
         val cache = cacheStore.fetchAsync(request = request).await()
 

@@ -1,6 +1,7 @@
 package com.theblissprogrammer.amazon.sdk.stores.subscriptions
 
 import com.theblissprogrammer.amazon.sdk.common.*
+import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.Notification
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.Queue
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.SubscriptionsModels
 
@@ -13,7 +14,7 @@ interface SubscriptionsStore {
     fun getQueue(request: SubscriptionsModels.QueueRequest): Result<Queue>
     fun registerDestination(request: SubscriptionsModels.DestinationRequest): Result<Void>
     fun createSubscription(request: SubscriptionsModels.SubscriptionRequest): Result<Void>
-    fun pollQueue(request: SubscriptionsModels.PollRequest)
+    fun pollQueue(request: SubscriptionsModels.PollRequest): Result<List<Notification<Any>>>
 }
 
 interface SubscriptionsCacheStore {

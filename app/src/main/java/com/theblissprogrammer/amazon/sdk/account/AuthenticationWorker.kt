@@ -127,6 +127,7 @@ class AuthenticationWorker(val service: AuthenticationService,
         completion(success(AccountModels.Response(seller = seller)))
 
         // Load remote data locally before proceeding
+        syncWorker.configure()
         /*syncWorker.remotePull {
             completion(success(AccountModels.Response(seller = seller)))
         }*/

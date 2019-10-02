@@ -3,11 +3,15 @@ package com.theblissprogrammer.amazon.sdk.stores.subscriptions
 import com.theblissprogrammer.amazon.sdk.common.*
 import com.theblissprogrammer.amazon.sdk.enums.DefaultsKeys
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
+import com.theblissprogrammer.amazon.sdk.enums.NotificationType
 import com.theblissprogrammer.amazon.sdk.enums.marketplaceFromId
 import com.theblissprogrammer.amazon.sdk.extensions.*
 import com.theblissprogrammer.amazon.sdk.network.NetworkBoundResource
 import com.theblissprogrammer.amazon.sdk.preferences.PreferencesWorkerType
+import com.theblissprogrammer.amazon.sdk.stores.reports.ReportsWorkerType
+import com.theblissprogrammer.amazon.sdk.stores.reports.models.ReportModels
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.Queue
+import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.ReportsProcessingNotificationPayload
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.SubscriptionsModels
 
 /**
@@ -17,7 +21,8 @@ import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.Subscriptio
 class SubscriptionsWorker(
         val store: SubscriptionsStore,
         val cacheStore: SubscriptionsCacheStore,
-        val preferencesWorker: PreferencesWorkerType): SubscriptionsWorkerType {
+        val preferencesWorker: PreferencesWorkerType,
+        val reportsWorker: ReportsWorkerType): SubscriptionsWorkerType {
 
     override fun getQueue(completion: LiveResourceResponse<Queue>) {
         val id = preferencesWorker.get(DefaultsKeys.sellerID)
@@ -81,10 +86,29 @@ class SubscriptionsWorker(
     }
 
     override fun pollQueue(request: SubscriptionsModels.PollRequest) {
-        coroutineOnUi {
+        coroutineOnIO {
             val data = coroutineBackgroundAsync {
                 store.pollQueue(request)
             }.await()
+
+            data.value?.forEach {
+                if (it.payload == null) return@forEach
+
+                when (it.metaData?.notificationType) {
+                    NotificationType.ReportProcessingFinished -> {
+
+                        val payload = it.payload as ReportsProcessingNotificationPayload
+                        val readRequest = ReportModels.ReadRequest(
+                                id = payload.reportId,
+                                type = payload.type
+
+                        )
+
+                        reportsWorker.processReport(readRequest)
+                    }
+                    else -> {}
+                }
+            }
         }
     }
 }

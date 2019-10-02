@@ -8,6 +8,7 @@ import com.theblissprogrammer.amazon.sdk.enums.OrderStatus
 import com.theblissprogrammer.amazon.sdk.stores.common.CommonDAO
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.Order
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderAddress
+import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderDetail
 import java.util.*
 
 
@@ -38,12 +39,14 @@ interface OrderDAO: CommonDAO<Order> {
     @Query("SELECT * FROM `Order` WHERE id = :id")
     fun fetch(id: String): LiveData<Order>
 
+    @Transaction
     @Query("SELECT * FROM `Order` WHERE status IN (:orderStatuses) AND marketplace IN (:marketplaces) AND purchasedAt BETWEEN :startDate AND :endDate")
     fun fetch(startDate: Date, endDate: Date, orderStatuses: Array<OrderStatus>,
-              marketplaces: Array<MarketplaceType>): LiveData<Array<Order>>
+              marketplaces: Array<MarketplaceType>): LiveData<Array<OrderDetail>>
 
+    @Transaction
     @Query("SELECT * FROM `Order` WHERE id = :id AND marketplace IN (:marketplaces)")
-    fun fetch(id: String, marketplaces: Array<MarketplaceType>): LiveData<Array<Order>>
+    fun fetch(id: String, marketplaces: Array<MarketplaceType>): LiveData<Array<OrderDetail>>
 
     @Query("SELECT * FROM `Order` WHERE id = :id AND marketplace = :marketplace")
     fun fetch(id: String, marketplace: MarketplaceType): LiveData<Order>

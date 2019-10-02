@@ -8,83 +8,65 @@ import com.theblissprogrammer.amazon.sdk.errors.DataError
 import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetworkAsync
 import com.theblissprogrammer.amazon.sdk.extensions.coroutineRoomAsync
 import com.theblissprogrammer.amazon.sdk.stores.common.insertOrUpdate
+import com.theblissprogrammer.amazon.sdk.stores.orderItems.OrderItemDAO
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.ListOrder
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.Order
+import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderDetail
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderModels
 
 /**
  * Created by ahmed.saad on 2018-12-19.
  * Copyright © 2018. All rights reserved.
  */
-class OrdersRoomStore(val orderDao: OrderDAO?): OrdersCacheStore {
+class OrdersRoomStore(val orderDao: OrderDAO?,
+                      val itemDAO: OrderItemDAO?): OrdersCacheStore {
 
-    override fun fetch(request: OrderModels.Request): DeferredLiveResult<Array<Order>> {
-        return coroutineRoomAsync<Array<Order>> {
+    override fun fetch(request: OrderModels.Request): LiveResult<Array<OrderDetail>> {
+        val items = if (request.id != null) {
+            orderDao?.fetch(id = request.id, marketplaces = request.marketplaces.toTypedArray())
+        } else {
+            orderDao?.fetch(
+                startDate = request.startDate ?: request.lastSync,
+                endDate = request.endDate,
+                orderStatuses = request.orderStatuses.toTypedArray(),
+                marketplaces = request.marketplaces.toTypedArray()
+            )
+        }
 
-            val items = if (request.id != null) {
-                orderDao?.fetch(id = request.id, marketplaces = request.marketplaces.toTypedArray())
-            } else {
-                orderDao?.fetch(
-                    startDate = request.startDate ?: request.lastSync,
-                    endDate = request.endDate,
-                    orderStatuses = request.orderStatuses.toTypedArray(),
-                    marketplaces = request.marketplaces.toTypedArray()
-                )
-            }
-
-            if (items == null) {
-                LiveResult.failure(DataError.NonExistent)
-            } else {
-                LiveResult.success(items)
-            }
+        return if (items == null) {
+            LiveResult.failure(DataError.NonExistent)
+        } else {
+            LiveResult.success(items)
         }
     }
 
-    override fun fetchOldestOrder(): DeferredLiveResult<Order> {
-        return coroutineRoomAsync<Order> {
-            val item = orderDao?.fetchOldestOrder()
+    override fun fetchOldestOrder(): LiveResult<Order> {
+        val item = orderDao?.fetchOldestOrder()
 
-            if (item == null) {
-                LiveResult.failure(DataError.NonExistent)
-            } else {
-                LiveResult.success(item)
-            }
+        return if (item == null) {
+            LiveResult.failure(DataError.NonExistent)
+        } else {
+            LiveResult.success(item)
         }
     }
 
-    override fun createOrUpdate(request: ListOrder): DeferredLiveResult<Order> {
-        return coroutineRoomAsync<Order> {
+    override fun createOrUpdate(request: ListOrder) {
+        orderDao?.insertOrUpdate(request.order)
 
-            orderDao?.insertOrUpdate(request.order)
-
-            if (request.buyer != null)
-                orderDao?.insertOrUpdate(request.buyer)
-
-            val marketplace = request.order.marketplace
-
-            val item = if (marketplace != null) {
-                orderDao?.fetch(id = request.order.id, marketplace = marketplace)
-            } else {
-                orderDao?.fetch(id = request.order.id)
-            }
-
-            if (item == null) {
-                LiveResult.failure(DataError.NonExistent)
-            } else {
-                LiveResult.success(item)
-            }
-        }
+        if (request.buyer != null)
+            orderDao?.insertOrUpdate(request.buyer)
     }
 
-    override fun createOrUpdate(vararg listOrder: ListOrder): DeferredResult<Void> {
-        return coroutineNetworkAsync<Void> {
-            val orders = listOrder.map { it.order }
-            val buyers = listOrder.mapNotNull { it.buyer }
+    override fun createOrUpdate(vararg listOrder: ListOrder) {
+        val orders = listOrder.map { it.order }
+        val buyers = listOrder.mapNotNull { it.buyer }
 
-            orderDao?.insert(*orders.toTypedArray())
-            orderDao?.insert(*buyers.toTypedArray())
-            Result.success()
-        }
+        orderDao?.insert(*orders.toTypedArray())
+        orderDao?.insert(*buyers.toTypedArray())
+    }
+
+    override fun createOrUpdate(orders: List<Order>) {
+        orderDao?.insert(*orders.toTypedArray())
     }
 
 }

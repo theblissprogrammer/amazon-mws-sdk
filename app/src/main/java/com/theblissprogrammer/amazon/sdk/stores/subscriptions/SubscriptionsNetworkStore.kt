@@ -18,7 +18,9 @@ import com.theblissprogrammer.amazon.sdk.errors.DataError
 import com.theblissprogrammer.amazon.sdk.logging.LogHelper
 import com.theblissprogrammer.amazon.sdk.network.APIRouter
 import com.theblissprogrammer.amazon.sdk.network.APISessionType
+import com.theblissprogrammer.amazon.sdk.parsers.NotificationXmlParser
 import com.theblissprogrammer.amazon.sdk.preferences.ConstantsType
+import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.Notification
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.Queue
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.SubscriptionsModels
 import java.lang.Exception
@@ -124,12 +126,13 @@ class SubscriptionsNetworkStore(val constants: ConstantsType,
         return success(null)
     }
 
-    override fun pollQueue(request: SubscriptionsModels.PollRequest) {
-        val messages = sqs.receiveMessage(request.queue.url).messages?.map {
+    override fun pollQueue(request: SubscriptionsModels.PollRequest): Result<List<Notification<Any>>> {
+        val messages = sqs.receiveMessage(request.queue.url).messages?.mapNotNull {
             sqs.deleteMessage(request.queue.url, it.receiptHandle)
 
-
-            it.body
+            NotificationXmlParser().parse<Any>(it.body)
         }
+
+        return success(messages)
     }
 }

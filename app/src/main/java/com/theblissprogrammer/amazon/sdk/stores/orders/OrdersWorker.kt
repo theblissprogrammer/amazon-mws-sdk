@@ -2,11 +2,16 @@ package com.theblissprogrammer.amazon.sdk.stores.orders
 
 import com.theblissprogrammer.amazon.sdk.data.SyncRoomStore
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
-import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderModels
 import com.theblissprogrammer.amazon.sdk.common.LiveCompletionResponse
+import com.theblissprogrammer.amazon.sdk.common.LiveResourceResponse
+import com.theblissprogrammer.amazon.sdk.common.LiveResult
+import com.theblissprogrammer.amazon.sdk.common.Result
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineOnUi
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineRoomAsync
 import com.theblissprogrammer.amazon.sdk.logging.LogHelper
+import com.theblissprogrammer.amazon.sdk.network.NetworkBoundResource
 import com.theblissprogrammer.amazon.sdk.preferences.PreferencesWorkerType
-import com.theblissprogrammer.amazon.sdk.stores.orders.models.Order
+import com.theblissprogrammer.amazon.sdk.stores.orders.models.*
 
 /**
  * Created by ahmedsaad on 2018-08-05.
@@ -16,14 +21,37 @@ class OrdersWorker(val store: OrdersStore,
                    val cacheStore: OrdersCacheStore,
                    val preferencesWorker: PreferencesWorkerType): OrdersWorkerType {
 
+    override fun fetch(request: OrderModels.Request, completion: LiveResourceResponse<Array<OrderDetail>>) {
 
-    override suspend fun fetch(request: OrderModels.Request, completion: LiveCompletionResponse<Array<Order>>) {
         if (request.marketplaces.isEmpty()) {
             val marketplaces = SyncRoomStore.getSellerMarketplaces(preferencesWorker)
             request.marketplaces = marketplaces ?: listOf(MarketplaceType.US)
         }
 
-        val cache = cacheStore.fetch(request = request).await()
+        val data = object : NetworkBoundResource<Array<OrderDetail>, ListOrders>() {
+            override fun saveCallResult(item: ListOrders?) {
+                if (item != null) {
+                    cacheStore.createOrUpdate(*item.orders.toTypedArray())
+                }
+            }
+
+            override fun shouldFetch(data: Array<OrderDetail>?): Boolean {
+                return false
+            }
+
+            override fun loadFromDb(): LiveResult<Array<OrderDetail>> {
+                return cacheStore.fetch(request = request)
+            }
+
+            override fun createCall(): Result<ListOrders> {
+                return store.fetch(request = request)
+            }
+
+        }.asLiveData()
+
+        completion(data)
+
+        /*val cache = cacheStore.fetch(request = request).await()
 
         // Immediately return local response
         //completion(cache)
@@ -72,10 +100,16 @@ class OrdersWorker(val store: OrdersStore,
             nextToken = listOrderNext.value.nextToken
         }
 
-        completion(cache)
+        completion(cache)*/
     }
 
     override suspend fun fetchOldestOrder(completion: LiveCompletionResponse<Order>) {
-        completion(cacheStore.fetchOldestOrder().await())
+        coroutineOnUi {
+            val data = coroutineRoomAsync {
+                cacheStore.fetchOldestOrder()
+            }.await()
+
+            completion(data)
+        }
     }
 }

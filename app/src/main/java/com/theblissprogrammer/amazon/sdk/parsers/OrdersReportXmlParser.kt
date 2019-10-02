@@ -23,7 +23,7 @@ class OrdersReportXmlParser {
     private val ns: String? = null
 
     @Throws(XmlPullParserException::class, IOException::class)
-    fun parse(input: String): List<Order> {
+    fun parse(input: String): List<OrderDetail> {
         input.byteInputStream().use { inputStream ->
             val parser = Xml.newPullParser()
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
@@ -41,7 +41,7 @@ class OrdersReportXmlParser {
     // Parses the contents of an entry. If it encounters a title, summary, or link tag, hands them off
     // to their respective "read" methods for processing. Otherwise, skips the tag.
     @Throws(XmlPullParserException::class, IOException::class)
-    private fun readOrder(parser: XmlPullParser): Order? {
+    private fun readOrder(parser: XmlPullParser): OrderDetail? {
         parser.require(XmlPullParser.START_TAG, ns, "Order")
 
         var id: String? = null
@@ -50,7 +50,7 @@ class OrdersReportXmlParser {
         var status: OrderStatus = OrderStatus.Pending
         var salesChannel: String? = null
         var fulfillmentData: FulfillmentData? = null
-        val items: ArrayList<OrderItem> = arrayListOf()
+        val items: ArrayList<OrderItem?> = arrayListOf()
 
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.eventType != XmlPullParser.START_TAG) {
@@ -69,19 +69,24 @@ class OrdersReportXmlParser {
                         FulfillmentData(address = readAddress(parser))
                     }.firstOrNull()
                 }
-                "OrderItem" -> items.add(readOrderItem(parser))
+                "OrderItem" -> items.add(readOrderItem(id, parser))
                 else -> parser.skip()
             }
         }
 
-        if (id == null || purchasedDate == null || updatedDate == null) { return null}
+        if (id == null || purchasedDate == null || updatedDate == null) { return null }
 
-        return Order(
+        val order = Order(
                 id = id,
                 purchasedAt = purchasedDate,
                 updatedAt = updatedDate,
                 status = status,
                 marketplace = marketplaceFromSalesChannel(salesChannel)
+        )
+
+        return OrderDetail(
+                order = order,
+                items = items.filterNotNull()
         )
     }
 
@@ -122,7 +127,7 @@ class OrdersReportXmlParser {
     // Parses the contents of an entry. If it encounters a title, summary, or link tag, hands them off
     // to their respective "read" methods for processing. Otherwise, skips the tag.
     @Throws(XmlPullParserException::class, IOException::class)
-    private fun readOrderItem(parser: XmlPullParser): OrderItem {
+    private fun readOrderItem(id: String?, parser: XmlPullParser): OrderItem? {
         parser.require(XmlPullParser.START_TAG, ns, "OrderItem")
 
         var asin: String? = null
@@ -130,6 +135,7 @@ class OrdersReportXmlParser {
         var productName: String? = null
         var quantity: String? = null
         var priceComponent: PriceComponent? = null
+        var itemId: String? = null
 
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.eventType != XmlPullParser.START_TAG) {
@@ -138,6 +144,7 @@ class OrdersReportXmlParser {
 
             val name = parser.name
             when (name) {
+                "AmazonOrderItemCode" -> itemId = parser.readString(name)
                 "ASIN" -> asin = parser.readString(name)
                 "SKU" -> sku = parser.readString(name)
                 "ProductName" -> productName = parser.readString(name)
@@ -151,13 +158,17 @@ class OrdersReportXmlParser {
             }
         }
 
+        if (id == null || itemId == null) { return null }
+
         return OrderItem(
-            asin = asin,
-            sku = sku,
-            productName = productName,
-            quantity = quantity?.toInt(),
-            currency = priceComponent?.currency,
-            price = priceComponent?.amount
+                orderItemId = itemId,
+                orderId = id,
+                asin = asin,
+                sku = sku,
+                productName = productName,
+                quantity = quantity?.toInt(),
+                currency = priceComponent?.currency,
+                price = priceComponent?.amount
         )
     }
 

@@ -20,7 +20,7 @@ import com.theblissprogrammer.amazon.sdk.logging.LogHelper
  **/
 
 
-internal fun <T> ReportsNetworkStore.processReport(request: ReportModels.Request, call: (data: String) -> List<T>): Result<List<T>> {
+/*internal fun <T> ReportsNetworkStore.processReport(request: ReportModels.Request, call: (data: String) -> List<T>): Result<List<T>> {
     val response: ArrayList<T> = arrayListOf()
 
     val reportRequestList = ReportModels.ReportRequest(
@@ -106,38 +106,7 @@ internal fun <T> ReportsNetworkStore.processReport(request: ReportModels.Request
 
     return success(response)
 }
-
-internal fun ReportsNetworkStore.requestReport(request: ReportModels.Request): Result<String> {
-    val response = apiSession.request(
-            router = APIRouter.RequestReport(request = request)
-    )
-
-    // Handle errors
-    if (response.value == null || !response.isSuccess) {
-        val error = response.error
-
-        return if (error != null) {
-            val exception = initDataError(response.error)
-            LogHelper.e(messages = *arrayOf("An error occurred while fetching report: " +
-                    "${error.description}."))
-            failure(exception)
-        } else {
-            failure(DataError.UnknownReason(null))
-        }
-    }
-
-    return try {
-        // Parse response data
-        val payload = RequestReportXmlParser().parse(response.value.data)?.requestID
-
-        success(payload)
-    } catch(e: Exception) {
-        LogHelper.e(messages = *arrayOf("An error occurred while parsing report: " +
-                "${e.localizedMessage ?: ""}."))
-        failure(DataError.ParseFailure(e))
-    }
-}
-
+*/
 internal fun ReportsNetworkStore.fetchReportRequest(request: ReportModels.ReportRequest): Result<List<RequestReport>> {
     val response = apiSession.request(
             router = APIRouter.ReportRequestList(request = request)
@@ -161,36 +130,6 @@ internal fun ReportsNetworkStore.fetchReportRequest(request: ReportModels.Report
         // Parse response data
         val payload = ReportRequestListXmlParser().parse(response.value.data)
 
-        success(payload)
-    } catch(e: Exception) {
-        LogHelper.e(messages = *arrayOf("An error occurred while parsing report: " +
-                "${e.localizedMessage ?: ""}."))
-        failure(DataError.ParseFailure(e))
-    }
-}
-
-internal fun <T> ReportsNetworkStore.readReport(id: String, call: (data: String) -> T): Result<T> {
-    val response = apiSession.request(
-            router = APIRouter.ReadReport(id)
-    )
-
-    // Handle errors
-    if (response.value == null || !response.isSuccess) {
-        val error = response.error
-
-        return if (error != null) {
-            val exception = initDataError(response.error)
-            LogHelper.e(messages = *arrayOf("An error occurred while fetching report: " +
-                    "${error.description}."))
-            failure(exception)
-        } else {
-            failure(DataError.UnknownReason(null))
-        }
-    }
-
-    return try {
-        // Parse response data
-        val payload = call(response.value.data)
         success(payload)
     } catch(e: Exception) {
         LogHelper.e(messages = *arrayOf("An error occurred while parsing report: " +

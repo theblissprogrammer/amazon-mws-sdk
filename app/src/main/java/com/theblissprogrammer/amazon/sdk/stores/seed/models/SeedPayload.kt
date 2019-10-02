@@ -3,6 +3,7 @@ package com.theblissprogrammer.amazon.sdk.stores.seed.models
 import com.theblissprogrammer.amazon.sdk.stores.fbaFees.models.FBAFeeType
 import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Inventory
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.Order
+import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderDetail
 import com.theblissprogrammer.amazon.sdk.stores.products.models.Product
 
 /**
@@ -10,7 +11,7 @@ import com.theblissprogrammer.amazon.sdk.stores.products.models.Product
  * Copyright (c) 2018. All rights reserved.
  **/
 data class SeedPayload(
-    var orders: List<Order> = listOf(),
+    var orders: List<OrderDetail> = listOf(),
     var inventories: List<Inventory> = listOf(),
     var products: List<Product> = listOf(),
     var fbaFees: List<FBAFeeType> = listOf()) {

@@ -105,8 +105,9 @@ open class SDKDependency: SDKDependable {
 
     override val resolveSyncWorker: SyncWorkerType  by lazy {
          SyncWorker(
-            store = resolveSyncStore,
-            dataWorker = resolveDataWorker
+                 store = resolveSyncStore,
+                 dataWorker = resolveDataWorker,
+                 context = resolveContext
         )
     }
 
@@ -144,8 +145,10 @@ open class SDKDependency: SDKDependable {
 
     override val resolveReportsWorker: ReportsWorkerType by lazy {
          ReportsWorker(
-             store = resolveReportsStore,
-             productCacheStore = resolveProductsCacheStore
+                 store = resolveReportsStore,
+                 productCacheStore = resolveProductsCacheStore,
+                 ordersCacheStore = resolveOrdersCacheStore,
+                 itemsCacheStore = resolveOrderItemsCacheStore
         )
     }
 
@@ -177,7 +180,8 @@ open class SDKDependency: SDKDependable {
         SubscriptionsWorker(
                 store = resolveSubscriptionsStore,
                 cacheStore = resolveSubscriptionsCacheStore,
-                preferencesWorker = resolvePreferencesWorker
+                preferencesWorker = resolvePreferencesWorker,
+                reportsWorker = resolveReportsWorker
         )
     }
 
@@ -255,7 +259,8 @@ open class SDKDependency: SDKDependable {
 
     override val resolveOrdersCacheStore: OrdersCacheStore  by lazy {
         OrdersRoomStore(
-            orderDao = (resolveDataStore as? DataRoomStore)?.instance()?.orderDao()
+            orderDao = (resolveDataStore as? DataRoomStore)?.instance()?.orderDao(),
+            itemDAO = (resolveDataStore as? DataRoomStore)?.instance()?.orderItemDao()
         )
     }
 

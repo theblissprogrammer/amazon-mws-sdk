@@ -16,7 +16,7 @@ class InventoryWorker(val store: InventoryStore,
                       val cacheStore: InventoryCacheStore,
                       val preferencesWorker: PreferencesWorkerType): InventoryWorkerType {
 
-    override suspend fun fetch(request: InventoryModels.Request, completion: LiveCompletionResponse<Array<Inventory>>) {
+    override suspend fun fetchAsync(request: InventoryModels.Request, completion: LiveCompletionResponse<Array<Inventory>>) {
         if (request.marketplace == null) {
             request.marketplace = MarketplaceType.valueOf(preferencesWorker.get(DefaultsKeys.marketplace) ?: "US")
         }
