@@ -12,8 +12,8 @@ import com.theblissprogrammer.amazon.sdk.stores.details.models.ProductDetail
 class DetailsWorker(val store: DetailsStore,
                     val cacheStore: DetailsCacheStore): DetailsWorkerType {
 
-    override suspend fun fetchAsync(request: List<String>, completion: LiveCompletionResponse<Array<Detail>>) {
-        val cache = cacheStore.fetchAsync(request = request).await()
+    /*override suspend fun fetchAsync(request: List<String>, completion: LiveCompletionResponse<Array<Detail>>) {
+        val cache = cacheStore.fetchProductDetailAsync(request = request).await()
 
         request.forEach {
             val details = store.fetchAsync(it).await()
@@ -35,7 +35,7 @@ class DetailsWorker(val store: DetailsStore,
         }
 
         completion(cache)
-    }
+    }*/
 
     override suspend fun fetchProductDetails(asins: List<String>, completion: LiveCompletionResponse<List<ProductDetail>>) {
         val cache = cacheStore.fetchProductDetailAsync(request = asins).await()

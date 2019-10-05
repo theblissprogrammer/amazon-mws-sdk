@@ -19,7 +19,6 @@ interface CommonStore<T, R> {
 }
 
 interface CommonCacheStore<T, R> {
-    fun fetchAsync(request: R): DeferredLiveResult<Array<T>>
     fun createOrUpdateAsync(request: T): DeferredLiveResult<T>
     fun createOrUpdateAsync(vararg inventory: T): DeferredResult<Void>
     fun createOrUpdate(items: List<T>) {}

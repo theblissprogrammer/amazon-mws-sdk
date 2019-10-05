@@ -16,7 +16,7 @@ import com.theblissprogrammer.amazon.sdk.stores.products.models.Product
  */
 class ProductsRoomStore(val productDAO: ProductDAO?): ProductsCacheStore {
 
-    override fun fetchAsync(request: List<String>): DeferredLiveResult<Array<Product>> {
+    fun fetchAsync(request: List<String>): DeferredLiveResult<Array<Product>> {
         return coroutineRoomAsync<Array<Product>> {
 
             val items = productDAO?.fetch(request.toTypedArray())
@@ -44,6 +44,10 @@ class ProductsRoomStore(val productDAO: ProductDAO?): ProductsCacheStore {
             productDAO?.insert(*products)
             Result.success()
         }
+    }
+
+    override fun createOrUpdate(items: List<Product>) {
+        productDAO?.insert(*items.toTypedArray())
     }
 
 }

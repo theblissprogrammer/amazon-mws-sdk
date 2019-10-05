@@ -8,8 +8,7 @@ import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderModels
 import com.theblissprogrammer.amazon.sdk.stores.reports.models.ReportModels
 import com.theblissprogrammer.amazon.sdk.enums.DefaultsKeys
 import com.theblissprogrammer.amazon.sdk.enums.SecurityProperty
-import com.theblissprogrammer.amazon.sdk.extensions.dateFormatter
-import com.theblissprogrammer.amazon.sdk.extensions.isDateToday
+import com.theblissprogrammer.amazon.sdk.extensions.*
 import com.theblissprogrammer.amazon.sdk.preferences.ConstantsType
 import com.theblissprogrammer.amazon.sdk.preferences.PreferencesWorkerType
 import com.theblissprogrammer.amazon.sdk.security.SecurityWorkerType
@@ -70,7 +69,14 @@ sealed class APIRouter: APIRoutable() {
 
             if (request.date != null) {
                 val formatter = dateFormatter()
-                map["StartDate"] = formatter.format(request.date)
+                map["StartDate"] = formatter.format(request.date ?: Date())
+
+                if (request.date?.endOfMonth()?.before(Date()) == true) {
+                    map["EndDate"] = formatter.format(request.date?.endOfMonth()
+                            ?: Date())
+                } else {
+                    map["EndDate"] = formatter.format(Date())
+                }
             }
 
             request.marketplaces.forEachIndexed { index, marketplace ->

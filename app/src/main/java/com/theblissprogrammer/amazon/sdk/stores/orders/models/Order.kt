@@ -4,7 +4,9 @@ import androidx.room.*
 import com.theblissprogrammer.amazon.sdk.enums.FulfillmentChannel
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.enums.OrderStatus
+import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Inventory
 import com.theblissprogrammer.amazon.sdk.stores.orderItems.models.OrderItem
+import com.theblissprogrammer.amazon.sdk.stores.orderItems.models.OrderItemDetail
 import java.util.*
 
 /**
@@ -29,7 +31,7 @@ data class OrderDetail(
         @Embedded
         val order: Order,
         @Relation(parentColumn = "id", entityColumn = "orderId", entity = OrderItem::class)
-        val items: List<OrderItem>
+        val details: List<OrderItemDetail> = listOf()
 )
 
 data class ListOrders(

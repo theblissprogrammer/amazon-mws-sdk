@@ -2,7 +2,9 @@ package com.theblissprogrammer.amazon.sdk.stores.orderItems.models
 
 import androidx.room.*
 import androidx.room.ForeignKey.CASCADE
+import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Inventory
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.Order
+import com.theblissprogrammer.amazon.sdk.stores.products.models.Product
 
 
 /**
@@ -42,3 +44,12 @@ data class ListOrderItems(
     val orderItems: List<OrderItem>,
     val orderId: String?,
     val nextToken: String?)
+
+data class OrderItemDetail(
+        @Embedded
+        val item: OrderItem,
+        @Relation(parentColumn = "sku", entityColumn = "sku", entity = Inventory::class)
+        val inventories: List<Inventory> = listOf(),
+        @Relation(parentColumn = "sku", entityColumn = "sku", entity = Product::class)
+        val products: List<Product> = listOf()
+)

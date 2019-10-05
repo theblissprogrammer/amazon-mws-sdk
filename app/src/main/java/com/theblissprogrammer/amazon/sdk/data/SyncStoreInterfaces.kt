@@ -5,7 +5,7 @@ import com.theblissprogrammer.amazon.sdk.common.CompletionResponse
 
 
 interface SyncStore {
-    fun remotePull(completion: CompletionResponse<SeedPayload>? = null)
+    fun remotePull(refresh: Boolean = false, completion: CompletionResponse<SeedPayload>? = null)
 }
 
 interface SyncWorkerType: SyncStore {

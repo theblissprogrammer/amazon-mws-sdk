@@ -11,6 +11,7 @@ import com.theblissprogrammer.amazon.sdk.logging.LogHelper
 import com.theblissprogrammer.amazon.sdk.network.APIRouter
 import com.theblissprogrammer.amazon.sdk.network.APISessionType
 import com.theblissprogrammer.amazon.sdk.parsers.*
+import com.theblissprogrammer.amazon.sdk.stores.reports.models.RequestReport
 
 /**
  * Created by ahmedsaad on 2018-08-06.
@@ -78,6 +79,7 @@ class ReportsNetworkStore(val apiSession: APISessionType): ReportsStore {
             // Parse response data
             val data = response.value.data
 
+            @Suppress("IMPLICIT_CAST_TO_ANY")
             val payload = when (request.type) {
                 ReportType.AllListings, ReportType.InventoryMFN -> {
                     ProductsReportFileParser().parse(data)
@@ -86,10 +88,10 @@ class ReportsNetworkStore(val apiSession: APISessionType): ReportsStore {
                     OrdersReportXmlParser().parse(data)
                 }
                 ReportType.InventoryAFN -> {
-                    InventoriesReportFileParser().parse(data)
+                    InventoriesReportFileParser(request.marketplace).parse(data)
                 }
                 ReportType.FBAMYIInventory -> {
-                    FbaMYIInventoriesReportFileParser().parse(data)
+                    FbaMYIInventoriesReportFileParser(request.marketplace).parse(data)
                 }
                 ReportType.FBAFees -> {
                     FBAFeesReportFileParser().parse(data)
@@ -107,5 +109,35 @@ class ReportsNetworkStore(val apiSession: APISessionType): ReportsStore {
         }
     }
 
+    override fun fetchReportRequest(request: ReportModels.ReportRequest): Result<List<RequestReport>> {
+        val response = apiSession.request(
+                router = APIRouter.ReportRequestList(request = request)
+        )
+
+        // Handle errors
+        if (response.value == null || !response.isSuccess) {
+            val error = response.error
+
+            return if (error != null) {
+                val exception = initDataError(response.error)
+                LogHelper.e(messages = *arrayOf("An error occurred while fetching report: " +
+                        "${error.description}."))
+                Result.failure(exception)
+            } else {
+                Result.failure(DataError.UnknownReason(null))
+            }
+        }
+
+        return try {
+            // Parse response data
+            val payload = ReportRequestListXmlParser().parse(response.value.data)
+
+            Result.success(payload)
+        } catch(e: Exception) {
+            LogHelper.e(messages = *arrayOf("An error occurred while parsing report: " +
+                    "${e.localizedMessage ?: ""}."))
+            Result.failure(DataError.ParseFailure(e))
+        }
+    }
 
 }

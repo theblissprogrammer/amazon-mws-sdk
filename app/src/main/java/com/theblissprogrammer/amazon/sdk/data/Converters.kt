@@ -3,6 +3,7 @@ package com.theblissprogrammer.amazon.sdk.data
 import androidx.room.TypeConverter
 import com.theblissprogrammer.amazon.sdk.enums.*
 import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Quantity
+import com.theblissprogrammer.amazon.sdk.stores.inventory.models.QuantityDetail
 import java.lang.IllegalArgumentException
 import java.util.*
 
@@ -86,6 +87,16 @@ class Converters {
 
     @TypeConverter
     fun quantityToString(quantity: Quantity?): String? {
+        return quantity?.toString()
+    }
+
+    @TypeConverter
+    fun quantityDetailfromString(value: String?): QuantityDetail? {
+        return if (!value.isNullOrEmpty()) QuantityDetail(value) else null
+    }
+
+    @TypeConverter
+    fun quantityDetailToString(quantity: QuantityDetail?): String? {
         return quantity?.toString()
     }
 

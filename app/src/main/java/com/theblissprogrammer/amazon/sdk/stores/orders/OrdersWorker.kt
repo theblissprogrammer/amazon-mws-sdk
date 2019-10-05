@@ -23,9 +23,9 @@ class OrdersWorker(val store: OrdersStore,
 
     override fun fetch(request: OrderModels.Request, completion: LiveResourceResponse<Array<OrderDetail>>) {
 
-        if (request.marketplaces.isEmpty()) {
+        if (request.marketplaces.isNullOrEmpty()) {
             val marketplaces = SyncRoomStore.getSellerMarketplaces(preferencesWorker)
-            request.marketplaces = marketplaces ?: listOf(MarketplaceType.US)
+            request.marketplaces = marketplaces
         }
 
         val data = object : NetworkBoundResource<Array<OrderDetail>, ListOrders>() {

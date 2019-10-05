@@ -23,6 +23,6 @@ data class NotificationMetaData(
 data class ReportsProcessingNotificationPayload(
         val sellerId: String,
         val reportRequestId: String,
-        val reportId: String,
+        val reportId: String?,
         val type: ReportType,
         val status: ReportStatus)

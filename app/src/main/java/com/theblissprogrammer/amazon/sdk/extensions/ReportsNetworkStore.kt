@@ -107,33 +107,3 @@ import com.theblissprogrammer.amazon.sdk.logging.LogHelper
     return success(response)
 }
 */
-internal fun ReportsNetworkStore.fetchReportRequest(request: ReportModels.ReportRequest): Result<List<RequestReport>> {
-    val response = apiSession.request(
-            router = APIRouter.ReportRequestList(request = request)
-    )
-
-    // Handle errors
-    if (response.value == null || !response.isSuccess) {
-        val error = response.error
-
-        return if (error != null) {
-            val exception = initDataError(response.error)
-            LogHelper.e(messages = *arrayOf("An error occurred while fetching report: " +
-                    "${error.description}."))
-            failure(exception)
-        } else {
-            failure(DataError.UnknownReason(null))
-        }
-    }
-
-    return try {
-        // Parse response data
-        val payload = ReportRequestListXmlParser().parse(response.value.data)
-
-        success(payload)
-    } catch(e: Exception) {
-        LogHelper.e(messages = *arrayOf("An error occurred while parsing report: " +
-                "${e.localizedMessage ?: ""}."))
-        failure(DataError.ParseFailure(e))
-    }
-}

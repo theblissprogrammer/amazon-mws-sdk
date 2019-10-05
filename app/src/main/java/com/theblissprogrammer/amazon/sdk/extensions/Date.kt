@@ -52,6 +52,22 @@ fun Date.endOfDay(): Date {
     return cal.time
 }
 
+fun Date.startOfMonth(): Date {
+    val cal = Calendar.getInstance(TimeZone.getTimeZone("America/Los_Angeles"))
+    cal.time = this
+    cal.set(Calendar.DAY_OF_MONTH, cal.getActualMinimum(Calendar.DAY_OF_MONTH))
+
+    return cal.time.startOfDay()
+}
+
+fun Date.endOfMonth(): Date {
+    val cal = Calendar.getInstance(TimeZone.getTimeZone("America/Los_Angeles"))
+    cal.time = this
+    cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH))
+
+    return cal.time.endOfDay()
+}
+
 fun dateFormatter(): SimpleDateFormat {
     val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
     formatter.timeZone = TimeZone.getTimeZone("GMT")

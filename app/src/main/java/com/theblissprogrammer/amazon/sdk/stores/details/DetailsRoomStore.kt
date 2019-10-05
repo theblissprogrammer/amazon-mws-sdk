@@ -16,7 +16,7 @@ import com.theblissprogrammer.amazon.sdk.stores.details.models.ProductDetail
  */
 
 class DetailsRoomStore(val detailDao: DetailDAO?): DetailsCacheStore {
-    override fun fetchAsync(request: List<String>): DeferredLiveResult<Array<Detail>> {
+    fun fetchAsync(request: List<String>): DeferredLiveResult<Array<Detail>> {
         return coroutineRoomAsync<Array<Detail>> {
 
             val items = detailDao?.fetch(request.toTypedArray())

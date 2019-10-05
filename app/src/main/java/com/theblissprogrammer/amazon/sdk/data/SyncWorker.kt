@@ -72,7 +72,7 @@ class SyncWorker(private val store: SyncStore,
         const val SYNC_INTERVAL = SYNC_INTERVAL_IN_MINUTES * SECONDS_PER_MINUTE
     }
 
-    override fun remotePull(completion: AmznResult<SeedPayload>?) {
+    override fun remotePull(refresh: Boolean, completion: AmznResult<SeedPayload>?) {
         synchronized(pullQueue) {
             if (completion != null) {
                 pullTasks.add(completion)
@@ -83,7 +83,7 @@ class SyncWorker(private val store: SyncStore,
             }
             isPulling = true
 
-            store.remotePull { result ->
+            store.remotePull(refresh) { result ->
                 synchronized(pullQueue) {
                     val tasks = ArrayList(pullTasks)
                     pullTasks.clear()

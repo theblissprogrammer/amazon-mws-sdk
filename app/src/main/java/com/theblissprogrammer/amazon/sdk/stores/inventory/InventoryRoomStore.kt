@@ -10,6 +10,7 @@ import com.theblissprogrammer.amazon.sdk.extensions.coroutineNetworkAsync
 import com.theblissprogrammer.amazon.sdk.extensions.coroutineRoomAsync
 import com.theblissprogrammer.amazon.sdk.stores.common.insertOrUpdate
 import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Inventory
+import com.theblissprogrammer.amazon.sdk.stores.inventory.models.InventoryDetail
 import com.theblissprogrammer.amazon.sdk.stores.inventory.models.InventoryModels
 
 /**
@@ -18,19 +19,16 @@ import com.theblissprogrammer.amazon.sdk.stores.inventory.models.InventoryModels
  */
 class InventoryRoomStore(val inventoryDao: InventoryDAO?): InventoryCacheStore {
 
-    override fun fetchAsync(request: InventoryModels.Request): DeferredLiveResult<Array<Inventory>> {
-        return coroutineRoomAsync<Array<Inventory>> {
+    override fun fetch(request: InventoryModels.Request): LiveResult<Array<InventoryDetail>> {
+        val items = if (request.skus.isNotEmpty())
+            inventoryDao?.fetch(request.skus.toTypedArray())
+        else
+            inventoryDao?.fetch(request.marketplace ?: MarketplaceType.US)
 
-            val items = if (request.skus.isNotEmpty())
-                inventoryDao?.fetch(request.skus.toTypedArray())
-            else
-                inventoryDao?.fetch(request.marketplace ?: MarketplaceType.US)
-
-            if (items == null) {
-                LiveResult.failure(DataError.NonExistent)
-            } else {
-                LiveResult.success(items)
-            }
+        return if (items == null) {
+            LiveResult.failure(DataError.NonExistent)
+        } else {
+            LiveResult.success(items)
         }
     }
 
@@ -54,6 +52,10 @@ class InventoryRoomStore(val inventoryDao: InventoryDAO?): InventoryCacheStore {
             inventoryDao?.insert(*inventory)
             Result.success()
         }
+    }
+
+    override fun createOrUpdate(items: List<Inventory>) {
+        inventoryDao?.insert(*items.toTypedArray())
     }
 
 }

@@ -17,7 +17,7 @@ import com.theblissprogrammer.amazon.sdk.stores.orderItems.models.OrderItemModel
  */
 class OrderItemsRoomStore(val orderItemDao: OrderItemDAO?): OrderItemsCacheStore {
 
-    override fun fetchAsync(request: OrderItemModels.Request): DeferredLiveResult<Array<OrderItem>> {
+    fun fetchAsync(request: OrderItemModels.Request): DeferredLiveResult<Array<OrderItem>> {
         return coroutineRoomAsync<Array<OrderItem>> {
 
             val items = orderItemDao?.fetchByOrderId(request.ids.toTypedArray())

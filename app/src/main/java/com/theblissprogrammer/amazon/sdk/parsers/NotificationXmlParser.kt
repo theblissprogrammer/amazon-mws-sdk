@@ -124,7 +124,7 @@ class NotificationXmlParser {
             }
         }
 
-        if (reportId == null || type == null || sellerId == null || status == null || reportRequestId == null) return null
+        if (type == null || sellerId == null || status == null || reportRequestId == null) return null
 
         return ReportsProcessingNotificationPayload(
                 sellerId = sellerId,

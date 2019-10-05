@@ -112,7 +112,7 @@ class AuthenticationWorker(val service: AuthenticationService,
             // Load remote data locally before proceeding
             syncWorker.configure()
 
-            syncWorker.remotePull()
+            syncWorker.remotePull(refresh = true)
         }
     }
 

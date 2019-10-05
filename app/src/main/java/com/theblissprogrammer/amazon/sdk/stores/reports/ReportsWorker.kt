@@ -8,11 +8,18 @@ import com.theblissprogrammer.amazon.sdk.enums.ReportType
 import com.theblissprogrammer.amazon.sdk.errors.DataError
 import com.theblissprogrammer.amazon.sdk.extensions.coroutineBackgroundAsync
 import com.theblissprogrammer.amazon.sdk.extensions.coroutineOnIO
+import com.theblissprogrammer.amazon.sdk.parsers.FbaMYIInventoriesReportModel
+import com.theblissprogrammer.amazon.sdk.parsers.InventoriesReportFileModel
+import com.theblissprogrammer.amazon.sdk.parsers.OrdersReportXmlModel
+import com.theblissprogrammer.amazon.sdk.stores.inventory.InventoryCacheStore
+import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Inventory
+import com.theblissprogrammer.amazon.sdk.stores.inventory.models.InventoryDetail
 import com.theblissprogrammer.amazon.sdk.stores.orderItems.OrderItemsCacheStore
 import com.theblissprogrammer.amazon.sdk.stores.orders.OrdersCacheStore
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderDetail
 import com.theblissprogrammer.amazon.sdk.stores.products.ProductsCacheStore
 import com.theblissprogrammer.amazon.sdk.stores.products.models.Product
+import com.theblissprogrammer.amazon.sdk.stores.reports.models.RequestReport
 
 /**
  * Created by ahmedsaad on 2018-08-06.
@@ -21,7 +28,8 @@ import com.theblissprogrammer.amazon.sdk.stores.products.models.Product
 class ReportsWorker(val store: ReportsStore,
                     val ordersCacheStore: OrdersCacheStore,
                     val itemsCacheStore: OrderItemsCacheStore,
-                    val productCacheStore: ProductsCacheStore): ReportsWorkerType {
+                    val productCacheStore: ProductsCacheStore,
+                    val inventoryCacheStore: InventoryCacheStore): ReportsWorkerType {
 
     override suspend fun <T> fetchReport(request: ReportModels.Request, completion: CompletionResponse<List<T>>) {
         if (request.type == ReportType.Unknown) return completion(Result.failure(DataError.BadRequest))
@@ -59,15 +67,36 @@ class ReportsWorker(val store: ReportsStore,
 
             when (request.type) {
                 ReportType.OrderByUpdateDate, ReportType.OrderByOrderDate -> {
-                    val list = resource.data as List<OrderDetail>
-                    val orders = list.map { it.order }
-                    val items = list.flatMap { it.items }
+                    val list = resource.data as? OrdersReportXmlModel ?: return@coroutineOnIO
 
-                    ordersCacheStore.createOrUpdate(orders)
-                    itemsCacheStore.createOrUpdate(items)
+                    ordersCacheStore.createOrUpdate(list.orders)
+                    itemsCacheStore.createOrUpdate(list.items)
+                }
+                ReportType.FBAMYIInventory -> {
+                    val list = resource.data as? FbaMYIInventoriesReportModel ?: return@coroutineOnIO
+                    val inventories = list.inventories.toList()
+                    val products = list.products.toList()
+
+                    inventoryCacheStore.createOrUpdate(inventories)
+                    productCacheStore.createOrUpdate(products)
+                }
+                ReportType.InventoryAFN -> {
+                    val list = resource.data as? InventoriesReportFileModel ?: return@coroutineOnIO
+
+                    inventoryCacheStore.createOrUpdate(list.inventories)
                 }
                 else -> {}
             }
+        }
+    }
+
+    override fun fetchReportRequest(request: ReportModels.ReportRequest, completion: CompletionResponse<List<RequestReport>>) {
+        coroutineOnIO {
+            val requests = coroutineBackgroundAsync {
+                store.fetchReportRequest(request)
+            }.await()
+
+            completion(requests)
         }
     }
 }

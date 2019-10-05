@@ -19,7 +19,8 @@ sealed class ReportModels {
 
     class ReadRequest(
         val type: ReportType,
-        val id: String): ReportModels()
+        val id: String,
+        val marketplace: MarketplaceType): ReportModels()
 
     class ReportRequest(
         var requestFrom: Date? = null,

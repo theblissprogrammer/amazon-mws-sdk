@@ -147,7 +147,8 @@ open class SDKDependency: SDKDependable {
                  store = resolveReportsStore,
                  productCacheStore = resolveProductsCacheStore,
                  ordersCacheStore = resolveOrdersCacheStore,
-                 itemsCacheStore = resolveOrderItemsCacheStore
+                 itemsCacheStore = resolveOrderItemsCacheStore,
+                 inventoryCacheStore = resolveInventoryCacheStore
         )
     }
 

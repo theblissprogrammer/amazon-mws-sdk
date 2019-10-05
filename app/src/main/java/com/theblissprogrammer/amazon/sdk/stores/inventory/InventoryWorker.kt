@@ -2,11 +2,18 @@ package com.theblissprogrammer.amazon.sdk.stores.inventory
 
 import com.theblissprogrammer.amazon.sdk.stores.inventory.models.InventoryModels
 import com.theblissprogrammer.amazon.sdk.common.LiveCompletionResponse
+import com.theblissprogrammer.amazon.sdk.common.LiveResourceResponse
+import com.theblissprogrammer.amazon.sdk.common.LiveResult
+import com.theblissprogrammer.amazon.sdk.common.Result
 import com.theblissprogrammer.amazon.sdk.enums.DefaultsKeys
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
+import com.theblissprogrammer.amazon.sdk.enums.marketplaceFromId
 import com.theblissprogrammer.amazon.sdk.logging.LogHelper
+import com.theblissprogrammer.amazon.sdk.network.NetworkBoundResource
 import com.theblissprogrammer.amazon.sdk.preferences.PreferencesWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Inventory
+import com.theblissprogrammer.amazon.sdk.stores.inventory.models.InventoryDetail
+import com.theblissprogrammer.amazon.sdk.stores.inventory.models.ListInventorySupply
 
 /**
  * Created by ahmedsaad on 2018-08-07.
@@ -16,9 +23,41 @@ class InventoryWorker(val store: InventoryStore,
                       val cacheStore: InventoryCacheStore,
                       val preferencesWorker: PreferencesWorkerType): InventoryWorkerType {
 
-    override suspend fun fetchAsync(request: InventoryModels.Request, completion: LiveCompletionResponse<Array<Inventory>>) {
+    override fun fetch(request: InventoryModels.Request, completion: LiveResourceResponse<Array<InventoryDetail>>) {
         if (request.marketplace == null) {
-            request.marketplace = MarketplaceType.valueOf(preferencesWorker.get(DefaultsKeys.marketplace) ?: "US")
+            request.marketplace = marketplaceFromId(preferencesWorker.get(DefaultsKeys.marketplace)) ?: MarketplaceType.US
+        }
+
+        val data = object : NetworkBoundResource<Array<InventoryDetail>, ListInventorySupply>() {
+            override fun saveCallResult(item: ListInventorySupply?) {
+                if (item != null) {
+                    val inventories = item.inventory
+                    inventories.forEach { inventory -> inventory.marketplace = item.marketplace }
+
+                    cacheStore.createOrUpdate(inventories)
+                }
+            }
+
+            override fun shouldFetch(data: Array<InventoryDetail>?): Boolean {
+                return false
+            }
+
+            override fun loadFromDb(): LiveResult<Array<InventoryDetail>> {
+                return cacheStore.fetch(request = request)
+            }
+
+            override fun createCall(): Result<ListInventorySupply> {
+                return store.fetch(request = request)
+            }
+
+        }.asLiveData()
+
+        completion(data)
+    }
+
+    /*override suspend fun fetchAsync(request: InventoryModels.Request, completion: LiveCompletionResponse<Array<Inventory>>) {
+        if (request.marketplace == null) {
+            request.marketplace = marketplaceFromId(preferencesWorker.get(DefaultsKeys.marketplace)) ?: MarketplaceType.US
         }
 
         val cache = cacheStore.fetchAsync(request = request).await()
@@ -73,5 +112,5 @@ class InventoryWorker(val store: InventoryStore,
         }
 
         completion(cache)
-    }
+    }*/
 }

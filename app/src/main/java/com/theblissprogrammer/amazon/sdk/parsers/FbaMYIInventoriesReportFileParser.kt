@@ -1,22 +1,31 @@
 package com.theblissprogrammer.amazon.sdk.parsers
 
 import com.theblissprogrammer.amazon.sdk.enums.InventoryCondition
+import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Inventory
+import com.theblissprogrammer.amazon.sdk.stores.inventory.models.InventoryDetail
 import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Quantity
+import com.theblissprogrammer.amazon.sdk.stores.inventory.models.QuantityDetail
+import com.theblissprogrammer.amazon.sdk.stores.products.models.Product
 
 
 /**
  * Created by ahmedsaad on 2018-02-20.
  * Copyright © 2017. All rights reserved.
  */
-class FbaMYIInventoriesReportFileParser {
+data class FbaMYIInventoriesReportModel (
+        val inventories: Sequence<Inventory>,
+        val products: Sequence<Product>
+)
 
-    fun parse(input: String): List<Inventory> {
+class FbaMYIInventoriesReportFileParser(val marketplace: MarketplaceType) {
+
+    fun parse(input: String): FbaMYIInventoriesReportModel? {
         val products = input.split(Regex("[\r\n]+"))
                 .asSequence()
                 .mapNotNull { it.split("\t") }
 
-        val header = products.firstOrNull { it.contains("sku") } ?: return listOf()
+        val header = products.firstOrNull { it.contains("sku") } ?: return  null
 
         val skuIndex = header.indexOf("sku")
         val fnskuIndex = header.indexOf("fnsku")
@@ -39,17 +48,47 @@ class FbaMYIInventoriesReportFileParser {
         val reservedFutureIndex = header.indexOf("afn-reserved-future-supply")
         val futureSupplyIndex = header.indexOf("afn-future-supply-buyable")
 
-        return products.mapNotNull {
+        val inventory = products.mapNotNull {
             if (it.isNullOrEmpty() || it.contains("sku")
                     || it[conditionIndex] == InventoryCondition.Unknown.name) return@mapNotNull  null
 
-            Inventory(
+            val inventory = Inventory(
                     sku = it[skuIndex],
                     asin = it[asinIndex],
                     fnsku = it[fnskuIndex],
                     condition = InventoryCondition.valueOf(it[conditionIndex]),
+                    marketplace = marketplace,
+                    quantityDetail = QuantityDetail(
+                            mfnQuantity = it[mfnQuantityIndex].toIntOrNull() ?: 0,
+                            afnWarehouseQuantity = it[afnWarehouseIndex].toIntOrNull() ?: 0,
+                            afnFulfillableQuantity = it[afnFulfillableIndex].toIntOrNull() ?: 0,
+                            afnUnsellableQuantity = it[afnUnsellableIndex].toIntOrNull() ?: 0,
+                            afnReservedQuantity = it[afnReservedIndex].toIntOrNull() ?: 0,
+                            afnTotalQuantity = it[afnTotalIndex].toIntOrNull() ?: 0,
+                            inboundWorkingQuantity = it[inboundWorkingIndex].toIntOrNull() ?: 0,
+                            inboundShippedQuantity = it[inboundShippedIndex].toIntOrNull() ?: 0,
+                            inboundReceivedQuantity = it[inboundReceivingIndex].toIntOrNull() ?: 0
+                    ),
                     quantity = Quantity(total = it[afnTotalIndex].toIntOrNull() ?: 0)
             )
-        }.toList()
+
+            val product = Product(
+                    sku = it[skuIndex],
+                    asin = it[asinIndex],
+                    name = it[nameIndex],
+                    sellPrice = it[priceIndex].toDoubleOrNull(),
+                    isFBA = it[afnExisitsIndex].equals("yes", ignoreCase = true)
+            )
+
+            Pair(
+                    inventory,
+                    product
+            )
+        }
+
+        return FbaMYIInventoriesReportModel(
+                inventories = inventory.map { it.first },
+                products = inventory.map { it.second }
+        )
     }
 }

@@ -5,6 +5,7 @@ import com.theblissprogrammer.amazon.sdk.enums.OrderStatus
 import com.theblissprogrammer.amazon.sdk.enums.marketplaceFromSalesChannel
 import com.theblissprogrammer.amazon.sdk.extensions.*
 import com.theblissprogrammer.amazon.sdk.stores.orderItems.models.OrderItem
+import com.theblissprogrammer.amazon.sdk.stores.orderItems.models.OrderItemDetail
 import com.theblissprogrammer.amazon.sdk.stores.orderItems.models.PriceComponent
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.*
 import org.xmlpull.v1.XmlPullParser
@@ -18,30 +19,40 @@ import kotlin.collections.ArrayList
  * Created by ahmedsaad on 2018-02-20.
  * Copyright © 2017. All rights reserved.
  */
+
+data class OrdersReportXmlModel (
+        val orders: List<Order>,
+        val items: List<OrderItem>
+)
 class OrdersReportXmlParser {
     // We don't use namespaces
     private val ns: String? = null
 
     @Throws(XmlPullParserException::class, IOException::class)
-    fun parse(input: String): List<OrderDetail> {
+    fun parse(input: String): OrdersReportXmlModel? {
         input.byteInputStream().use { inputStream ->
             val parser = Xml.newPullParser()
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
             parser.setInput(inputStream, null)
             parser.nextTag()
 
-            return parser.findChildTag("Message") {
+            val orders = parser.findChildTag("Message") {
                 parser.findChildTag("Order") {
                     readOrder(parser)
                 }.firstOrNull()
             }.filterNotNull()
+
+            return OrdersReportXmlModel(
+                    orders = orders.map { it.first },
+                    items = orders.flatMap { it.second }
+            )
         }
     }
 
     // Parses the contents of an entry. If it encounters a title, summary, or link tag, hands them off
     // to their respective "read" methods for processing. Otherwise, skips the tag.
     @Throws(XmlPullParserException::class, IOException::class)
-    private fun readOrder(parser: XmlPullParser): OrderDetail? {
+    private fun readOrder(parser: XmlPullParser): Pair<Order, List<OrderItem>>? {
         parser.require(XmlPullParser.START_TAG, ns, "Order")
 
         var id: String? = null
@@ -84,9 +95,9 @@ class OrdersReportXmlParser {
                 marketplace = marketplaceFromSalesChannel(salesChannel)
         )
 
-        return OrderDetail(
-                order = order,
-                items = items.filterNotNull()
+        return Pair(
+                order,
+                items.filterNotNull()
         )
     }
 

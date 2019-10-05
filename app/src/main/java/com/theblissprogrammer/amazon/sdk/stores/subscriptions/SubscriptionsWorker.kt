@@ -1,10 +1,7 @@
 package com.theblissprogrammer.amazon.sdk.stores.subscriptions
 
 import com.theblissprogrammer.amazon.sdk.common.*
-import com.theblissprogrammer.amazon.sdk.enums.DefaultsKeys
-import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
-import com.theblissprogrammer.amazon.sdk.enums.NotificationType
-import com.theblissprogrammer.amazon.sdk.enums.marketplaceFromId
+import com.theblissprogrammer.amazon.sdk.enums.*
 import com.theblissprogrammer.amazon.sdk.extensions.*
 import com.theblissprogrammer.amazon.sdk.network.NetworkBoundResource
 import com.theblissprogrammer.amazon.sdk.preferences.PreferencesWorkerType
@@ -96,15 +93,38 @@ class SubscriptionsWorker(
 
                 when (it.metaData?.notificationType) {
                     NotificationType.ReportProcessingFinished -> {
-
                         val payload = it.payload as ReportsProcessingNotificationPayload
-                        val readRequest = ReportModels.ReadRequest(
-                                id = payload.reportId,
-                                type = payload.type
 
-                        )
+                        if (payload.status == ReportStatus._DONE_ && !payload.reportId.isNullOrBlank()) {
+                            val readRequest = ReportModels.ReadRequest(
+                                    id = payload.reportId,
+                                    type = payload.type,
+                                    marketplace = marketplaceFromId(preferencesWorker.get(DefaultsKeys.marketplace))
+                                            ?: MarketplaceType.US
 
-                        reportsWorker.processReport(readRequest)
+                            )
+
+                            reportsWorker.processReport(readRequest)
+                        } else {
+                            reportsWorker.fetchReportRequest(ReportModels.ReportRequest(
+                                    statuses = listOf(ReportStatus._DONE_),
+                                    types = listOf(payload.type)
+                            )) {
+
+                                val lastReport = it.value?.firstOrNull()
+                                if (!lastReport?.reportID.isNullOrBlank()) {
+                                    val readRequest = ReportModels.ReadRequest(
+                                            id = lastReport?.reportID ?: "",
+                                            type = payload.type,
+                                            marketplace = marketplaceFromId(preferencesWorker.get(DefaultsKeys.marketplace))
+                                                    ?: MarketplaceType.US
+
+                                    )
+                                    reportsWorker.processReport(readRequest)
+                                }
+                            }
+                        }
+
                     }
                     else -> {}
                 }

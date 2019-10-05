@@ -17,6 +17,7 @@ import com.theblissprogrammer.amazon.sdk.enums.marketplaceFromId
 import com.theblissprogrammer.amazon.sdk.errors.DataError
 import com.theblissprogrammer.amazon.sdk.extensions.add
 import com.theblissprogrammer.amazon.sdk.extensions.startOfDay
+import com.theblissprogrammer.amazon.sdk.extensions.startOfMonth
 import com.theblissprogrammer.amazon.sdk.logging.LogHelper
 import com.theblissprogrammer.amazon.sdk.preferences.PreferencesWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Inventory
@@ -33,42 +34,73 @@ class SyncRoomStore(val preferencesWorker: PreferencesWorkerType,
             return !preferencesWorker.get(DefaultsKeys.sellerID).isNullOrEmpty()
         }
 
-    override fun remotePull(completion: CompletionResponse<SeedPayload>?) {
+    override fun remotePull(refresh: Boolean, completion: CompletionResponse<SeedPayload>?) {
         LogHelper.d(messages = *arrayOf("Pull from remote data source begins."))
 
         // Ensure configured with latest settings
         dataWorker.configure()
 
-        seedPayload {
-            if (it.value == null || !it.isSuccess) {
-                completion?.invoke(failure(it.error ?: DataError.UnknownReason(null)))
-                return@seedPayload
+        seedOrders(refresh)
+        seedInventories(refresh)
+
+        completion?.invoke(success(null))
+    }
+
+    private fun seedOrders(refresh: Boolean) {
+        val marketplaces = getSellerMarketplaces(preferencesWorker)
+
+        if (refresh) {
+
+            val cal = Calendar.getInstance(TimeZone.getTimeZone("America/Los_Angeles"))
+            cal.time = Date()
+
+            (0..12).map {
+                cal.set(Calendar.MONTH, cal.get(Calendar.MONTH) - it)
+
+                ReportModels.Request(
+                        type = ReportType.OrderByUpdateDate,
+                        date = cal.time.startOfMonth(),
+                        marketplaces = marketplaces
+                )
+            }.forEach {
+                reportsWorker.requestReport(it)
             }
 
-            completion?.invoke(success(it.value))
+        } else {
+            val lastPulledAt = getSyncActivityLastPulledAt(
+                    typeName = Order::class.java.simpleName,
+                    suffix = marketplaces.joinToString())
+
+            if (lastPulledAt != null && lastPulledAt.add(Calendar.MINUTE, 1).after(Date())) {
+                return
+            }
+
+            val request = ReportModels.Request(
+                    type = ReportType.OrderByUpdateDate,
+                    date = lastPulledAt ?: Date().startOfMonth(),
+                    marketplaces = marketplaces
+            )
+
+            reportsWorker.requestReport(request)
         }
     }
 
-    private fun seedPayload(completion: CompletionResponse<SeedPayload>?) {
+    private fun seedInventories(refresh: Boolean) {
         val marketplaces = getSellerMarketplaces(preferencesWorker)
         val lastPulledAt = getSyncActivityLastPulledAt(
-                typeName = SeedPayload::class.java.simpleName,
+                typeName = Inventory::class.java.simpleName,
                 suffix = marketplaces.joinToString())
 
         if (lastPulledAt != null && lastPulledAt.add(Calendar.MINUTE, 30).after(Date())) {
-            completion?.invoke(failure(DataError.NonExistent))
             return
         }
 
         val request = ReportModels.Request(
-                type = ReportType.OrderByUpdateDate,
-                date = lastPulledAt ?: Date().startOfDay().add(Calendar.DATE, -30),
+                type = ReportType.FBAMYIInventory,
                 marketplaces = marketplaces
         )
 
         reportsWorker.requestReport(request)
-
-        completion?.invoke(success(null))
     }
 
     companion object {
