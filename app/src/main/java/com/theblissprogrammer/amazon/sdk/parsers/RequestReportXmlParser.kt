@@ -44,7 +44,6 @@ class RequestReportXmlParser {
         parser.require(XmlPullParser.START_TAG, ns, "ReportRequestInfo")
 
         var id: String? = null
-        var reportID: String? = null
         var type: String? = null
         var status: ReportStatus? = null
 
@@ -54,10 +53,10 @@ class RequestReportXmlParser {
             }
 
             val name = parser.name
+
             when (name) {
                 "ReportRequestId" -> id = parser.readString(name)
                 "ReportType" -> type = parser.readString(name)
-                "GeneratedReportId" -> reportID = parser.readString(name)
                 "ReportProcessingStatus" -> status = ReportStatus.valueOf(parser.readString(name))
                 else -> parser.skip()
             }
@@ -67,7 +66,6 @@ class RequestReportXmlParser {
 
         return RequestReport(
                 requestID = id,
-                reportID = reportID,
                 type = ReportType.value(type),
                 status = status
         )

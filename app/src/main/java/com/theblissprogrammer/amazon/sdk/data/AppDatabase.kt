@@ -14,10 +14,14 @@ import com.theblissprogrammer.amazon.sdk.stores.orders.models.Order
 import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderAddress
 import com.theblissprogrammer.amazon.sdk.stores.products.ProductDAO
 import com.theblissprogrammer.amazon.sdk.stores.products.models.Product
+import com.theblissprogrammer.amazon.sdk.stores.reports.ReportDAO
+import com.theblissprogrammer.amazon.sdk.stores.reports.models.RequestReport
 import com.theblissprogrammer.amazon.sdk.stores.sellers.SellerDAO
 import com.theblissprogrammer.amazon.sdk.stores.sellers.models.Seller
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.SubscriptionsDAO
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.Queue
+import com.theblissprogrammer.amazon.sdk.stores.sync.models.Sync
+import com.theblissprogrammer.amazon.sdk.stores.sync.SyncDAO
 
 /**
  * Created by ahmed.saad on 2018-12-03.
@@ -32,9 +36,11 @@ import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.Queue
         Inventory::class,
         Product::class,
         Detail::class,
-        Queue::class
+        Queue::class,
+        Sync::class,
+        RequestReport::class
     ],
-    version = 17
+    version = 23
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -45,4 +51,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun productDao(): ProductDAO
     abstract fun detailDao(): DetailDAO
     abstract fun subscriptionsDAO(): SubscriptionsDAO
+    abstract fun syncDAO(): SyncDAO
+    abstract fun reportDAO(): ReportDAO
 }

@@ -127,4 +127,32 @@ class Converters {
     fun listToString(list: List<String>?): String? {
         return list?.joinToString(separator = delimiter)
     }
+
+    @TypeConverter
+    fun reportStatusfromString(value: String?): ReportStatus? {
+        return try {
+            ReportStatus.valueOf(value ?: "")
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+    }
+
+    @TypeConverter
+    fun reportStatusToString(reportStatus: ReportStatus?): String? {
+        return reportStatus?.name
+    }
+
+    @TypeConverter
+    fun reportTypefromString(value: String?): ReportType? {
+        return try {
+            ReportType.valueOf(value ?: "")
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+    }
+
+    @TypeConverter
+    fun reportTypeToString(reportType: ReportType?): String? {
+        return reportType?.name
+    }
 }

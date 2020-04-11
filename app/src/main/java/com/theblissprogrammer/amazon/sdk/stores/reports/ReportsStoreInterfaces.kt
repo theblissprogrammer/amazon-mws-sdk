@@ -1,9 +1,7 @@
 package com.theblissprogrammer.amazon.sdk.stores.reports
 
+import com.theblissprogrammer.amazon.sdk.common.*
 import com.theblissprogrammer.amazon.sdk.stores.reports.models.ReportModels
-import com.theblissprogrammer.amazon.sdk.common.CompletionResponse
-import com.theblissprogrammer.amazon.sdk.common.DeferredResult
-import com.theblissprogrammer.amazon.sdk.common.Result
 import com.theblissprogrammer.amazon.sdk.stores.reports.models.RequestReport
 
 /**
@@ -12,9 +10,16 @@ import com.theblissprogrammer.amazon.sdk.stores.reports.models.RequestReport
  **/
 interface ReportsStore {
     fun <T> fetchReportAsync(request: ReportModels.Request): DeferredResult<List<T>>
-    fun requestReport(request: ReportModels.Request): Result<String>
+    fun requestReport(request: ReportModels.Request): Result<RequestReport>
     fun readReport(request: ReportModels.ReadRequest): Result<Any>
     fun fetchReportRequest(request: ReportModels.ReportRequest): Result<List<RequestReport>>
+}
+
+interface ReportsCacheStore {
+    fun getReports(): LiveResult<List<RequestReport>>
+    fun createOrUpdate(report: RequestReport)
+    fun createOrUpdate(vararg report: RequestReport)
+    fun deleteById(id: String)
 }
 
 interface ReportsWorkerType {
@@ -22,4 +27,5 @@ interface ReportsWorkerType {
     fun requestReport(request: ReportModels.Request)
     fun processReport(request: ReportModels.ReadRequest)
     fun fetchReportRequest(request: ReportModels.ReportRequest, completion: CompletionResponse<List<RequestReport>>)
+    fun getReports(completion: LiveCompletionResponse<List<RequestReport>>)
 }

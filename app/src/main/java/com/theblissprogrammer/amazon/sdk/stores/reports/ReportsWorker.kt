@@ -1,22 +1,18 @@
 package com.theblissprogrammer.amazon.sdk.stores.reports
 
+import com.theblissprogrammer.amazon.sdk.common.*
 import com.theblissprogrammer.amazon.sdk.stores.reports.models.ReportModels
-import com.theblissprogrammer.amazon.sdk.common.CompletionResponse
-import com.theblissprogrammer.amazon.sdk.common.Result
-import com.theblissprogrammer.amazon.sdk.common.asResource
 import com.theblissprogrammer.amazon.sdk.enums.ReportType
 import com.theblissprogrammer.amazon.sdk.errors.DataError
 import com.theblissprogrammer.amazon.sdk.extensions.coroutineBackgroundAsync
 import com.theblissprogrammer.amazon.sdk.extensions.coroutineOnIO
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineRoomAsync
 import com.theblissprogrammer.amazon.sdk.parsers.FbaMYIInventoriesReportModel
 import com.theblissprogrammer.amazon.sdk.parsers.InventoriesReportFileModel
 import com.theblissprogrammer.amazon.sdk.parsers.OrdersReportXmlModel
 import com.theblissprogrammer.amazon.sdk.stores.inventory.InventoryCacheStore
-import com.theblissprogrammer.amazon.sdk.stores.inventory.models.Inventory
-import com.theblissprogrammer.amazon.sdk.stores.inventory.models.InventoryDetail
 import com.theblissprogrammer.amazon.sdk.stores.orderItems.OrderItemsCacheStore
 import com.theblissprogrammer.amazon.sdk.stores.orders.OrdersCacheStore
-import com.theblissprogrammer.amazon.sdk.stores.orders.models.OrderDetail
 import com.theblissprogrammer.amazon.sdk.stores.products.ProductsCacheStore
 import com.theblissprogrammer.amazon.sdk.stores.products.models.Product
 import com.theblissprogrammer.amazon.sdk.stores.reports.models.RequestReport
@@ -25,11 +21,12 @@ import com.theblissprogrammer.amazon.sdk.stores.reports.models.RequestReport
  * Created by ahmedsaad on 2018-08-06.
  * Copyright (c) 2018. All rights reserved.
  **/
-class ReportsWorker(val store: ReportsStore,
-                    val ordersCacheStore: OrdersCacheStore,
-                    val itemsCacheStore: OrderItemsCacheStore,
-                    val productCacheStore: ProductsCacheStore,
-                    val inventoryCacheStore: InventoryCacheStore): ReportsWorkerType {
+class ReportsWorker(private val store: ReportsStore,
+                    private val cacheStore: ReportsCacheStore,
+                    private val ordersCacheStore: OrdersCacheStore,
+                    private val itemsCacheStore: OrderItemsCacheStore,
+                    private val productCacheStore: ProductsCacheStore,
+                    private val inventoryCacheStore: InventoryCacheStore): ReportsWorkerType {
 
     override suspend fun <T> fetchReport(request: ReportModels.Request, completion: CompletionResponse<List<T>>) {
         if (request.type == ReportType.Unknown) return completion(Result.failure(DataError.BadRequest))
@@ -51,9 +48,11 @@ class ReportsWorker(val store: ReportsStore,
 
     override fun requestReport(request: ReportModels.Request) {
         coroutineOnIO {
-            coroutineBackgroundAsync {
+            val report = coroutineBackgroundAsync {
                 store.requestReport(request)
             }.await()
+
+            report.value?.let { cacheStore.createOrUpdate(report = it) }
         }
     }
 
@@ -87,6 +86,9 @@ class ReportsWorker(val store: ReportsStore,
                 }
                 else -> {}
             }
+
+            // Remove from cache once completed
+            cacheStore.deleteById(request.requestId)
         }
     }
 
@@ -97,6 +99,16 @@ class ReportsWorker(val store: ReportsStore,
             }.await()
 
             completion(requests)
+        }
+    }
+
+    override fun getReports(completion: LiveCompletionResponse<List<RequestReport>>) {
+        coroutineOnIO {
+            val reports = coroutineRoomAsync {
+                cacheStore.getReports()
+            }.await()
+
+            completion(reports)
         }
     }
 }

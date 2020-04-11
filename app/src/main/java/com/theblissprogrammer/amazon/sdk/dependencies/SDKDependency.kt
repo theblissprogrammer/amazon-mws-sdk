@@ -12,10 +12,6 @@ import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.enums.RegionType
 import com.theblissprogrammer.amazon.sdk.stores.inventory.*
 import com.theblissprogrammer.amazon.sdk.stores.orders.*
-import com.theblissprogrammer.amazon.sdk.stores.reports.ReportsNetworkStore
-import com.theblissprogrammer.amazon.sdk.stores.reports.ReportsStore
-import com.theblissprogrammer.amazon.sdk.stores.reports.ReportsWorker
-import com.theblissprogrammer.amazon.sdk.stores.reports.ReportsWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.seed.SeedNetworkStore
 import com.theblissprogrammer.amazon.sdk.stores.seed.SeedStore
 import com.theblissprogrammer.amazon.sdk.stores.seed.SeedWorker
@@ -32,7 +28,12 @@ import com.theblissprogrammer.amazon.sdk.stores.details.*
 import com.theblissprogrammer.amazon.sdk.stores.orderItems.*
 import com.theblissprogrammer.amazon.sdk.stores.products.ProductsCacheStore
 import com.theblissprogrammer.amazon.sdk.stores.products.ProductsRoomStore
+import com.theblissprogrammer.amazon.sdk.stores.reports.*
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.*
+import com.theblissprogrammer.amazon.sdk.stores.sync.SyncCacheStore
+import com.theblissprogrammer.amazon.sdk.stores.sync.SyncRoomStore
+import com.theblissprogrammer.amazon.sdk.stores.sync.SyncWorker
+import com.theblissprogrammer.amazon.sdk.stores.sync.SyncWorkerType
 
 open class SDKDependency: SDKDependable {
     override lateinit var application: Application
@@ -103,10 +104,14 @@ open class SDKDependency: SDKDependable {
         )
     }
 
-    override val resolveSyncWorker: SyncWorkerType  by lazy {
-         SyncWorker(
-                 store = resolveSyncStore,
-                 dataWorker = resolveDataWorker
+    override val resolveSyncWorker: SyncWorkerType by lazy {
+        SyncWorker(
+                cacheStore = resolveSyncCacheStore,
+                dataWorker = resolveDataWorker,
+                preferencesWorker = resolvePreferencesWorker,
+                reportsWorker = resolveReportsWorker,
+                inventoryWorker = resolveInventoryWorker,
+                sellersWorker = resolveSellersWorker
         )
     }
 
@@ -145,6 +150,7 @@ open class SDKDependency: SDKDependable {
     override val resolveReportsWorker: ReportsWorkerType by lazy {
          ReportsWorker(
                  store = resolveReportsStore,
+                 cacheStore = resolveReportsCacheStore,
                  productCacheStore = resolveProductsCacheStore,
                  ordersCacheStore = resolveOrdersCacheStore,
                  itemsCacheStore = resolveOrderItemsCacheStore,
@@ -182,15 +188,6 @@ open class SDKDependency: SDKDependable {
                 cacheStore = resolveSubscriptionsCacheStore,
                 preferencesWorker = resolvePreferencesWorker,
                 reportsWorker = resolveReportsWorker
-        )
-    }
-
-    override val resolveSyncStore: SyncStore  by lazy {
-         SyncRoomStore(
-             preferencesWorker = resolvePreferencesWorker,
-             dataWorker = resolveDataWorker,
-             reportsWorker = resolveReportsWorker,
-             seedWorker = resolveSeedWorker
         )
     }
 
@@ -291,6 +288,18 @@ open class SDKDependency: SDKDependable {
     override val resolveSubscriptionsCacheStore: SubscriptionsCacheStore by lazy {
         SubscriptionsRoomStore(
                 subscriptionsDao = (resolveDataStore as? DataRoomStore)?.instance()?.subscriptionsDAO()
+        )
+    }
+
+    override val resolveSyncCacheStore: SyncCacheStore by lazy {
+        SyncRoomStore(
+                syncDAO = (resolveDataStore as? DataRoomStore)?.instance()?.syncDAO()
+        )
+    }
+
+    override val resolveReportsCacheStore: ReportsCacheStore by lazy {
+        ReportsRoomStore(
+                reportDAO = (resolveDataStore as? DataRoomStore)?.instance()?.reportDAO()
         )
     }
 

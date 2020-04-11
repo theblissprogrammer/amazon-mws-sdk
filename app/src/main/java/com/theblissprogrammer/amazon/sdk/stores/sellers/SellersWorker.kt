@@ -1,14 +1,18 @@
 package com.theblissprogrammer.amazon.sdk.stores.sellers
 
-import com.theblissprogrammer.amazon.sdk.common.CompletionResponse
 import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
 import com.theblissprogrammer.amazon.sdk.stores.sellers.models.SellerModels
 import com.theblissprogrammer.amazon.sdk.common.LiveCompletionResponse
+import com.theblissprogrammer.amazon.sdk.common.LiveResourceResponse
+import com.theblissprogrammer.amazon.sdk.common.LiveResult
 import com.theblissprogrammer.amazon.sdk.common.LiveResult.Companion.failure
+import com.theblissprogrammer.amazon.sdk.common.Result
 import com.theblissprogrammer.amazon.sdk.enums.DefaultsKeys
 import com.theblissprogrammer.amazon.sdk.enums.DefaultsKeys.Companion.sellerID
 import com.theblissprogrammer.amazon.sdk.errors.DataError
+import com.theblissprogrammer.amazon.sdk.extensions.coroutineOnIO
 import com.theblissprogrammer.amazon.sdk.logging.LogHelper
+import com.theblissprogrammer.amazon.sdk.network.NetworkBoundResource
 import com.theblissprogrammer.amazon.sdk.preferences.PreferencesWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.sellers.models.Seller
 
@@ -20,71 +24,61 @@ class SellersWorker(val store: SellersStore,
                     val cacheStore: SellersCacheStore,
                     val preferencesWorker: PreferencesWorkerType): SellersWorkerType {
 
-    override suspend fun fetchSellerAsync(request: SellerModels.Request, completion: LiveCompletionResponse<Seller>) {
-        // Use cache storage if applicable
-        val cache = cacheStore.fetch(request = request).await()
+    override fun fetchSellersAsync(request: SellerModels.Request?, completion: LiveResourceResponse<List<Seller>>) {
 
-        // Retrieve missing cache data from cloud if applicable
-        if (cache.error != null && cache.error === DataError.NonExistent) {
-            val response = this.store.fetch(request = request).await()
-            val value = response.value
+        val data = object : NetworkBoundResource<List<Seller>, Seller>() {
+            override fun saveCallResult(item: Seller?) {
+                if (item != null) {
+                    val current = SellerModels.CurrentRequest(
+                            id = item.sellerId,
+                            marketplace = item.marketplace
+                    )
 
-            return if (value == null || !response.isSuccess) {
-                completion(failure(response.error))
-            } else {
-                completion(cacheStore.createOrUpdate(value).await())
+                    item.id = cacheStore.fetchNow(current).value?.id
+                    cacheStore.createOrUpdate(item)
+                }
             }
-        }
 
-        // Immediately return local response
-        completion(cache)
+            override fun shouldFetch(data: List<Seller>?): Boolean {
+                return true // Update the rank
+            }
 
-        val cacheElement = cache.value
-        if (cacheElement == null || !cache.isSuccess) {
-            return
-        }
+            override fun loadFromDb(): LiveResult<List<Seller>> {
+                return cacheStore.fetch(request = request)
+            }
 
-        // Sync remote updates to cache if applicable
-        val response = this.store.fetch(request = request).await()
+            override fun createCall(): Result<Seller> {
+                val current = SellerModels.CurrentRequest(
+                        id = request?.ids?.first() ?: "",
+                        marketplace = request?.marketplaces?.first() ?: MarketplaceType.US
+                )
 
-        // Validate if any updates that needs to be stored
-        val element = response.value
-        if (element == null || !response.isSuccess) {
-            return
-        }
+                return store.fetch(request = current)
+            }
 
-        // Update local storage with updated data
-        val savedElement = cacheStore.createOrUpdate(element).await()
+        }.asLiveData()
 
-        if (!savedElement.isSuccess) {
-            LogHelper.e(messages = *arrayOf("Could not save updated user locally" +
-                    " from remote storage: ${savedElement.error?.localizedMessage ?: ""}"))
-        }
+        completion(data)
     }
 
-    override suspend fun fetchCurrentSellerAsync(completion: LiveCompletionResponse<Seller>) {
+    override fun fetchCurrentSeller(): Result<Seller> {
         val id = preferencesWorker.get(sellerID)
         val marketplace = preferencesWorker.get(DefaultsKeys.marketplace)
 
         if (id == null || marketplace == null || id.isEmpty() || marketplace.isEmpty()) {
-            completion(failure(DataError.Unauthorized))
-            return
+            return Result.failure(DataError.Unauthorized)
         }
 
-        val request = SellerModels.Request(
+        val request = SellerModels.CurrentRequest(
                 id = id,
                 marketplace = MarketplaceType.valueOf(marketplace)
         )
 
-        fetchSellerAsync(request = request, completion = completion)
+        return fetchSeller(request)
     }
 
-    override fun fetchCurrentSeller(completion: CompletionResponse<Seller>) {
-        // TODO: ("fetchCurrentSeller not implemented")
-    }
-
-    override fun fetchSeller(request: SellerModels.Request, completion: CompletionResponse<Seller>) {
-        // TODO: ("fetchSeller not implemented")
+    override fun fetchSeller(request: SellerModels.CurrentRequest): Result<Seller> {
+        return cacheStore.fetchNow(request = request)
     }
 
 }

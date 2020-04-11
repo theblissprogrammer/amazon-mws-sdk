@@ -25,7 +25,7 @@ class ReportsNetworkStore(val apiSession: APISessionType): ReportsStore {
         }
     }
 
-    override fun requestReport(request: ReportModels.Request): Result<String> {
+    override fun requestReport(request: ReportModels.Request): Result<RequestReport> {
         val response = apiSession.request(
                 router = APIRouter.RequestReport(request = request)
         )
@@ -46,7 +46,7 @@ class ReportsNetworkStore(val apiSession: APISessionType): ReportsStore {
 
         return try {
             // Parse response data
-            val payload = RequestReportXmlParser().parse(response.value.data)?.requestID
+            val payload = RequestReportXmlParser().parse(response.value.data)
 
             Result.success(payload)
         } catch(e: Exception) {

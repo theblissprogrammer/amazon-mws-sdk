@@ -2,6 +2,7 @@ package com.theblissprogrammer.amazon.sdk.stores.sellers
 
 import com.theblissprogrammer.amazon.sdk.common.DeferredLiveResult
 import com.theblissprogrammer.amazon.sdk.common.DeferredResult
+import com.theblissprogrammer.amazon.sdk.common.LiveResult
 import com.theblissprogrammer.amazon.sdk.common.LiveResult.Companion.failure
 import com.theblissprogrammer.amazon.sdk.common.LiveResult.Companion.success
 import com.theblissprogrammer.amazon.sdk.common.Result
@@ -18,37 +19,35 @@ import com.theblissprogrammer.amazon.sdk.stores.sellers.models.SellerModels
  **/
 class SellersRoomStore(val sellerDao: SellerDAO?): SellersCacheStore {
 
-    override fun fetch(request: SellerModels.Request): DeferredLiveResult<Seller> {
-        return coroutineRoomAsync<Seller> {
-            val item = sellerDao?.fetch(id = request.id, marketplace = request.marketplace)
+    override fun fetch(request: SellerModels.Request?): LiveResult<List<Seller>> {
+        val item = if (request != null) sellerDao?.fetch(
+                ids = request.ids.toTypedArray(),
+                marketplaces = request.marketplaces.toTypedArray()
+        )
+        else sellerDao?.fetchAllSellers()
 
-            if (item == null) {
-                failure(DataError.NonExistent)
-            } else {
-                success(item)
-            }
+        return if (item == null) {
+            failure(DataError.NonExistent)
+        } else {
+            success(item)
         }
     }
 
-    override fun createOrUpdate(request: Seller): DeferredLiveResult<Seller> {
-        return coroutineRoomAsync<Seller> {
+    override fun fetchNow(request: SellerModels.CurrentRequest): Result<Seller> {
+        val item = sellerDao?.fetchSync(id = request.id, marketplace = request.marketplace)
 
-            sellerDao?.insertOrUpdate(request)
-
-            val item = sellerDao?.fetch(id = request.id, marketplace = request.marketplace)
-
-            if (item == null) {
-                failure(DataError.NonExistent)
-            } else {
-                success(item)
-            }
+        return if (item == null) {
+            Result.failure(DataError.NonExistent)
+        } else {
+            Result.success(item)
         }
     }
 
-    override fun createOrUpdate(vararg sellers: Seller): DeferredResult<Void> {
-        return coroutineNetworkAsync<Void> {
-            sellerDao?.insert(*sellers)
-            Result.success()
-        }
+    override fun createOrUpdate(request: Seller) {
+        sellerDao?.insertOrUpdate(request)
+    }
+
+    override fun createOrUpdate(sellers: List<Seller>) {
+        sellerDao?.insertOrUpdate(sellers)
     }
 }

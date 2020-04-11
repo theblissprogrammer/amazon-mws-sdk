@@ -10,28 +10,28 @@ import com.theblissprogrammer.amazon.sdk.preferences.PreferencesWorkerType
  */
 class DataRoomStore(val context: Context, override val preferencesWorker: PreferencesWorkerType): DataStore {
     fun instance(name: String = this.name): AppDatabase?{
-        return databases[name]
+        return databases
     }
 
-    private var databases: MutableMap<String, AppDatabase> = mutableMapOf()
+    private val databases: AppDatabase by lazy {
+        Room.databaseBuilder(
+                context.applicationContext,
+                AppDatabase::class.java, "SalesTracker"
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                .fallbackToDestructiveMigration()
+                .build()
+    }
 
     init {
         this.configure()
     }
 
     override fun configure() {
-        if (instance() == null) {
-            databases[this.name] = Room.databaseBuilder(
-                context.applicationContext,
-                AppDatabase::class.java, this.name
-            ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
-                .fallbackToDestructiveMigration()
-                .build()
-        }
+
     }
 
     override fun delete(sellerID: String) {
         instance(generateName(sellerID))?.clearAllTables()
-        databases.remove(generateName(sellerID))
+        //databases.remove(generateName(sellerID))
     }
 }

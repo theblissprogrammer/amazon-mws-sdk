@@ -64,7 +64,7 @@ class AuthenticationNetworkService(val apiSession: APISessionType,
             // Parse response data
             val sellers = ListMarketplaceParticipationsXmlParser().parse(value.data)?.map {
                 Seller(
-                        id = it.sellerID,
+                        sellerId = it.sellerID,
                         marketplace = it.marketplaceType ?: MarketplaceType.US
                 )
             } ?: throw DataError.BadRequest

@@ -5,7 +5,7 @@ import com.theblissprogrammer.amazon.sdk.account.models.AccountModels
 import com.theblissprogrammer.amazon.sdk.account.models.LoginModels
 import android.content.Intent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.theblissprogrammer.amazon.sdk.data.SyncWorkerType
+import com.theblissprogrammer.amazon.sdk.stores.sync.SyncWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.sellers.SellersCacheStore
 import com.theblissprogrammer.amazon.sdk.common.Result.Companion.failure
 import com.theblissprogrammer.amazon.sdk.common.Result.Companion.success
@@ -88,29 +88,29 @@ class AuthenticationWorker(val service: AuthenticationService,
             // Store user info for later use on app start and db initialization
             securityWorker.set(key = SecurityProperty.TOKEN(default.marketplace.region.name), value = value.token)
 
-            preferencesWorker.set(default.id, key = sellerID)
+            preferencesWorker.set(default.sellerId, key = sellerID)
             preferencesWorker.set(default.marketplace.name, key = DefaultsKeys.marketplace)
 
+            // Load remote data locally before proceeding
+            syncWorker.configure()
+
             /// Save sellers to cache
-            sellersCacheStore.createOrUpdate(*value.sellers.toTypedArray()).await()
+            sellersCacheStore.createOrUpdate(value.sellers)
 
             // Notify application authentication occurred and ready
             if (context != null){
                 val intent = Intent()
                 intent.action = ACTION_AUTHENTICATION_DID_LOGIN
-                intent.putExtra(SELLER_ID, default.id)
+                intent.putExtra(SELLER_ID, default.sellerId)
 
                 LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
             }
 
-            LogHelper.i(messages = *arrayOf("Login complete for user #${value.sellers.first().id}."))
+            LogHelper.i(messages = *arrayOf("Login complete for user #${value.sellers.first().sellerId}."))
 
             coroutineOnUi {
                 completion(success(AccountModels.Response(seller = default)))
             }
-
-            // Load remote data locally before proceeding
-            syncWorker.configure()
 
             syncWorker.remotePull(refresh = true)
         }

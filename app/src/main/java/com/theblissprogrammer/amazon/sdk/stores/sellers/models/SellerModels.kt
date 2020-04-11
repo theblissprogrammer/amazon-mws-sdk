@@ -8,6 +8,11 @@ import com.theblissprogrammer.amazon.sdk.enums.MarketplaceType
  **/
 sealed class SellerModels {
     class Request(
+            val ids: List<String>,
+            val marketplaces: List<MarketplaceType>
+    ): SellerModels()
+
+    class CurrentRequest(
             val id: String,
             val marketplace: MarketplaceType
     ): SellerModels()

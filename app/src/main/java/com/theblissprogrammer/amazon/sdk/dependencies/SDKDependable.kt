@@ -6,8 +6,7 @@ import com.theblissprogrammer.amazon.sdk.account.AuthenticationService
 import com.theblissprogrammer.amazon.sdk.account.AuthenticationWorkerType
 import com.theblissprogrammer.amazon.sdk.data.DataStore
 import com.theblissprogrammer.amazon.sdk.data.DataWorkerType
-import com.theblissprogrammer.amazon.sdk.data.SyncStore
-import com.theblissprogrammer.amazon.sdk.data.SyncWorkerType
+import com.theblissprogrammer.amazon.sdk.stores.sync.SyncWorkerType
 import com.theblissprogrammer.amazon.sdk.network.APISessionType
 import com.theblissprogrammer.amazon.sdk.network.HTTPServiceType
 import com.theblissprogrammer.amazon.sdk.network.SignedHelperType
@@ -30,6 +29,7 @@ import com.theblissprogrammer.amazon.sdk.stores.orders.OrdersCacheStore
 import com.theblissprogrammer.amazon.sdk.stores.orders.OrdersStore
 import com.theblissprogrammer.amazon.sdk.stores.orders.OrdersWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.products.ProductsCacheStore
+import com.theblissprogrammer.amazon.sdk.stores.reports.ReportsCacheStore
 import com.theblissprogrammer.amazon.sdk.stores.reports.ReportsStore
 import com.theblissprogrammer.amazon.sdk.stores.reports.ReportsWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.seed.SeedStore
@@ -40,6 +40,7 @@ import com.theblissprogrammer.amazon.sdk.stores.sellers.SellersWorkerType
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.SubscriptionsCacheStore
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.SubscriptionsStore
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.SubscriptionsWorkerType
+import com.theblissprogrammer.amazon.sdk.stores.sync.SyncCacheStore
 
 
 /**
@@ -78,7 +79,6 @@ interface SDKDependable {
     val resolveDetailsWorker: DetailsWorkerType
     val resolveSubscriptionsWorker: SubscriptionsWorkerType
 
-    val resolveSyncStore: SyncStore
     val resolveSellersStore: SellersStore
     val resolveOrdersStore: OrdersStore
     val resolveOrderItemsStore: OrderItemsStore
@@ -97,4 +97,6 @@ interface SDKDependable {
     val resolveDetailsCacheStore: DetailsCacheStore
     val resolveProductsCacheStore: ProductsCacheStore
     val resolveSubscriptionsCacheStore: SubscriptionsCacheStore
+    val resolveSyncCacheStore: SyncCacheStore
+    val resolveReportsCacheStore: ReportsCacheStore
 }

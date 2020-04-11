@@ -1,5 +1,6 @@
 package com.theblissprogrammer.amazon.sdk.stores.subscriptions
 
+import android.os.Handler
 import com.theblissprogrammer.amazon.sdk.common.*
 import com.theblissprogrammer.amazon.sdk.enums.*
 import com.theblissprogrammer.amazon.sdk.extensions.*
@@ -10,6 +11,7 @@ import com.theblissprogrammer.amazon.sdk.stores.reports.models.ReportModels
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.Queue
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.ReportsProcessingNotificationPayload
 import com.theblissprogrammer.amazon.sdk.stores.subscriptions.models.SubscriptionsModels
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Created by ahmed.saad on 2019-09-26.
@@ -21,11 +23,14 @@ class SubscriptionsWorker(
         val preferencesWorker: PreferencesWorkerType,
         val reportsWorker: ReportsWorkerType): SubscriptionsWorkerType {
 
+    private val marketplace by lazy {
+        MarketplaceType.valueOf(preferencesWorker.get(DefaultsKeys.marketplace) ?: "US")
+    }
+
     override fun getQueue(completion: LiveResourceResponse<Queue>) {
         val id = preferencesWorker.get(DefaultsKeys.sellerID)
-        val marketplace = preferencesWorker.get(DefaultsKeys.marketplace)
 
-        if (id.isNullOrBlank() || marketplace.isNullOrBlank()) {
+        if (id.isNullOrBlank()) {
             //completion(failure(DataError.Unauthorized))
             return
         }
@@ -34,7 +39,7 @@ class SubscriptionsWorker(
 
         val request = SubscriptionsModels.QueueRequest(
                 name = queueName,
-                marketplace = marketplaceFromId(marketplace) ?: MarketplaceType.US
+                marketplace = marketplace
         )
 
         val data = object : NetworkBoundResource<Queue, Queue>() {
@@ -72,13 +77,13 @@ class SubscriptionsWorker(
         }
     }
 
-    override fun createSubscription(request: SubscriptionsModels.SubscriptionRequest, completion: ResourceResponse<Void>) {
+    override fun createSubscription(request: SubscriptionsModels.SubscriptionRequest, completion: ResourceResponse<Void>?) {
         coroutineOnUi {
             val data = coroutineBackgroundAsync {
                 store.createSubscription(request).asResource()
             }.await()
 
-            completion(data)
+            completion?.invoke(data)
         }
     }
 
@@ -99,9 +104,8 @@ class SubscriptionsWorker(
                             val readRequest = ReportModels.ReadRequest(
                                     id = payload.reportId,
                                     type = payload.type,
-                                    marketplace = marketplaceFromId(preferencesWorker.get(DefaultsKeys.marketplace))
-                                            ?: MarketplaceType.US
-
+                                    marketplace = marketplace,
+                                    requestId = payload.reportRequestId
                             )
 
                             reportsWorker.processReport(readRequest)
@@ -116,8 +120,8 @@ class SubscriptionsWorker(
                                     val readRequest = ReportModels.ReadRequest(
                                             id = lastReport?.reportID ?: "",
                                             type = payload.type,
-                                            marketplace = marketplaceFromId(preferencesWorker.get(DefaultsKeys.marketplace))
-                                                    ?: MarketplaceType.US
+                                            marketplace = marketplace,
+                                            requestId = payload.reportRequestId
 
                                     )
                                     reportsWorker.processReport(readRequest)
@@ -131,4 +135,68 @@ class SubscriptionsWorker(
             }
         }
     }
+
+    override fun startPolling() {
+        getQueue {
+            coroutineOnUi {
+                it.observeForever {
+                    val queue = it.data ?: return@observeForever
+
+                    // Register and create subscription if not done so
+                    registerDestination(SubscriptionsModels.DestinationRequest(queue)) {
+                        createSubscription(SubscriptionsModels.SubscriptionRequest(queue, notificationType = NotificationType.ReportProcessingFinished))
+                    }
+
+                    pollRequest = SubscriptionsModels.PollRequest(queue)
+                }
+            }
+        }
+    }
+
+    override fun stopPolling() {
+        handler.removeCallbacks(mRunnableCode)
+        polling.set(false)
+    }
+
+    private var polling: AtomicBoolean = AtomicBoolean(false)
+
+    private val handler by lazy {
+        Handler()
+    }
+
+    private var pollRequest: SubscriptionsModels.PollRequest? = null
+        set(value) {
+            field = value
+
+            if (value != null)
+                runPolling()
+        }
+
+    // alternate the view's background color
+    private val mRunnableCode = object : Runnable {
+        override fun run() {
+            pollRequest?.let { pollQueue(it) }
+            handler.postDelayed(this, 5000)
+        }
+    }
+
+    private fun runPolling() {
+        reportsWorker.getReports {
+            coroutineOnUi {
+                it.value?.observeForever {
+                    if (it.isNullOrEmpty()) {
+                        // stop polling
+                        handler.removeCallbacks(mRunnableCode)
+
+                        polling.set(false)
+                    } else {
+                        // start polling if not already
+                        if (!polling.getAndSet(true))
+                            mRunnableCode.run()
+                    }
+                }
+            }
+        }
+    }
+
 }

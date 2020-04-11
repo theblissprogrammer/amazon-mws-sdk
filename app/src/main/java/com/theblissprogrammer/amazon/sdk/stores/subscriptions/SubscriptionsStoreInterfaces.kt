@@ -25,6 +25,9 @@ interface SubscriptionsCacheStore {
 interface SubscriptionsWorkerType {
     fun getQueue(completion: LiveResourceResponse<Queue>)
     fun registerDestination(request: SubscriptionsModels.DestinationRequest, completion: ResourceResponse<Void>)
-    fun createSubscription(request: SubscriptionsModels.SubscriptionRequest, completion: ResourceResponse<Void>)
+    fun createSubscription(request: SubscriptionsModels.SubscriptionRequest, completion: ResourceResponse<Void>? = null)
     fun pollQueue(request: SubscriptionsModels.PollRequest)
+
+    fun startPolling()
+    fun stopPolling()
 }

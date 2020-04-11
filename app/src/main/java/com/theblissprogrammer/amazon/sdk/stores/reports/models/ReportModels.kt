@@ -20,7 +20,8 @@ sealed class ReportModels {
     class ReadRequest(
         val type: ReportType,
         val id: String,
-        val marketplace: MarketplaceType): ReportModels()
+        val marketplace: MarketplaceType,
+        val requestId: String): ReportModels()
 
     class ReportRequest(
         var requestFrom: Date? = null,

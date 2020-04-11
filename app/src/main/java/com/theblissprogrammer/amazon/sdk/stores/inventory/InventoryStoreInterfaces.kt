@@ -20,4 +20,6 @@ interface InventoryCacheStore: CommonCacheStore<Inventory, InventoryModels.Reque
     fun fetch(request: InventoryModels.Request): LiveResult<Array<InventoryDetail>>
 }
 
-interface InventoryWorkerType: CommonWorkerType<InventoryDetail, InventoryModels.Request>
+interface InventoryWorkerType: CommonWorkerType<InventoryDetail, InventoryModels.Request> {
+    fun update(request: InventoryModels.Request)
+}

@@ -49,7 +49,9 @@ abstract class NetworkBoundResource<ResultType, RequestType>
     @MainThread
     private fun setValue(newValue: Resource<ResultType>) {
         if (result.value != newValue) {
-            result.value = newValue
+            coroutineOnUi {
+                result.value = newValue
+            }
         }
     }
 

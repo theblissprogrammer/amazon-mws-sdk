@@ -15,14 +15,17 @@ import com.theblissprogrammer.amazon.sdk.stores.common.CommonDAO
 @Dao
 interface SellerDAO: CommonDAO<Seller> {
     @Query("SELECT * FROM Seller")
-    fun fetchAllSellers(): LiveData<Array<Seller>>
+    fun fetchAllSellers(): LiveData<List<Seller>>
 
-    @Query("SELECT * FROM Seller WHERE id = :id")
+    @Query("SELECT * FROM Seller WHERE sellerId = :id")
     fun fetch(id: String): LiveData<Seller>
 
-    @Query("SELECT * FROM Seller WHERE id = :id AND marketplace = :marketplace")
-    fun fetch(id: String, marketplace: MarketplaceType): LiveData<Seller>
+    @Query("SELECT * FROM Seller WHERE sellerId IN (:ids) AND marketplace IN (:marketplaces)")
+    fun fetch(ids: Array<String>, marketplaces: Array<MarketplaceType>): LiveData<List<Seller>>
+
+    @Query("SELECT * FROM Seller WHERE sellerId = :id AND marketplace = :marketplace")
+    fun fetchSync(id: String, marketplace: MarketplaceType): Seller
 
     @Query("SELECT * FROM Seller WHERE marketplace = :marketplace")
-    fun fetch(marketplace: MarketplaceType): LiveData<Array<Seller>>
+    fun fetch(marketplace: MarketplaceType): LiveData<List<Seller>>
 }

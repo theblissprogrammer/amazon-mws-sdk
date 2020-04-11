@@ -15,9 +15,5 @@ class MwsSdk {
             dependencies.application = application
             DependencyInjector.dependencies = dependencies
         }
-
-        val dataManager: DataManagerInterface by lazy {
-            DataManager()
-        }
     }
 }
